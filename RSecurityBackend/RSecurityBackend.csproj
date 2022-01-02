@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>Basic security backend including user management and some general utilities for ASP.NET Core applications</Description>
+    <Copyright>Hamid Reza Mohammadi @2022</Copyright>
+    <RepositoryUrl>https://github.com/hrmoh/RSecurityBackend</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
