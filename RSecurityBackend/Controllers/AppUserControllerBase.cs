@@ -37,7 +37,7 @@ namespace RSecurityBackend.Controllers
         [Route("login")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(LoggedOnUserModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> Login(
+        public virtual async Task<IActionResult> Login(
             [AuditIgnore]
             [FromBody]
             LoginViewModel loginViewModel
