@@ -63,7 +63,7 @@ namespace RSecurityBackend.Controllers
         [Route("relogin/{sessionId}")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(LoggedOnUserModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> ReLogin(
+        public virtual async Task<IActionResult> ReLogin(
             Guid sessionId
             )
         {
