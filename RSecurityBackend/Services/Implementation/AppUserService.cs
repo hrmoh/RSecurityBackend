@@ -41,16 +41,19 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<LoggedOnUserModel>(null, "نام کاربری وارد نشده است.");
             if (string.IsNullOrEmpty(loginViewModel.Password))
                 return new RServiceResult<LoggedOnUserModel>(null, "گذرواژه وارد نشده است.");
-            //we ignore loginViewModel in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
-            REvent log = new REvent()
+            if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
-                EventType = "AppUser/Login (POST)(Manual)",
-                StartDate = DateTime.UtcNow,
-                UserName = loginViewModel.Username,
-                IpAddress = clientIPAddress
-            };
-            _context.AuditLogs.Add(log);
-            await _context.SaveChangesAsync();
+                //we ignore loginViewModel in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
+                REvent log = new REvent()
+                {
+                    EventType = "AppUser/Login (POST)(Manual)",
+                    StartDate = DateTime.UtcNow,
+                    UserName = loginViewModel.Username,
+                    IpAddress = clientIPAddress
+                };
+                _context.AuditLogs.Add(log);
+                await _context.SaveChangesAsync();
+            }
 
             RServiceResult<bool> checkUserExists = await EnsureDefaultUserExists();
             if (!checkUserExists.Result)
@@ -1306,16 +1309,19 @@ namespace RSecurityBackend.Services.Implementation
         /// <returns></returns>
         public virtual async Task<RServiceResult<bool>> ResetPassword(string email, string secret, string password, string clientIPAddress)
         {
-            //we ignore input model in automatic auditing to prevent loginng password data, so we would add a manual auditing to have enough data on login intrusion and ...
-            REvent log = new REvent()
+            if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
-                EventType = "AppUser/ResetPassword (POST)(Manual)",
-                StartDate = DateTime.UtcNow,
-                UserName = email,
-                IpAddress = clientIPAddress
-            };
-            _context.AuditLogs.Add(log);
-            await _context.SaveChangesAsync();
+                //we ignore input model in automatic auditing to prevent loginng password data, so we would add a manual auditing to have enough data on login intrusion and ...
+                REvent log = new REvent()
+                {
+                    EventType = "AppUser/ResetPassword (POST)(Manual)",
+                    StartDate = DateTime.UtcNow,
+                    UserName = email,
+                    IpAddress = clientIPAddress
+                };
+                _context.AuditLogs.Add(log);
+                await _context.SaveChangesAsync();
+            }
 
             RAppUser existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser == null)
