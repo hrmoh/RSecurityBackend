@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Services;
 using System;
@@ -31,17 +30,10 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            var cachKey = _GetUserLevelCachKey(loggedOnUserId, name);
-            if (!_memoryCache.TryGetValue(cachKey, out string val))
-            {
-                var res = await _optionsService.GetValueAsync(name, loggedOnUserId);
-                if (!string.IsNullOrEmpty(res.ExceptionString))
-                    return BadRequest(res.ExceptionString);
-                val = res.Result;
-                _memoryCache.Set(cachKey, val);
-            }
-           
-            return Ok(val);
+            var res = await _optionsService.GetValueAsync(name, loggedOnUserId);
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+                return BadRequest(res.ExceptionString);
+            return Ok(res.Result);
         }
 
         private string _GetUserLevelCachKey(Guid loggedOnUserId, string name)
@@ -65,7 +57,6 @@ namespace RSecurityBackend.Controllers
             var res = await _optionsService.SetAsync(name, value, loggedOnUserId);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
-            _memoryCache.Set(_GetUserLevelCachKey(loggedOnUserId, name), value);
             return Ok(res.Result);
         }
 
@@ -81,16 +72,10 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public async Task<IActionResult> GetGlobalOptionValue(string name)
         {
-            var cachKey = _GetGlobalCachKey(name);
-            if (!_memoryCache.TryGetValue(cachKey, out string val))
-            {
-                var res = await _optionsService.GetValueAsync(name, null);
-                if (!string.IsNullOrEmpty(res.ExceptionString))
-                    return BadRequest(res.ExceptionString);
-                val = res.Result;
-                _memoryCache.Set(cachKey, val);
-            }
-            return Ok(val);
+            var res = await _optionsService.GetValueAsync(name, null);
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+                return BadRequest(res.ExceptionString);
+            return Ok(res.Result);
         }
 
         private string _GetGlobalCachKey(string name)
@@ -113,7 +98,6 @@ namespace RSecurityBackend.Controllers
             var res = await _optionsService.SetAsync(name, value, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
-            _memoryCache.Set(_GetGlobalCachKey(name), value);
             return Ok(res.Result);
         }
 
@@ -121,21 +105,14 @@ namespace RSecurityBackend.Controllers
        /// constructor
        /// </summary>
        /// <param name="optionsService"></param>
-       /// <param name="memoryCache"></param>
-        public RGenericOptionsControllerBase(IRGenericOptionsService optionsService, IMemoryCache memoryCache)
+        public RGenericOptionsControllerBase(IRGenericOptionsService optionsService)
         {
             _optionsService = optionsService;
-            _memoryCache = memoryCache;
         }
 
         /// <summary>
         /// Options Service
         /// </summary>
         protected readonly IRGenericOptionsService _optionsService;
-
-        /// <summary>
-        /// IMemoryCache
-        /// </summary>
-        protected readonly IMemoryCache _memoryCache;
     }
 }
