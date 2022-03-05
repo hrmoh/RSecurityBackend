@@ -36,11 +36,6 @@ namespace RSecurityBackend.Controllers
             return Ok(res.Result);
         }
 
-        private string _GetUserLevelCachKey(Guid loggedOnUserId, string name)
-        {
-            return $"RGenericOptionsControllerBase::GetValue::{loggedOnUserId}::{name}";
-        }
-
         /// <summary>
         /// get user level option, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them
         /// </summary>
@@ -78,10 +73,6 @@ namespace RSecurityBackend.Controllers
             return Ok(res.Result);
         }
 
-        private string _GetGlobalCachKey(string name)
-        {
-            return $"RGenericOptionsControllerBase::GetGlobalOptionValue::{name}";
-        }
 
         /// <summary>
         /// set global option value
