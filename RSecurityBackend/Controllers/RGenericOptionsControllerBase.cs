@@ -81,7 +81,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="value"></param>
         /// <returns></returns>
         [HttpPut("global/{name}")]
-        [Authorize(Policy = SecurableItem.GlobalOptionsEntityShortName + ":" + SecurableItem.ModifyOperationShortName)]
+        [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public async Task<IActionResult> SetGlobalOptionValue(string name, [FromBody] string value)
