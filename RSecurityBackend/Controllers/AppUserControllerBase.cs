@@ -276,7 +276,7 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// add a new user (if you are trying to add an admin user you yourself should be admin)
         /// </summary>
-        /// <param name="newUserInfo">if passsword is sent empty system genrates one for it which could be retrieved from returned record</param>
+        /// <param name="newUserInfo"></param>
         /// <returns>id/generated password if required could be retrieved from return value</returns>
         [HttpPost]
         [Authorize(Policy = SecurableItem.UserEntityShortName + ":" + SecurableItem.AddOperationShortName)]
