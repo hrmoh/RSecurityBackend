@@ -122,7 +122,7 @@
             <summary>
             add a new user (if you are trying to add an admin user you yourself should be admin)
             </summary>
-            <param name="newUserInfo">if passsword is sent empty system genrates one for it which could be retrieved from returned record</param>
+            <param name="newUserInfo"></param>
             <returns>id/generated password if required could be retrieved from return value</returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.Put(System.Guid,RSecurityBackend.Models.Auth.ViewModels.RegisterRAppUser)">
@@ -464,21 +464,15 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.#ctor(RSecurityBackend.Services.IRGenericOptionsService,Microsoft.Extensions.Caching.Memory.IMemoryCache)">
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.#ctor(RSecurityBackend.Services.IRGenericOptionsService)">
             <summary>
             constructor
             </summary>
             <param name="optionsService"></param>
-            <param name="memoryCache"></param>
         </member>
         <member name="F:RSecurityBackend.Controllers.RGenericOptionsControllerBase._optionsService">
             <summary>
             Options Service
-            </summary>
-        </member>
-        <member name="F:RSecurityBackend.Controllers.RGenericOptionsControllerBase._memoryCache">
-            <summary>
-            IMemoryCache
             </summary>
         </member>
         <member name="T:RSecurityBackend.Controllers.RImageControllerBase">
@@ -491,6 +485,14 @@
             returns image stream
             </summary>
             <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RImageControllerBase.GetImageWithCustomExtension(System.Guid,System.String)">
+            <summary>
+            return image with custom extension
+            </summary>
+            <param name="id"></param>
+            <param name="ext"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.RImageControllerBase.UploadImage">
