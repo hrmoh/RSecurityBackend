@@ -20,16 +20,23 @@ namespace RSecurityBackend.Controllers
     [Route("api/rimages")]
     public abstract class RImageControllerBase : Controller
     {
+
         /// <summary>
-        /// returns image stream
+        /// return image with custom extension
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="ext"></param>
         /// <returns></returns>
-        [HttpGet("{id}.jpg")]
+        [HttpGet("{id}.{ext}")]
         [AllowAnonymous]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(FileStreamResult))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> Get(Guid id)
+        public async Task<IActionResult> GetImageWithCustomExtension(Guid id, string ext)
+        {
+            return await _Get(id);
+        }
+
+        private async Task<IActionResult> _Get(Guid id)
         {
             var cachKey = $"RImageControllerBase::RImage::{id}";
             if (!_memoryCache.TryGetValue(cachKey, out RImage img))
@@ -71,21 +78,6 @@ namespace RSecurityBackend.Controllers
 
             return new FileStreamResult(new FileStream(imgPath, FileMode.Open, FileAccess.Read), img.ContentType);
 
-        }
-
-        /// <summary>
-        /// return image with custom extension
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="ext"></param>
-        /// <returns></returns>
-        [HttpGet("{id}.{ext}")]
-        [AllowAnonymous]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(FileStreamResult))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetImageWithCustomExtension(Guid id, string ext)
-        {
-            return await Get(id);
         }
 
         /// <summary>
