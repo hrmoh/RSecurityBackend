@@ -188,7 +188,7 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.GetUserImage(System.Guid)">
             <summary>
-            Get User Image in base 64
+            Get User Image
             </summary>
             <param name="id"></param>
             <returns></returns>
@@ -479,13 +479,6 @@
             <summary>
             Generic Image Provider
             </summary>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.RImageControllerBase.Get(System.Guid)">
-            <summary>
-            returns image stream
-            </summary>
-            <param name="id"></param>
-            <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.RImageControllerBase.GetImageWithCustomExtension(System.Guid,System.String)">
             <summary>
