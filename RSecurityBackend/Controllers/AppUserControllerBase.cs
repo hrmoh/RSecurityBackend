@@ -745,7 +745,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// Get User Image in base 64
+        /// Get User Image
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
