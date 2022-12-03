@@ -371,6 +371,10 @@ namespace RSecurityBackend.Controllers
                 return BadRequest("You can not disable yourself!");
             if (loggedOnUserId == id && !string.IsNullOrEmpty(existingUserInfo.Password))
                 return BadRequest("Please use setmypassword method to change your own password.");
+            if(loggedOnUserId == id)
+            {
+                existingUserInfo.IsAdmin = (await _appUserService.IsAdmin(id)).Result;//ignore changing isAdmin status for a user modifying himself/herself
+            }
 
             RServiceResult<bool> res = await _appUserService.ModifyUser(id, existingUserInfo);
             if (!res.Result)
