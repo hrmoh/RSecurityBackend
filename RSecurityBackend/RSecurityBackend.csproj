@@ -10,7 +10,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AssemblyVersion>1.0.8.0</AssemblyVersion>
     <FileVersion>1.0.8</FileVersion>
-    <Version>1.1.4</Version>
+    <Version>1.1.5</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 

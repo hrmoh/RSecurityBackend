@@ -426,7 +426,7 @@ namespace RSecurityBackend.Services.Implementation
         public virtual async Task<RServiceResult<PublicRUserSession>> GetUserSession(Guid userId, Guid sessionId)
         {
             RTemporaryUserSession rUserSession =
-                await _context.Sessions.Where(s => s.RAppUserId == userId && s.Id == sessionId).SingleAsync();
+                await _context.Sessions.Include(s => s.RAppUser).Where(s => s.RAppUserId == userId && s.Id == sessionId).SingleAsync();
             return new RServiceResult<PublicRUserSession>
                 (
                     new PublicRUserSession()
