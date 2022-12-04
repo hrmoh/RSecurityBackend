@@ -1518,7 +1518,7 @@ namespace RSecurityBackend.Services.Implementation
                 audience: "Everyone",
                 claims: claims,
                 notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddSeconds(DefaultTokenExpirationInSeconds),
+                expires: DefaultTokenExpirationInSeconds < 0 ? null : DateTime.UtcNow.AddSeconds(DefaultTokenExpirationInSeconds),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenSecret)), SecurityAlgorithms.HmacSha256)
                 );
 
