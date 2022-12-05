@@ -173,7 +173,7 @@ namespace RSecurityBackend.Services.Implementation
             RAppUser appUser = oldSession.RAppUser;
             if (appUser.Status == RAppUserStatus.Inactive)
             {
-                return new RServiceResult<LoggedOnUserModel>(null, "User is disabled by an admin.");
+                return new RServiceResult<LoggedOnUserModel>(null, oldSession.Language.StartsWith("fa") ? "یکی از مدیران کاربر را غیرفعال کرده است." : "User is disabled by an admin.");
             }
             RServiceResult<SecurableItem[]> securableItems = await GetUserSecurableItemsStatus(appUser.Id);
             if (!string.IsNullOrEmpty(securableItems.ExceptionString))
