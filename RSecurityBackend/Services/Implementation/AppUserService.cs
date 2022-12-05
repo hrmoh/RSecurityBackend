@@ -38,9 +38,9 @@ namespace RSecurityBackend.Services.Implementation
         public virtual async Task<RServiceResult<LoggedOnUserModel>> Login(LoginViewModel loginViewModel, string clientIPAddress)
         {
             if (string.IsNullOrEmpty(loginViewModel.Username))
-                return new RServiceResult<LoggedOnUserModel>(null, "نام کاربری وارد نشده است.");
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری خالی است." : "Username is empty.");
             if (string.IsNullOrEmpty(loginViewModel.Password))
-                return new RServiceResult<LoggedOnUserModel>(null, "گذرواژه وارد نشده است.");
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "رمز خالی است." : "Password is empty.");
             if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
                 //we ignore loginViewModel in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
@@ -68,14 +68,20 @@ namespace RSecurityBackend.Services.Implementation
                 appUser = await _userManager.FindByEmailAsync(loginViewModel.Username);
                 if (appUser == null)
                 {
-                    return new RServiceResult<LoggedOnUserModel>(null, "نام کاربری و/یا رمز نادرست است.");
+                    return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری و/یا رمز نادرست است." : "Username or password is empty.");
                 }
             }
+
 
             var result = await _signInManager.CheckPasswordSignInAsync(appUser, loginViewModel.Password, true);
             if (result.IsLockedOut)
             {
-                return new RServiceResult<LoggedOnUserModel>(null, "نام کاربری شما به دلیل ورود متوالی ۵ بارهٔ رمزهای اشتباه قفل شده است. لطفاً ۵ دقیقهٔ‌دیگر مجدداً تلاش کنید.");
+                return new RServiceResult<LoggedOnUserModel>(null,
+                    loginViewModel.Language.StartsWith("fa") ?
+                    $"نام کاربری شما به دلیل ورود متوالی {_signInManager.Options.Lockout.MaxFailedAccessAttempts} بارهٔ رمزهای اشتباه قفل شده است. لطفاً {_signInManager.Options.Lockout.DefaultLockoutTimeSpan.TotalMinutes} دقیقهٔ‌ دیگر مجدداً تلاش کنید."
+                    :
+                    $"Your user has been locked out dut to {_signInManager.Options.Lockout.MaxFailedAccessAttempts} failed login attempts. Please check again {_signInManager.Options.Lockout.DefaultLockoutTimeSpan.TotalMinutes} minutes later again."
+                    );
             }
 
             if (result.IsNotAllowed || result.RequiresTwoFactor)
@@ -85,12 +91,12 @@ namespace RSecurityBackend.Services.Implementation
 
             if (!result.Succeeded)
             {
-                return new RServiceResult<LoggedOnUserModel>(null, "نام کاربری و/یا رمز نادرست است.");
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری و/یا رمز نادرست است." : "Username or password is empty.");
             }
 
             if (appUser.Status == RAppUserStatus.Inactive)
             {
-                return new RServiceResult<LoggedOnUserModel>(null, "نام کاربری شما غیرفعال شده است.");
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری شما غیرفعال شده است." : "You user is deactivated.");
             }
 
             RServiceResult<SecurableItem[]> securableItems = await GetUserSecurableItemsStatus(appUser.Id);
@@ -426,8 +432,8 @@ namespace RSecurityBackend.Services.Implementation
         public virtual async Task<RServiceResult<PublicRUserSession>> GetUserSession(Guid userId, Guid sessionId)
         {
             RTemporaryUserSession rUserSession =
-                await _context.Sessions.Include(s => s.RAppUser).Where(s => s.RAppUserId == userId && s.Id == sessionId).FirstAsync();
-            if(rUserSession == null)
+                await _context.Sessions.Include(s => s.RAppUser).Where(s => s.RAppUserId == userId && s.Id == sessionId).SingleOrDefaultAsync();
+            if (rUserSession == null)
             {
                 return null;
             }
@@ -822,7 +828,7 @@ namespace RSecurityBackend.Services.Implementation
             updateUserInfo.SureName = string.IsNullOrEmpty(updateUserInfo.SureName) ? updateUserInfo.SureName : updateUserInfo.SureName.Trim();
             updateUserInfo.NickName = string.IsNullOrEmpty(updateUserInfo.NickName) ? updateUserInfo.NickName : updateUserInfo.NickName.Trim();
 
-            if(string.IsNullOrEmpty(updateUserInfo.NickName) && string.IsNullOrEmpty(updateUserInfo.FirstName) && string.IsNullOrEmpty(updateUserInfo.SureName))
+            if (string.IsNullOrEmpty(updateUserInfo.NickName) && string.IsNullOrEmpty(updateUserInfo.FirstName) && string.IsNullOrEmpty(updateUserInfo.SureName))
             {
                 return new RServiceResult<bool>(false, "نام، نام خانوادگی و نام مستعار نمی‌توانند همگی خالی باشند.");
             }
@@ -854,7 +860,7 @@ namespace RSecurityBackend.Services.Implementation
                 existingInfo.PasswordHash = _userManager.PasswordHasher.HashPassword(existingInfo, updateUserInfo.Password);
             }
 
-            if(updateUserInfo.Status == RAppUserStatus.Inactive)
+            if (updateUserInfo.Status == RAppUserStatus.Inactive)
             {
                 _context.Sessions.RemoveRange(await _context.Sessions.Where(u => u.RAppUserId == userId).ToArrayAsync());
                 await _context.SaveChangesAsync();
@@ -960,9 +966,9 @@ namespace RSecurityBackend.Services.Implementation
                 Email = user.Email,
                 DateTime = DateTime.Now,
                 ClientIPAddress = clientIPAddress,
-                ClientAppName = session == null ? "Unknown Session" :session.Result.ClientAppName,
+                ClientAppName = session == null ? "Unknown Session" : session.Result.ClientAppName,
                 Secret = $"{new Random(DateTime.Now.Millisecond).Next(0, 99999)}".PadLeft(6, '0'),
-                Language = session == null ? "Unknown Session Language" :  session.Result.Language
+                Language = session == null ? "Unknown Session Language" : session.Result.Language
             };
 
             var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();
@@ -1708,9 +1714,9 @@ namespace RSecurityBackend.Services.Implementation
             RAppUser appUser =
                 await _userManager.Users.Where(u => u.Id == userId).SingleOrDefaultAsync();
             string email = appUser.NormalizedEmail;
-            if(email.Contains("@GMAIL.COM"))
+            if (email.Contains("@GMAIL.COM"))
             {
-                if(email.Contains("+") && email.IndexOf("+") < email.IndexOf("@GMAIL.COM"))
+                if (email.Contains("+") && email.IndexOf("+") < email.IndexOf("@GMAIL.COM"))
                 {
                     email = email.Substring(0, email.IndexOf("+")) + "@GMAIL.COM";
                 }
