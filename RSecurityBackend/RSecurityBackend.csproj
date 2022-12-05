@@ -9,7 +9,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AssemblyVersion>1.1.6.0</AssemblyVersion>
-    <FileVersion>1.1.5</FileVersion>
+    <FileVersion>1.1.6</FileVersion>
     <Version>1.1.6</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
