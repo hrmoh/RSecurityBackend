@@ -483,8 +483,8 @@ namespace RSecurityBackend.Controllers
             {
                 Username = user.Email,
                 Password = viewModel.Password,
-                ClientAppName = session.Result.ClientAppName,
-                Language = session.Result.Language
+                ClientAppName = session == null ? "Unknonw Session" : session.Result.ClientAppName,
+                Language = session == null ? "Unknown Session" : session.Result.Language
             },
             clientIPAddress);
 

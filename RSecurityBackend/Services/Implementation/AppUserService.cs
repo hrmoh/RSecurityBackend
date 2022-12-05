@@ -426,7 +426,11 @@ namespace RSecurityBackend.Services.Implementation
         public virtual async Task<RServiceResult<PublicRUserSession>> GetUserSession(Guid userId, Guid sessionId)
         {
             RTemporaryUserSession rUserSession =
-                await _context.Sessions.Include(s => s.RAppUser).Where(s => s.RAppUserId == userId && s.Id == sessionId).SingleAsync();
+                await _context.Sessions.Include(s => s.RAppUser).Where(s => s.RAppUserId == userId && s.Id == sessionId).FirstAsync();
+            if(rUserSession == null)
+            {
+                return null;
+            }
             return new RServiceResult<PublicRUserSession>
                 (
                     new PublicRUserSession()
@@ -956,9 +960,9 @@ namespace RSecurityBackend.Services.Implementation
                 Email = user.Email,
                 DateTime = DateTime.Now,
                 ClientIPAddress = clientIPAddress,
-                ClientAppName = session.Result.ClientAppName,
-                Secret = $"{(new Random(DateTime.Now.Millisecond)).Next(0, 99999)}".PadLeft(6, '0'),
-                Language = session.Result.Language
+                ClientAppName = session == null ? "Unknown Session" :session.Result.ClientAppName,
+                Secret = $"{new Random(DateTime.Now.Millisecond).Next(0, 99999)}".PadLeft(6, '0'),
+                Language = session == null ? "Unknown Session Language" :  session.Result.Language
             };
 
             var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();
