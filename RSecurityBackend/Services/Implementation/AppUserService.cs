@@ -68,7 +68,7 @@ namespace RSecurityBackend.Services.Implementation
                 appUser = await _userManager.FindByEmailAsync(loginViewModel.Username);
                 if (appUser == null)
                 {
-                    return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری و/یا رمز نادرست است." : "Username or password is empty.");
+                    return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری و/یا رمز نادرست است." : "Username or password is incorrect.");
                 }
             }
 
