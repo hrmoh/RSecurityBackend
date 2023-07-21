@@ -1899,6 +1899,13 @@
             Last Modified for caching purposes
             </summary>
         </member>
+        <member name="M:RSecurityBackend.Models.Image.RImage.DuplicateExcludingId(RSecurityBackend.Models.Image.RImage)">
+            <summary>
+            duplicate RImage (excluding Id)
+            </summary>
+            <param name="src"></param>
+            <returns></returns>
+        </member>
         <member name="T:RSecurityBackend.Models.Mail.SmptConfig">
             <summary>
             smtp config

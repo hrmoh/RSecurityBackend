@@ -63,6 +63,27 @@ namespace RSecurityBackend.Models.Image
         /// </summary>
         public DateTime LastModified { get; set; }
 
+        /// <summary>
+        /// duplicate RImage (excluding Id)
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
+        public RImage DuplicateExcludingId(RImage src)
+        {
+            return new RImage()
+            {
+                OriginalFileName = src.OriginalFileName,
+                ContentType = src.ContentType,
+                DataTime = src.DataTime,
+                FileSizeInBytes = src.FileSizeInBytes,
+                FolderName = src.FolderName,
+                ImageHeight = src.ImageHeight,
+                ImageWidth = src.ImageWidth,
+                LastModified = src.LastModified,
+                StoredFileName = src.StoredFileName,
+            };
+        }
+
 
 
 
