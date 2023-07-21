@@ -21,10 +21,11 @@ namespace RSecurityBackend.Services
         /// <param name="stream"></param>
         /// <param name="originalFileNameForStreams"></param>
         /// <param name="imageFolderName">pass empty if you want a generic date based folder</param>
+        /// <param name="isImage"></param>
         /// <returns></returns>
         Task<RServiceResult<RImage>> Add
             (
-            IFormFile file, Stream stream, string originalFileNameForStreams, string imageFolderName
+            IFormFile file, Stream stream, string originalFileNameForStreams, string imageFolderName, bool isImage = true
             );
 
         /// <summary>

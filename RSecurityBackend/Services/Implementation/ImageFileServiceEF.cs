@@ -25,8 +25,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="stream"></param>
         /// <param name="originalFileNameForStreams"></param>
         /// <param name="imageFolderName"></param>
+        /// <param name="isImage"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RImage>> Add(IFormFile file, Stream stream, string originalFileNameForStreams, string imageFolderName)
+        public async Task<RServiceResult<RImage>> Add(IFormFile file, Stream stream, string originalFileNameForStreams, string imageFolderName, bool isImage)
         {
             RServiceResult<RImage>
                 pictureFile =
@@ -40,7 +41,8 @@ namespace RSecurityBackend.Services.Implementation
                         FolderName = string.IsNullOrEmpty(imageFolderName) ? DateTime.Now.ToString("yyyy-MM") : imageFolderName
                     },
                     stream,
-                    originalFileNameForStreams
+                    originalFileNameForStreams,
+                    isImage
                     );
             if (pictureFile == null)
                 return new RServiceResult<RImage>(null, pictureFile.ExceptionString);
@@ -61,7 +63,7 @@ namespace RSecurityBackend.Services.Implementation
             return new RServiceResult<RImage>(image);
         }
 
-        private async Task<RServiceResult<RImage>> ProcessImage(IFormFile uploadedImage, RImage pictureFile, Stream stream, string originalFileNameForStreams)
+        private async Task<RServiceResult<RImage>> ProcessImage(IFormFile uploadedImage, RImage pictureFile, Stream stream, string originalFileNameForStreams, bool isImage)
         {
             if (uploadedImage == null && stream == null)
             {
@@ -109,23 +111,27 @@ namespace RSecurityBackend.Services.Implementation
                     await stream.CopyToAsync(fsMain);
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            if(isImage)
             {
-                if (uploadedImage != null)
-                    await uploadedImage.CopyToAsync(ms);
-                else
+                using (MemoryStream ms = new MemoryStream())
                 {
-                    stream.Position = 0;
-                    await stream.CopyToAsync(ms);
-                }
+                    if (uploadedImage != null)
+                        await uploadedImage.CopyToAsync(ms);
+                    else
+                    {
+                        stream.Position = 0;
+                        await stream.CopyToAsync(ms);
+                    }
 
 
-                using (Image img = Bitmap.FromStream(ms))
-                {
-                    pictureFile.ImageWidth = img.Width;
-                    pictureFile.ImageHeight = img.Height;
+                    using (Image img = Bitmap.FromStream(ms))
+                    {
+                        pictureFile.ImageWidth = img.Width;
+                        pictureFile.ImageHeight = img.Height;
+                    }
                 }
-            }
+            } 
+            
             return new RServiceResult<RImage>(pictureFile);
         }
 

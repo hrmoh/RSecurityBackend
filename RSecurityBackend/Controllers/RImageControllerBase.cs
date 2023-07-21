@@ -99,9 +99,16 @@ namespace RSecurityBackend.Controllers
                     return BadRequest("path is null");
                 }
 
+                bool isImage = true;
+                if (Request.Form.TryGetValue("isImage", out Microsoft.Extensions.Primitives.StringValues tmp))
+                {
+                    isImage = bool.Parse(tmp);
+                }
+
+
                 IFormFile file = Request.Form.Files[0];
 
-                RServiceResult<RImage> image = await _pictureFileService.Add(file, null, file.FileName, path);
+                RServiceResult<RImage> image = await _pictureFileService.Add(file, null, file.FileName, path, isImage);
 
 
                 if (!string.IsNullOrEmpty(image.ExceptionString))
