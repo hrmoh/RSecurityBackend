@@ -26,8 +26,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="originalFileNameForStreams"></param>
         /// <param name="imageFolderName"></param>
         /// <param name="isImage"></param>
+        /// <param name="contentType"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RImage>> Add(IFormFile file, Stream stream, string originalFileNameForStreams, string imageFolderName, bool isImage)
+        public async Task<RServiceResult<RImage>> Add(IFormFile file, Stream stream, string originalFileNameForStreams, string imageFolderName, bool isImage = true, string contentType = "image/jpeg")
         {
             RServiceResult<RImage>
                 pictureFile =
@@ -42,7 +43,8 @@ namespace RSecurityBackend.Services.Implementation
                     },
                     stream,
                     originalFileNameForStreams,
-                    isImage
+                    isImage,
+                    contentType
                     );
             if (pictureFile == null)
                 return new RServiceResult<RImage>(null, pictureFile.ExceptionString);
@@ -63,14 +65,14 @@ namespace RSecurityBackend.Services.Implementation
             return new RServiceResult<RImage>(image);
         }
 
-        private async Task<RServiceResult<RImage>> ProcessImage(IFormFile uploadedImage, RImage pictureFile, Stream stream, string originalFileNameForStreams, bool isImage)
+        private async Task<RServiceResult<RImage>> ProcessImage(IFormFile uploadedImage, RImage pictureFile, Stream stream, string originalFileNameForStreams, bool isImage, string contentType)
         {
             if (uploadedImage == null && stream == null)
             {
                 return new RServiceResult<RImage>(null, "ProcessImage: uploadedImage == null && stream == null");
             }
 
-            pictureFile.ContentType = uploadedImage == null ? "image/jpeg" : uploadedImage.ContentType;
+            pictureFile.ContentType = uploadedImage == null ? contentType : uploadedImage.ContentType;
             pictureFile.FileSizeInBytes = uploadedImage == null ? stream.Length : uploadedImage.Length;
             pictureFile.OriginalFileName = uploadedImage == null ? originalFileNameForStreams : uploadedImage.FileName;
 
@@ -94,7 +96,11 @@ namespace RSecurityBackend.Services.Implementation
 
 
 
-            string ext = uploadedImage == null ? ".jpg" : Path.GetExtension(uploadedImage.FileName);
+            string ext = Path.GetExtension(uploadedImage.FileName).ToLower();
+            if(ext == "jpeg")
+            {
+                ext = "jpg";
+            }
             pictureFile.StoredFileName = Path.GetFileNameWithoutExtension(pictureFile.OriginalFileName) + ext;
 
             string originalFileStorePath = Path.Combine(fullDirStorePath, pictureFile.StoredFileName);

@@ -2427,7 +2427,7 @@
             Image File Service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IImageFileService.Add(Microsoft.AspNetCore.Http.IFormFile,System.IO.Stream,System.String,System.String,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.IImageFileService.Add(Microsoft.AspNetCore.Http.IFormFile,System.IO.Stream,System.String,System.String,System.Boolean,System.String)">
             <summary>
             add new picture
             </summary>
@@ -2436,6 +2436,7 @@
             <param name="originalFileNameForStreams"></param>
             <param name="imageFolderName">pass empty if you want a generic date based folder</param>
             <param name="isImage"></param>
+            <param name="contentType"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IImageFileService.Store(RSecurityBackend.Models.Image.RImage)">
@@ -3036,7 +3037,7 @@
             Image File Service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.ImageFileServiceEF.Add(Microsoft.AspNetCore.Http.IFormFile,System.IO.Stream,System.String,System.String,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.Implementation.ImageFileServiceEF.Add(Microsoft.AspNetCore.Http.IFormFile,System.IO.Stream,System.String,System.String,System.Boolean,System.String)">
             <summary>
             Add Image File
             </summary>
@@ -3045,6 +3046,7 @@
             <param name="originalFileNameForStreams"></param>
             <param name="imageFolderName"></param>
             <param name="isImage"></param>
+            <param name="contentType"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.ImageFileServiceEF.Store(RSecurityBackend.Models.Image.RImage)">
