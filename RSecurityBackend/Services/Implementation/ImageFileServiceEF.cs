@@ -96,10 +96,10 @@ namespace RSecurityBackend.Services.Implementation
 
 
 
-            string ext = Path.GetExtension(uploadedImage.FileName).ToLower();
-            if(ext == "jpeg")
+            string ext = uploadedImage != null ? Path.GetExtension(uploadedImage.FileName).ToLower() : !string.IsNullOrEmpty(originalFileNameForStreams) ? Path.GetExtension(originalFileNameForStreams).ToLower() : ".jpg" ;
+            if(ext == ".jpeg")
             {
-                ext = "jpg";
+                ext = ".jpg";
             }
             pictureFile.StoredFileName = Path.GetFileNameWithoutExtension(pictureFile.OriginalFileName) + ext;
 
