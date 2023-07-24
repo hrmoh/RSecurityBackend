@@ -68,7 +68,7 @@ namespace RSecurityBackend.Models.Image
         /// </summary>
         /// <param name="src"></param>
         /// <returns></returns>
-        public RImage DuplicateExcludingId(RImage src)
+        public static RImage DuplicateExcludingId(RImage src)
         {
             return new RImage()
             {
