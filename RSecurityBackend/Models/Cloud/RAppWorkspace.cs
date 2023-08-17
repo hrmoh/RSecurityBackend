@@ -1,5 +1,6 @@
 ﻿using RSecurityBackend.Models.Auth.Db;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace RSecurityBackend.Models.Cloud
@@ -40,5 +41,10 @@ namespace RSecurityBackend.Models.Cloud
         /// owner
         /// </summary>
         public virtual RAppUser Owner { get; set; }
+
+        /// <summary>
+        /// users having access to the workspace
+        /// </summary>
+        public ICollection<RAppUser> Users { get; set; }
     }
 }
