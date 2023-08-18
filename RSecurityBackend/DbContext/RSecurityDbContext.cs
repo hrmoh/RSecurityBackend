@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using RSecurityBackend.Models.Audit.Db;
 using RSecurityBackend.Models.Auth.Db;
+using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Generic.Db;
 using RSecurityBackend.Models.Image;
 using RSecurityBackend.Models.Notification;
@@ -116,13 +117,33 @@ namespace RSecurityBackend.DbContext
         public DbSet<RGenericOption> Options { get; set; }
 
         /// <summary>
-        /// user bad behaviour loigs
+        /// User bad behaviour logs
         /// </summary>
         public DbSet<RUserBehaviourLog> UserBehaviourLogs { get; set; }
 
         /// <summary>
-        /// banned emails
+        /// Banned emails
         /// </summary>
         public DbSet<BannedEmail> BannedEmails { get; set; }
+
+        /// <summary>
+        /// Workspaces
+        /// </summary>
+        public DbSet<RAppWorkspace> RWorkspaces { get; set; }
+
+        /// <summary>
+        /// Workspace Permissions
+        /// </summary>
+        public DbSet<RWSPermission> RWSPermissions { get; set; }
+
+        /// <summary>
+        /// Workspace Roles
+        /// </summary>
+        public DbSet<RWSRole> RWSRoles { get; set; }
+
+        /// <summary>
+        /// User Workspace Roles
+        /// </summary>
+        public DbSet<RAppUserWorkspaceRole> RWSUserRoles { get; set; }
     }
 }
