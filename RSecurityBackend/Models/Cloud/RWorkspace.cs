@@ -46,5 +46,10 @@ namespace RSecurityBackend.Models.Cloud
         /// users having access to the workspace
         /// </summary>
         public ICollection<RAppUser> Users { get; set; }
+
+        /// <summary>
+        /// every user has access to it (Users is ignored)
+        /// </summary>
+        public bool Public { get; set; }
     }
 }
