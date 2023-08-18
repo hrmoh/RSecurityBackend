@@ -8,7 +8,7 @@ namespace RSecurityBackend.Models.Cloud
     /// <summary>
     /// Workspace (a reference for a set of records separated from each other, users may have access to different workspaces and have different roles in each of them)
     /// </summary>
-    public class RAppWorkspace
+    public class RWorkspace
     {
         /// <summary>
         /// Id

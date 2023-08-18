@@ -129,7 +129,7 @@ namespace RSecurityBackend.DbContext
         /// <summary>
         /// Workspaces
         /// </summary>
-        public DbSet<RAppWorkspace> RWorkspaces { get; set; }
+        public DbSet<RWorkspace> RWorkspaces { get; set; }
 
         /// <summary>
         /// Workspace Permissions
@@ -144,6 +144,6 @@ namespace RSecurityBackend.DbContext
         /// <summary>
         /// User Workspace Roles
         /// </summary>
-        public DbSet<RAppUserWorkspaceRole> RWSUserRoles { get; set; }
+        public DbSet<RWSUserRole> RWSUserRoles { get; set; }
     }
 }

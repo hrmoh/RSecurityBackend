@@ -6,7 +6,7 @@ namespace RSecurityBackend.Models.Cloud
     /// <summary>
     /// User Workspace Role
     /// </summary>
-    public class RAppUserWorkspaceRole
+    public class RWSUserRole
     {
         /// <summary>
         /// record id
