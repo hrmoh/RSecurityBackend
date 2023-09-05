@@ -88,6 +88,7 @@ namespace RSecurityBackend.Services.Implementation
                 ws.IsPublic = model.IsPublic;
                 ws.Active = model.Active;
                 ws.OwnerId = model.OwnerId;
+                ws.WokspaceOrder = model.WokspaceOrder;
 
                 //if you are transferring ownership, we ensure you have revokable access to the workspace
                 if (model.OwnerId != userId)
@@ -110,6 +111,54 @@ namespace RSecurityBackend.Services.Implementation
             catch (Exception exp)
             {
                 return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// delete workspace
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<bool>> DeleteWorkspaceAsync(Guid userId, Guid id)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.Include(w => w.Users).Where(w => w.Id == id && w.OwnerId == userId).SingleOrDefaultAsync();
+                if (ws == null)
+                {
+                    return new RServiceResult<bool>(false);//not found
+                }
+                _context.Remove(ws);
+                await _context.SaveChangesAsync();
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// get owner workspaces
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="onlyActive"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<RWorkspace[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive)
+        {
+            try
+            {
+                return new RServiceResult<RWorkspace[]>(
+                    await _context.RWorkspaces.AsNoTracking()
+                            .Where(w => w.OwnerId == userId && (onlyActive == false || w.Active == true))
+                            .OrderBy(w => w.WokspaceOrder)
+                            .ToArrayAsync()
+                    );
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<RWorkspace[]>(null, exp.ToString());
             }
         }
 
