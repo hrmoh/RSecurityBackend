@@ -147,7 +147,33 @@ namespace RSecurityBackend.Controllers
             RServiceResult<RWorkspace[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
-            
+
+            return Ok(result.Result);
+        }
+
+        /// <summary>
+        /// get owned workspaces
+        /// </summary>
+        /// <param name="onlyActive"></param>
+        /// <returns></returns>
+        [HttpGet("owned")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWorkspace[]))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetOwnedWorkspacesAsync(bool onlyActive)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<RWorkspace[]> result = await _workspaceService.GetOwnedWorkspacesAsync(loggedOnUserId, onlyActive);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
 
             return Ok(result.Result);
         }
