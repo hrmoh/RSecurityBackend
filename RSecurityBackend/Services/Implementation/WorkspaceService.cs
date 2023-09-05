@@ -221,6 +221,39 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// delete member
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="ownerId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerId, Guid userId)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.Include(w => w.Users).Where(w => w.Id == workspaceId && w.OwnerId == ownerId).SingleOrDefaultAsync();
+                if (ws == null)
+                {
+                    return new RServiceResult<bool>(false);//not found
+                }
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                if (!ws.Users.Contains(user))
+                {
+                    return new RServiceResult<bool>(false, "User is not a member.");
+                }
+                ws.Users.Remove(user);
+                _context.Update(ws);
+                await _context.SaveChangesAsync();
+
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// Database Context
         /// </summary>
         protected readonly RSecurityDbContext<RAppUser, RAppRole, Guid> _context;
