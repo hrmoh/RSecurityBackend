@@ -89,7 +89,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> Logout(
+        public virtual async Task<IActionResult> Logout(
             Guid userId,
             Guid sessionId
             )
@@ -131,7 +131,7 @@ namespace RSecurityBackend.Controllers
         [Route("checkmysession")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> IsSessionValid(Guid sessionId)
+        public virtual async Task<IActionResult> IsSessionValid(Guid sessionId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -153,7 +153,7 @@ namespace RSecurityBackend.Controllers
         [Route("securableitems")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<SecurableItem>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetUserSecurableItemsStatus()
+        public virtual async Task<IActionResult> GetUserSecurableItemsStatus()
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -178,7 +178,7 @@ namespace RSecurityBackend.Controllers
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<PublicRAppUser>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null)
+        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -241,7 +241,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> Get(Guid id)
+        public virtual async Task<IActionResult> Get(Guid id)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -521,7 +521,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> FinializeLeaving(string code)
+        public virtual async Task<IActionResult> FinializeLeaving(string code)
         {
             if (SiteInReadOnlyMode)
                 return BadRequest("سایت به دلایل فنی مثل انتقال سرور موقتاً در حالت فقط خواندنی قرار دارد. لطفاً ساعاتی دیگر مجدداً برای حذف حساب کاربری تلاش کنید.");
@@ -581,7 +581,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> IsAdmin(Guid userId)
+        public virtual async Task<IActionResult> IsAdmin(Guid userId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             RServiceResult<bool> isAdmin = await _appUserService.IsAdmin(loggedOnUserId);
@@ -620,7 +620,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<PublicRUserSession>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> GetUserSessions(Guid? userId)
+        public virtual async Task<IActionResult> GetUserSessions(Guid? userId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             if (loggedOnUserId != userId)
@@ -659,7 +659,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden, Type = typeof(string))]
-        public async Task<IActionResult> SetUserImage()
+        public virtual async Task<IActionResult> SetUserImage()
         {
             try
             {
@@ -720,7 +720,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-        public async Task<IActionResult> GetUserImageBase64(Guid id)
+        public virtual async Task<IActionResult> GetUserImageBase64(Guid id)
         {
             try
             {
@@ -759,7 +759,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(FileStreamResult))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-        public async Task<IActionResult> GetUserImage(Guid id)
+        public virtual async Task<IActionResult> GetUserImage(Guid id)
         {
             try
             {
@@ -808,7 +808,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> GetUserRoles(Guid id)
+        public virtual async Task<IActionResult> GetUserRoles(Guid id)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -848,7 +848,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> RemoveFromRole(Guid id, string role)
+        public virtual async Task<IActionResult> RemoveFromRole(Guid id, string role)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             if (loggedOnUserId == id)
@@ -888,7 +888,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> AddToRole(Guid id, string role)
+        public virtual async Task<IActionResult> AddToRole(Guid id, string role)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             if (loggedOnUserId == id)
@@ -928,7 +928,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(Guid))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
 
-        public async Task<IActionResult> GenerateCaptchImage()
+        public virtual async Task<IActionResult> GenerateCaptchImage()
         {
 
             RServiceResult<RImage> img = await _captchaService.Generate();
@@ -952,7 +952,7 @@ namespace RSecurityBackend.Controllers
         [Route("signup")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> SignUp([FromBody] UnverifiedSignUpViewModel signUpViewModel)
+        public virtual async Task<IActionResult> SignUp([FromBody] UnverifiedSignUpViewModel signUpViewModel)
         {
             if (SiteInReadOnlyMode)
                 return BadRequest("سایت به دلایل فنی مثل انتقال سرور موقتاً در حالت فقط خواندنی قرار دارد. لطفاً ساعاتی دیگر مجدداً برای ثبت نام تلاش کنید.");
@@ -1006,7 +1006,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> VerifySignUp(RVerifyQueueType type, string secret)
+        public virtual async Task<IActionResult> VerifySignUp(RVerifyQueueType type, string secret)
         {
 
             RServiceResult<string> res = await _appUserService.RetrieveEmailFromQueueSecret(type, secret);
@@ -1033,7 +1033,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> FinalizeSignUp([AuditIgnore][FromBody] VerifiedSignUpViewModel newUserInfo)
+        public virtual async Task<IActionResult> FinalizeSignUp([AuditIgnore][FromBody] VerifiedSignUpViewModel newUserInfo)
         {
             RServiceResult<bool> result = await _appUserService.FinalizeSignUp(newUserInfo.Email, newUserInfo.Secret, newUserInfo.Password, newUserInfo.FirstName, newUserInfo.SureName);
             if (!result.Result)
@@ -1051,7 +1051,7 @@ namespace RSecurityBackend.Controllers
         [Route("forgotpassword")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> ForgotPassword(
+        public virtual async Task<IActionResult> ForgotPassword(
             [FromBody]
             UnverifiedSignUpViewModel fpwdViewModel
             )
@@ -1123,7 +1123,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> ResetPassword([AuditIgnore][FromBody] ResetPasswordViewModel pwd)
+        public virtual async Task<IActionResult> ResetPassword([AuditIgnore][FromBody] ResetPasswordViewModel pwd)
         {
             string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
             RServiceResult<bool> result = await _appUserService.ResetPassword(pwd.Email, pwd.Secret, pwd.Password, clientIPAddress);
@@ -1143,7 +1143,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RUserBehaviourLog))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> LogUserBehaviourAsync([FromBody] UserCauseViewModel userCause)
+        public virtual async Task<IActionResult> LogUserBehaviourAsync([FromBody] UserCauseViewModel userCause)
         {
             RServiceResult<RUserBehaviourLog> result = await _appUserService.LogUserBehaviourAsync(userCause.UserId, userCause.Cause);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -1162,7 +1162,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RUserBehaviourLog[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetUserBehaviourLogsAsync(Guid userId)
+        public virtual async Task<IActionResult> GetUserBehaviourLogsAsync(Guid userId)
         {
             RServiceResult<RUserBehaviourLog[]> result = await _appUserService.GetUserBehaviourLogsAsync(userId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -1182,7 +1182,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RUserBehaviourLog))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> KickOutUserAsync([FromBody] UserCauseViewModel userCause)
+        public virtual async Task<IActionResult> KickOutUserAsync([FromBody] UserCauseViewModel userCause)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             if (loggedOnUserId == userCause.UserId)
