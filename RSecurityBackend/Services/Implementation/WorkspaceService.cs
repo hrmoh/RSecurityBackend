@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RSecurityBackend.DbContext;
 using RSecurityBackend.Models.Auth.Db;
 using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -54,19 +56,82 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<RWorkspace>(null, exp.ToString());
             }
         }
+
         /// <summary>
-        /// Database Contetxt
+        /// Update workspace
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, RWorkspace model)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.Include(w => w.Users).Where(w => w.Id == model.Id && w.OwnerId == userId).SingleOrDefaultAsync();
+                if(ws == null)
+                {
+                    return new RServiceResult<bool>(false);//not found
+                }
+                model.Name = model.Name.Trim();
+                if (string.IsNullOrEmpty(model.Name))
+                {
+                    return new RServiceResult<bool>(false, "Name cannot be empty");
+                }
+                var alreadyUsedWorkspace = await _context.RWorkspaces.AsNoTracking().Where(w => w.Name == model.Name && w.OwnerId == model.OwnerId && w.Id != ws.Id).FirstOrDefaultAsync();
+                if (alreadyUsedWorkspace != null)
+                {
+                    return new RServiceResult<bool>(false, $"The (new) owner user aleady owns a workspace called {model.Name} with code {alreadyUsedWorkspace.Id}");
+                }
+                
+                ws.Name = model.Name;
+                ws.Description = model.Description;
+                ws.IsPublic = model.IsPublic;
+                ws.Active = model.Active;
+                ws.OwnerId = model.OwnerId;
+
+                //if you are transferring ownership, we ensure you have revokable access to the workspace
+                if (model.OwnerId != userId)
+                {
+                    if (ws.Users == null)
+                    {
+                        ws.Users = new List<RAppUser>();
+                    }
+                    if (!ws.Users.Any(u => u.Id == userId))
+                    {
+                        ws.Users.Add(await _userManager.Users.Where(u => u.Id == userId).SingleAsync());
+                    }
+                }
+
+                _context.Update(ws);
+                await _context.SaveChangesAsync();
+
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Database Context
         /// </summary>
         protected readonly RSecurityDbContext<RAppUser, RAppRole, Guid> _context;
 
+        /// <summary>
+        /// Identity User Manageer
+        /// </summary>
+        protected UserManager<RAppUser> _userManager;
 
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="context"></param>
-        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context)
+        /// <param name="userManager"></param>
+        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
     }
 }
