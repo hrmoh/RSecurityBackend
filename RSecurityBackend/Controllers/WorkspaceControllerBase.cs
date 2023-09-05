@@ -207,6 +207,63 @@ namespace RSecurityBackend.Controllers
             return Ok(result.Result);
         }
 
+        /// <summary>
+        /// delete member
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpDelete("{workspaceId}/member/{userId}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> DeleteMemberAsync(Guid workspaceId, Guid userId)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspaceId, loggedOnUserId, userId);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
+        }
+
+        /// <summary>
+        /// leave a workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        [HttpDelete("{workspaceId}/leave")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> LeaveWorkspaceAsync(Guid workspaceId)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspaceId, loggedOnUserId);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
+        }
+
 
         /// <summary>
         /// workspace service

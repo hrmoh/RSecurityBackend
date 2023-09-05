@@ -78,6 +78,14 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerId, Guid userId);
 
         /// <summary>
+        /// leave a workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId);
+
+        /// <summary>
         /// restrict workspace adding
         /// </summary>
         bool RestrictWorkspaceAdding { get; }

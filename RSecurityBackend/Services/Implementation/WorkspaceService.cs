@@ -280,6 +280,38 @@ namespace RSecurityBackend.Services.Implementation
             }
         }
 
+        /// <summary>
+        /// leave a workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.Include(w => w.Users).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                if (ws == null)
+                {
+                    return new RServiceResult<bool>(false);//not found
+                }
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                if (!ws.Users.Contains(user))
+                {
+                    return new RServiceResult<bool>(true);
+                }
+                ws.Users.Remove(user);
+                _context.Update(ws);
+                await _context.SaveChangesAsync();
+
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
 
         /// <summary>
         /// restrict workspace adding
