@@ -209,9 +209,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="ownerId"></param>
-        /// <param name="userId"></param>
+        /// <param name="email"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> AddMemberAsync(Guid workspaceId, Guid ownerId, Guid userId)
+        public async Task<RServiceResult<bool>> AddMemberByEmailAsync(Guid workspaceId, Guid ownerId, string email)
         {
             try
             {
@@ -220,7 +220,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
-                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                var user = await _userManager.FindByEmailAsync(email);
                 if(ws.Users.Contains(user))
                 {
                     return new RServiceResult<bool>(false, "User is already a member."); 
