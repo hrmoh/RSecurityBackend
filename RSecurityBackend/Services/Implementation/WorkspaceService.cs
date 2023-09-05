@@ -188,6 +188,23 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// get workspace by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<RWorkspace>> GetWorkspaceByIdAsync(Guid id)
+        {
+            try
+            {
+                return new RServiceResult<RWorkspace>(await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == id).SingleOrDefaultAsync());
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<RWorkspace>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// add member
         /// </summary>
         /// <param name="workspaceId"></param>
