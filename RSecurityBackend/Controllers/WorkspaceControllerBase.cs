@@ -94,6 +94,35 @@ namespace RSecurityBackend.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// delete workspace
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> DeleteWorkspaceAsync(Guid id)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<bool> result = await _workspaceService.DeleteWorkspaceAsync(loggedOnUserId, id);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (result.Result == false)
+                return NotFound();
+
+            return Ok();
+        }
+
 
         /// <summary>
         /// workspace service
