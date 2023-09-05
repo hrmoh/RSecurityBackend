@@ -123,6 +123,35 @@ namespace RSecurityBackend.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// user workspaces (member or owner)
+        /// </summary>
+        /// <param name="onlyActive"></param>
+        /// <remarks>if user is not owner of a workspace owner data + users are invalid</remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWorkspace[]))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<RWorkspace[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            
+
+            return Ok(result.Result);
+        }
+
 
         /// <summary>
         /// workspace service

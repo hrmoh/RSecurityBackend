@@ -174,11 +174,21 @@ namespace RSecurityBackend.Services.Implementation
             try
             {
                 var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
-                return new RServiceResult<RWorkspace[]>(
-                    await _context.RWorkspaces.Include(w => w.Users).AsNoTracking()
+                var workspaces = await _context.RWorkspaces.Include(w => w.Users).AsNoTracking()
                             .Where(w => w.Users.Contains(user) && (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
-                            .ToArrayAsync()
+                            .ToArrayAsync();
+                foreach (var workspace in workspaces)
+                {
+                    if(workspace.OwnerId != userId)
+                    {
+                        workspace.OwnerId = Guid.Empty;
+                        workspace.Owner = null;
+                        workspace.Users = new List<RAppUser>();
+                    }
+                }
+                return new RServiceResult<RWorkspace[]>(
+                   workspaces
                     );
             }
             catch (Exception exp)
