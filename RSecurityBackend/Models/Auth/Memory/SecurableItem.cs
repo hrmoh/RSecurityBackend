@@ -130,6 +130,15 @@
                         {
                             new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false),
                         }
+                    },
+                    new SecurableItem()
+                    {
+                        ShortName = WorkpsaceEntityShortName,
+                        Description = "فضاهای کاری",
+                        Operations = new SecurableItemOperation[]
+                        {
+                            new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
+                        }
                     }
                 };
             }
