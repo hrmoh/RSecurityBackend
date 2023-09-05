@@ -14,7 +14,7 @@ namespace RSecurityBackend.Services.Implementation
     /// <summary>
     /// Workspace service implementation
     /// </summary>
-    public class WorkspaceService
+    public class WorkspaceService : IWorkspaceService
     {
         /// <summary>
         /// add workspace
