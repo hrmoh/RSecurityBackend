@@ -215,6 +215,36 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// get user workspace information
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<RWorkspace>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == id && w.OwnerId == userId).SingleOrDefaultAsync();
+                if(ws != null)
+                {
+                    return new RServiceResult<RWorkspace>(ws);
+                }
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                ws = await _context.RWorkspaces.Include(w => w.Users).AsNoTracking().Where(w => w.Id == id && w.Users.Contains(user)).SingleOrDefaultAsync();
+                if(ws != null)
+                {
+                    ws.OwnerId = Guid.Empty;
+                    ws.Owner = null;
+                }
+                return new RServiceResult<RWorkspace>(ws);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<RWorkspace>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// add member
         /// </summary>
         /// <param name="workspaceId"></param>
