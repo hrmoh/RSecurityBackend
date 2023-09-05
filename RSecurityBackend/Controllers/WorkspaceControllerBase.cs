@@ -179,6 +179,36 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// get user workspace information (if user is not the owner, owner data is invaid)
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWorkspace))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid id)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<RWorkspace> result = await _workspaceService.GetUserWorkspaceByIdAsync(id, loggedOnUserId);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+
+            if(result.Result == null)
+                return NotFound();
+
+            return Ok(result.Result);
+        }
+
+        /// <summary>
         ///  add member
         /// </summary>
         /// <param name="workspaceId"></param>
