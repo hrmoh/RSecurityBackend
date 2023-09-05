@@ -46,6 +46,7 @@ namespace RSecurityBackend.Services.Implementation
                     CreateDate = DateTime.Now,
                     OwnerId = userId,
                     Active = true,
+                    Users = new List<RAppUser>() { await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync() }
                 };
                 _context.Add(ws);
                 await _context.SaveChangesAsync();
@@ -99,7 +100,7 @@ namespace RSecurityBackend.Services.Implementation
                     }
                     if (!ws.Users.Any(u => u.Id == userId))
                     {
-                        ws.Users.Add(await _userManager.Users.Where(u => u.Id == userId).SingleAsync());
+                        ws.Users.Add(await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync());
                     }
                 }
 
@@ -152,6 +153,30 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<RWorkspace[]>(
                     await _context.RWorkspaces.AsNoTracking()
                             .Where(w => w.OwnerId == userId && (onlyActive == false || w.Active == true))
+                            .OrderBy(w => w.WokspaceOrder)
+                            .ToArrayAsync()
+                    );
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<RWorkspace[]>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// member workspaces
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="onlyActive"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<RWorkspace[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive)
+        {
+            try
+            {
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                return new RServiceResult<RWorkspace[]>(
+                    await _context.RWorkspaces.Include(w => w.Users).AsNoTracking()
+                            .Where(w => w.Users.Contains(user) && (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
                             .ToArrayAsync()
                     );
