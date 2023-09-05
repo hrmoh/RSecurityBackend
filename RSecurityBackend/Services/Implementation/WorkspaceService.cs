@@ -270,6 +270,15 @@ namespace RSecurityBackend.Services.Implementation
             }
         }
 
+
+        /// <summary>
+        /// restrict workspace adding
+        /// </summary>
+        public virtual bool RestrictWorkspaceAdding
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Database Context
         /// </summary>
@@ -279,6 +288,7 @@ namespace RSecurityBackend.Services.Implementation
         /// Identity User Manageer
         /// </summary>
         protected UserManager<RAppUser> _userManager;
+
 
         /// <summary>
         /// constructor

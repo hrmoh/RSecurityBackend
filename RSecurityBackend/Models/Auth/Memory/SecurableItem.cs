@@ -9,6 +9,7 @@
         /// user
         /// </summary>
         public const string UserEntityShortName = "user";
+
         /// <summary>
         /// role
         /// </summary>
@@ -23,6 +24,11 @@
         /// global options
         /// </summary>
         public const string GlobalOptionsEntityShortName = "option";
+
+        /// <summary>
+        /// workspaces
+        /// </summary>
+        public const string WorkpsaceEntityShortName = "workspace";
 
 
         /// <summary>
