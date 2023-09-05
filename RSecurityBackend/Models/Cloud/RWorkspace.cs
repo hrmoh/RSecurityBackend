@@ -24,7 +24,7 @@ namespace RSecurityBackend.Models.Cloud
         /// <summary>
         /// description
         /// </summary>
-        public string Descrpition { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// worspace create date
