@@ -55,6 +55,11 @@ namespace RSecurityBackend.Models.Cloud
         /// <summary>
         /// every user has access to it (Users is ignored)
         /// </summary>
-        public bool Public { get; set; }
+        public bool IsPublic { get; set; }
+
+        /// <summary>
+        /// active
+        /// </summary>
+        public bool Active { get; set; }
     }
 }
