@@ -474,7 +474,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// restrict workspace adding
         /// </summary>
-        public virtual bool RestrictWorkspaceAdding
+        public virtual bool RestrictWorkspaceCreationToAuthorizarion
         {
             get { return false; }
         }

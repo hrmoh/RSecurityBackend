@@ -38,7 +38,7 @@ namespace RSecurityBackend.Controllers
             {
                 return StatusCode((int)HttpStatusCode.Forbidden);
             }
-            if (_workspaceService.RestrictWorkspaceAdding)
+            if (_workspaceService.RestrictWorkspaceCreationToAuthorizarion)
             {
                 RServiceResult<bool>
                     canAdd =
