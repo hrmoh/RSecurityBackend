@@ -27,7 +27,7 @@ namespace RSecurityBackend.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWorkspace))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> AddWorkpspaceAsync([FromBody] NewWorkspaceModel model)
@@ -59,7 +59,7 @@ namespace RSecurityBackend.Controllers
                     return StatusCode((int)HttpStatusCode.Forbidden);
                 }
             }
-            RServiceResult<RWorkspace> result = await _workspaceService.AddWorkpspaceAsync(loggedOnUserId, model.Name, model.Description, model.IsPublic);
+            RServiceResult<WorkspaceViewModel> result = await _workspaceService.AddWorkpspaceAsync(loggedOnUserId, model.Name, model.Description, model.IsPublic);
             if (result.Result == null)
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);

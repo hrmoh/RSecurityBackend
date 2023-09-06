@@ -1,4 +1,5 @@
 ﻿using RSecurityBackend.Models.Cloud;
+using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace RSecurityBackend.Services
         /// <param name="description"></param>
         /// <param name="isPublic"></param>
         /// <returns></returns>
-        Task<RServiceResult<RWorkspace>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic);
+        Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic);
 
         /// <summary>
         /// Update workspace

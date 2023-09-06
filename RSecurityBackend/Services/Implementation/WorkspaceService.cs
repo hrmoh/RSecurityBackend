@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using RSecurityBackend.DbContext;
 using RSecurityBackend.Models.Auth.Db;
+using RSecurityBackend.Models.Auth.ViewModels;
 using RSecurityBackend.Models.Cloud;
+using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
 using System.Collections.Generic;
@@ -24,19 +26,19 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="description"></param>
         /// <param name="isPublic"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RWorkspace>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic)
+        public async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic)
         {
             try
             {
                 name = name.Trim();
                 if(string.IsNullOrEmpty(name) )
                 {
-                    return new RServiceResult<RWorkspace>(null, "Name cannot be empty");
+                    return new RServiceResult<WorkspaceViewModel>(null, "Name cannot be empty");
                 }
                 var alreadyUsedWorkspace = await _context.RWorkspaces.Include(w => w.Members).AsNoTracking().Where(w => w.Name == name && w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner)).FirstOrDefaultAsync();
                 if(alreadyUsedWorkspace != null)
                 {
-                    return new RServiceResult<RWorkspace>(null, $"The user aleady owns a workspace called {name} with code {alreadyUsedWorkspace.Id}");
+                    return new RServiceResult<WorkspaceViewModel>(null, $"The user aleady owns a workspace called {name} with code {alreadyUsedWorkspace.Id}");
                 }
                 var ws = new RWorkspace()
                 {
@@ -58,11 +60,45 @@ namespace RSecurityBackend.Services.Implementation
                 };
                 _context.Add(ws);
                 await _context.SaveChangesAsync();
-                return new RServiceResult<RWorkspace>(ws);
+                return new RServiceResult<WorkspaceViewModel>
+                    (
+                    new WorkspaceViewModel()
+                    {
+                        Id = ws.Id,
+                        Name = ws.Name,
+                        Description = ws.Description,
+                        IsPublic = ws.IsPublic,
+                        CreateDate = ws.CreateDate,
+                        Active = ws.Active,
+                        WokspaceOrder = ws.WokspaceOrder,
+                        Members = ws.Members.Select(m => new RWSUserViewModel()
+                        {
+                            Id = m.Id,
+                            RAppUser = new PublicRAppUser()
+                            {
+                                Id = m.RAppUser.Id,
+                                Username = m.RAppUser.UserName,
+                                Email = m.RAppUser.Email,
+                                FirstName = m.RAppUser.FirstName,
+                                SureName = m.RAppUser.SureName,
+                                PhoneNumber = m.RAppUser.PhoneNumber,
+                                RImageId = m.RAppUser.RImageId,
+                                Status = m.RAppUser.Status,
+                                NickName = m.RAppUser.NickName,
+                                Website = m.RAppUser.Website,
+                                Bio = m.RAppUser.Bio,
+                                EmailConfirmed = m.RAppUser.EmailConfirmed
+                            },
+                            Status = m.Status,
+                            InviteDate = m.InviteDate,
+                            MemberFrom = m.MemberFrom,
+                        }).ToArray(),
+                    }
+                    );
             }
             catch (Exception exp)
             {
-                return new RServiceResult<RWorkspace>(null, exp.ToString());
+                return new RServiceResult<WorkspaceViewModel>(null, exp.ToString());
             }
         }
 
