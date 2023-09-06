@@ -108,7 +108,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, RWorkspace model)
+        public async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, WorkspaceViewModel model)
         {
             try
             {

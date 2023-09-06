@@ -74,7 +74,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> UpdateWorkpspaceAsync([FromBody] RWorkspace model)
+        public async Task<IActionResult> UpdateWorkpspaceAsync([FromBody] WorkspaceViewModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);

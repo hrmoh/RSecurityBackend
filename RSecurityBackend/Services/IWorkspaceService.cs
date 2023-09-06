@@ -27,7 +27,7 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, RWorkspace model);
+        Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, WorkspaceViewModel model);
 
         /// <summary>
         /// delete workspace
