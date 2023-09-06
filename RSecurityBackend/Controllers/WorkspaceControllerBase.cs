@@ -131,7 +131,7 @@ namespace RSecurityBackend.Controllers
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWorkspace[]))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive)
@@ -144,7 +144,7 @@ namespace RSecurityBackend.Controllers
                 return StatusCode((int)HttpStatusCode.Forbidden);
             }
 
-            RServiceResult<RWorkspace[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive);
+            RServiceResult<WorkspaceViewModel[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
 
