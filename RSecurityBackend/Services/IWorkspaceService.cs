@@ -98,5 +98,10 @@ namespace RSecurityBackend.Services
         /// restrict workspace adding
         /// </summary>
         bool RestrictWorkspaceCreationToAuthorizarion { get; }
+
+        /// <summary>
+        /// allow inviting users to workspaces by default
+        /// </summary>
+        bool AllowInvitingUsersToWorkspacesByDefault { get; }
     }
 }

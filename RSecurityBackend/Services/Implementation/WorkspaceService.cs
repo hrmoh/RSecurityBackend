@@ -384,6 +384,20 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     return new RServiceResult<bool>(false, "User is already a member.");
                 }
+                var rsOption = await _optionsService.GetValueAsync("AllowInvitingMeToWorkspaces", user.Id);
+                if(!string.IsNullOrEmpty(rsOption.ExceptionString))
+                {
+                    return new RServiceResult<bool>(false, rsOption.ExceptionString);
+                }
+                var optionValue = rsOption.Result;
+                if(string.IsNullOrEmpty(optionValue))
+                {
+                    optionValue = AllowInvitingUsersToWorkspacesByDefault.ToString();
+                }
+                if(!bool.Parse(optionValue))
+                {
+                    return new RServiceResult<bool>(false, "User does not allow adding him/her to workpsaces");
+                }
                 ws.Members.Add(new RWSUser()
                 {
                     RAppUserId = user.Id,
@@ -480,6 +494,14 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// allow inviting users to workspaces by default
+        /// </summary>
+        public virtual bool AllowInvitingUsersToWorkspacesByDefault
+        { 
+            get { return true; } 
+        }
+
+        /// <summary>
         /// Database Context
         /// </summary>
         protected readonly RSecurityDbContext<RAppUser, RAppRole, Guid> _context;
@@ -489,16 +511,23 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         protected UserManager<RAppUser> _userManager;
 
+        /// <summary>
+        /// Options service
+        /// </summary>
+        protected IRGenericOptionsService _optionsService;
+
 
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userManager"></param>
-        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager)
+        /// <param name="optionsService"></param>
+        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager, IRGenericOptionsService optionsService)
         {
             _context = context;
             _userManager = userManager;
+            _optionsService = optionsService;
         }
     }
 }
