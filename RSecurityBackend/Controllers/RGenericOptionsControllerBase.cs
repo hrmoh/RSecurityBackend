@@ -18,7 +18,7 @@ namespace RSecurityBackend.Controllers
     public abstract class RGenericOptionsControllerBase : Controller
     {
         /// <summary>
-        /// get user level option
+        /// get user level option, if option value is not found it returns empty string
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>

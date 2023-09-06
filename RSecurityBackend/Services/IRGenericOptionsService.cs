@@ -20,7 +20,7 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<RGenericOption>> SetAsync(string optionName, string optionValue, Guid? userId);
 
         /// <summary>
-        /// get option value
+        /// get option value, if option value is not found it returns empty string
         /// </summary>
         /// <param name="optionName"></param>
         /// <param name="userId"></param>
