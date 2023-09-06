@@ -43,7 +43,7 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <param name="onlyActive"></param>
         /// <returns></returns>
-        Task<RServiceResult<RWorkspace[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive);
+        Task<RServiceResult<WorkspaceViewModel[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive);
 
         /// <summary>
         /// member workspaces

@@ -176,20 +176,52 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="onlyActive"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RWorkspace[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive)
+        public async Task<RServiceResult<WorkspaceViewModel[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive)
         {
             try
             {
-                return new RServiceResult<RWorkspace[]>(
-                    await _context.RWorkspaces.AsNoTracking()
+                var workspaces = await _context.RWorkspaces.AsNoTracking()
                             .Where(w => w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner) && (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
-                            .ToArrayAsync()
+                            .ToArrayAsync();
+                return new RServiceResult<WorkspaceViewModel[]>(
+                   workspaces.Select(ws => new WorkspaceViewModel()
+                   {
+                       Id = ws.Id,
+                       Name = ws.Name,
+                       Description = ws.Description,
+                       IsPublic = ws.IsPublic,
+                       CreateDate = ws.CreateDate,
+                       Active = ws.Active,
+                       WokspaceOrder = ws.WokspaceOrder,
+                       Members = ws.Members.Select(m => new RWSUserViewModel()
+                       {
+                           Id = m.Id,
+                           RAppUser = new PublicRAppUser()
+                           {
+                               Id = m.RAppUser.Id,
+                               Username = m.RAppUser.UserName,
+                               Email = m.RAppUser.Email,
+                               FirstName = m.RAppUser.FirstName,
+                               SureName = m.RAppUser.SureName,
+                               PhoneNumber = m.RAppUser.PhoneNumber,
+                               RImageId = m.RAppUser.RImageId,
+                               Status = m.RAppUser.Status,
+                               NickName = m.RAppUser.NickName,
+                               Website = m.RAppUser.Website,
+                               Bio = m.RAppUser.Bio,
+                               EmailConfirmed = m.RAppUser.EmailConfirmed
+                           },
+                           Status = m.Status,
+                           InviteDate = m.InviteDate,
+                           MemberFrom = m.MemberFrom,
+                       }).ToArray(),
+                   }).ToArray()
                     );
             }
             catch (Exception exp)
             {
-                return new RServiceResult<RWorkspace[]>(null, exp.ToString());
+                return new RServiceResult<WorkspaceViewModel[]>(null, exp.ToString());
             }
         }
 
