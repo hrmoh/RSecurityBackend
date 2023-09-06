@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Cloud.ViewModels;
