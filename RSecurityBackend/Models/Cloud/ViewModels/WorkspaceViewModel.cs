@@ -1,7 +1,5 @@
-﻿using RSecurityBackend.Models.Auth.Db;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace RSecurityBackend.Models.Cloud.ViewModels
 {
@@ -38,7 +36,7 @@ namespace RSecurityBackend.Models.Cloud.ViewModels
         /// <summary>
         /// users having access to the workspace
         /// </summary>
-        public ICollection<RAppUser> Users { get; set; }
+        public ICollection<RWSUserViewModel> Members { get; set; }
 
         /// <summary>
         /// every user has access to it (Users is ignored)
