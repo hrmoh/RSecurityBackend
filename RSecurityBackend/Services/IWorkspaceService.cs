@@ -58,7 +58,7 @@ namespace RSecurityBackend.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<RServiceResult<RWorkspace>> GetWorkspaceByIdAsync(Guid id);
+        Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id);
 
         /// <summary>
         /// get user workspace information
