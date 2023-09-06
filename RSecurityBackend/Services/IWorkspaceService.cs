@@ -1,5 +1,4 @@
-﻿using RSecurityBackend.Models.Cloud;
-using RSecurityBackend.Models.Cloud.ViewModels;
+﻿using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
 using System.Threading.Tasks;
