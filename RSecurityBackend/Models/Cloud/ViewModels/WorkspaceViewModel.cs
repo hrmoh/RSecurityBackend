@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace RSecurityBackend.Models.Cloud
+namespace RSecurityBackend.Models.Cloud.ViewModels
 {
     /// <summary>
-    /// Workspace (a reference for a set of records separated from each other, users may have access to different workspaces and have different roles in each of them)
+    /// Workspace view model
     /// </summary>
-    public class RWorkspace
+    public class WorkspaceViewModel
     {
         /// <summary>
         /// Id
@@ -18,7 +18,6 @@ namespace RSecurityBackend.Models.Cloud
         /// <summary>
         /// name
         /// </summary>
-        [MinLength(1)]
         public string Name { get; set; }
 
         /// <summary>
@@ -34,13 +33,12 @@ namespace RSecurityBackend.Models.Cloud
         /// <summary>
         /// worspace create date
         /// </summary>
-        [Required]
         public DateTime CreateDate { get; set; }
 
         /// <summary>
         /// users having access to the workspace
         /// </summary>
-        public ICollection<RWSUser> Members { get; set; }
+        public ICollection<RAppUser> Users { get; set; }
 
         /// <summary>
         /// every user has access to it (Users is ignored)

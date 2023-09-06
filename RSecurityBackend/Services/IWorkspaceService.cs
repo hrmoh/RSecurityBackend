@@ -71,19 +71,19 @@ namespace RSecurityBackend.Services
         /// add member
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="ownerId"></param>
+        /// <param name="ownerOrModeratorId"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> AddMemberByEmailAsync(Guid workspaceId, Guid ownerId, string email);
+        Task<RServiceResult<bool>> AddMemberByEmailAsync(Guid workspaceId, Guid ownerOrModeratorId, string email);
 
         /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="ownerId"></param>
+        /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerId, Guid userId);
+        Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId);
 
         /// <summary>
         /// leave a workspace
