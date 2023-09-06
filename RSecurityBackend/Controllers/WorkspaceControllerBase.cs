@@ -208,7 +208,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        ///  add member
+        ///  add member  (does not send any email)
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="email"></param>
@@ -218,7 +218,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> AddMemberByEmailAsync(Guid workspaceId, string email)
+        public async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -228,7 +228,7 @@ namespace RSecurityBackend.Controllers
                 return StatusCode((int)HttpStatusCode.Forbidden);
             }
        
-            RServiceResult<bool> result = await _workspaceService.AddMemberByEmailAsync(workspaceId, loggedOnUserId, email);
+            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspaceId, loggedOnUserId, email);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if(!result.Result)

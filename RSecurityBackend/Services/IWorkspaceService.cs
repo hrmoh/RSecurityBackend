@@ -69,13 +69,13 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId);
 
         /// <summary>
-        /// add member
+        /// add member (does not send any email)
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> AddMemberByEmailAsync(Guid workspaceId, Guid ownerOrModeratorId, string email);
+        Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email);
 
         /// <summary>
         /// delete member

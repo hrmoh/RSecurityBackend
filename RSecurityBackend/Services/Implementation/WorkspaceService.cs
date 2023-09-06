@@ -370,7 +370,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> AddMemberByEmailAsync(Guid workspaceId, Guid ownerOrModeratorId, string email)
+        public async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email)
         {
             try
             {
