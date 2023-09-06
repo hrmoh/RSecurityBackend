@@ -26,7 +26,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="description"></param>
         /// <param name="isPublic"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, WorkspaceViewModel model)
+        public virtual async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, WorkspaceViewModel model)
         {
             try
             {
@@ -151,7 +151,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> DeleteWorkspaceAsync(Guid userId, Guid id)
+        public virtual async Task<RServiceResult<bool>> DeleteWorkspaceAsync(Guid userId, Guid id)
         {
             try
             {
@@ -176,7 +176,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="onlyActive"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<WorkspaceViewModel[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive)
+        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="onlyActive"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive)
+        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive)
         {
             try
             {
@@ -285,7 +285,7 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id)
         {
             try
             {
@@ -318,7 +318,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="id"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
         {
             try
             {
@@ -370,7 +370,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email)
+        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email)
         {
             try
             {
@@ -422,7 +422,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId)
         {
             try
             {
@@ -456,7 +456,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId)
         {
             try
             {
