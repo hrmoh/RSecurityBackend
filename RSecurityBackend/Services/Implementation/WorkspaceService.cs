@@ -180,7 +180,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var workspaces = await _context.RWorkspaces.AsNoTracking()
+                var workspaces = await _context.RWorkspaces.Include(w => w.Members).ThenInclude(m => m.RAppUser).AsNoTracking()
                             .Where(w => w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner) && (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
                             .ToArrayAsync();
@@ -235,7 +235,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var workspaces = await _context.RWorkspaces.Include(w => w.Members).AsNoTracking()
+                var workspaces = await _context.RWorkspaces.Include(w => w.Members).ThenInclude(m => m.RAppUser).AsNoTracking()
                             .Where(w => w.Members.Any(m => m.RAppUserId == userId && m.Status != RWSUserMembershipStatus.Invited) && (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
                             .ToArrayAsync();
@@ -318,16 +318,48 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="id"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RWorkspace>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
+        public async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
         {
             try
             {
-                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == id && w.Members.Any(m => m.RAppUserId == userId)).SingleOrDefaultAsync();
-                return new RServiceResult<RWorkspace>(ws);
+                var ws = await _context.RWorkspaces.Include(w => w.Members).ThenInclude(m => m.RAppUser).AsNoTracking().Where(w => w.Id == id && w.Members.Any(m => m.RAppUserId == userId)).SingleOrDefaultAsync();
+                return new RServiceResult<WorkspaceViewModel>(ws == null ? null :
+                    new WorkspaceViewModel()
+                    {
+                        Id = ws.Id,
+                        Name = ws.Name,
+                        Description = ws.Description,
+                        IsPublic = ws.IsPublic,
+                        CreateDate = ws.CreateDate,
+                        Active = ws.Active,
+                        WokspaceOrder = ws.WokspaceOrder,
+                        Members = ws.Members.Where(m => m.RAppUserId == userId).Select(m => new RWSUserViewModel()
+                        {
+                            Id = m.Id,
+                            RAppUser = new PublicRAppUser()
+                            {
+                                Id = m.RAppUser.Id,
+                                Username = m.RAppUser.UserName,
+                                Email = m.RAppUser.Email,
+                                FirstName = m.RAppUser.FirstName,
+                                SureName = m.RAppUser.SureName,
+                                PhoneNumber = m.RAppUser.PhoneNumber,
+                                RImageId = m.RAppUser.RImageId,
+                                Status = m.RAppUser.Status,
+                                NickName = m.RAppUser.NickName,
+                                Website = m.RAppUser.Website,
+                                Bio = m.RAppUser.Bio,
+                                EmailConfirmed = m.RAppUser.EmailConfirmed
+                            },
+                            Status = m.Status,
+                            InviteDate = m.InviteDate,
+                            MemberFrom = m.MemberFrom,
+                        }).ToArray(),
+                    });
             }
             catch (Exception exp)
             {
-                return new RServiceResult<RWorkspace>(null, exp.ToString());
+                return new RServiceResult<WorkspaceViewModel>(null, exp.ToString());
             }
         }
 
