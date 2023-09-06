@@ -236,7 +236,7 @@ namespace RSecurityBackend.Services.Implementation
             try
             {
                 var workspaces = await _context.RWorkspaces.Include(w => w.Members).AsNoTracking()
-                            .Where(w => w.Members.Any(m => m.RAppUserId == userId) && (onlyActive == false || w.Active == true))
+                            .Where(w => w.Members.Any(m => m.RAppUserId == userId && m.Status != RWSUserMembershipStatus.Invited) && (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
                             .ToArrayAsync();
                 return new RServiceResult<WorkspaceViewModel[]>(
