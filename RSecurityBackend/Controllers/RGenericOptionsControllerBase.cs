@@ -75,7 +75,7 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
-        /// set global option value
+        /// set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
