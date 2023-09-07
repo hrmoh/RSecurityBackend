@@ -145,6 +145,17 @@
         }
 
         /// <summary>
+        /// workspace items
+        /// </summary>
+        public static SecurableItem[] WorkspaceItems
+        {
+            get
+            {
+                return new SecurableItem[] { };
+            }
+        }
+
+        /// <summary>
         /// Short Name
         /// </summary>
         /// <example>
