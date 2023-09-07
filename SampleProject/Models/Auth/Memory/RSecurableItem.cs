@@ -20,5 +20,16 @@ namespace SampleProject.Models.Auth.Memory
                 return lst.ToArray();
             }
         }
+
+        /// <summary>
+        /// workspace forms and their permissions
+        /// </summary>
+        public new static RSecurableItem[] WorkspaceItems
+        {
+            get
+            {
+                return new RSecurableItem[] { };
+            }
+        }
     }
 }

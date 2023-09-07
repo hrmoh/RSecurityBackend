@@ -1316,7 +1316,7 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.WorkspaceItems">
             <summary>
-            workspace items
+            workspace forms and their permissions
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.ShortName">

@@ -145,7 +145,7 @@
         }
 
         /// <summary>
-        /// workspace items
+        /// workspace forms and their permissions
         /// </summary>
         public static SecurableItem[] WorkspaceItems
         {
