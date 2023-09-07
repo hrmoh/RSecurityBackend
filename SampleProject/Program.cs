@@ -155,13 +155,13 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "R Service API",
+        Title = $"{builder.Configuration.GetSection("RSecurityBackend")["ApplicationName"]} API",
         Version = "v1",
-        Description = "R Service API",
+        Description = $"{builder.Configuration.GetSection("RSecurityBackend")["ApplicationName"]} API",
         TermsOfService = new Uri("https://github.com/hrmoh/RSecurityBackend"),
         Contact = new OpenApiContact
         {
-            Name = "R Service",
+            Name = builder.Configuration.GetSection("RSecurityBackend")["ApplicationName"],
             Email = "email@domain.com",
             Url = new Uri("https://github.com/hrmoh/RSecurityBackend")
         }
