@@ -29,7 +29,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> AddWorkpspaceAsync([FromBody] NewWorkspaceModel model)
+        public virtual async Task<IActionResult> AddWorkpspaceAsync([FromBody] NewWorkspaceModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -74,7 +74,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> UpdateWorkpspaceAsync([FromBody] WorkspaceViewModel model)
+        public virtual async Task<IActionResult> UpdateWorkpspaceAsync([FromBody] WorkspaceViewModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -103,7 +103,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> DeleteWorkspaceAsync(Guid id)
+        public virtual async Task<IActionResult> DeleteWorkspaceAsync(Guid id)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -133,7 +133,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive)
+        public virtual async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -160,7 +160,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetOwnedWorkspacesAsync(bool onlyActive)
+        public virtual async Task<IActionResult> GetOwnedWorkspacesAsync(bool onlyActive)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -187,7 +187,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid id)
+        public virtual async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid id)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -219,7 +219,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email, bool notify)
+        public virtual async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email, bool notify)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -248,7 +248,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> DeleteMemberAsync(Guid workspaceId, Guid userId)
+        public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspaceId, Guid userId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -276,7 +276,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> LeaveWorkspaceAsync(Guid workspaceId)
+        public virtual async Task<IActionResult> LeaveWorkspaceAsync(Guid workspaceId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
