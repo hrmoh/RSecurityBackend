@@ -125,6 +125,16 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> AddUserToRoleInWorkspaceAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, string roleName);
 
         /// <summary>
+        /// remove user from role i
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="ownerOrModeratorId"></param>
+        /// <param name="userId"></param>
+        /// <param name="roleName"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> RemoveUserFromRoleInWorkspaceAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, string roleName);
+
+        /// <summary>
         /// restrict workspace adding
         /// </summary>
         bool RestrictWorkspaceCreationToAuthorizarion { get; }
