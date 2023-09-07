@@ -220,6 +220,12 @@ builder.Services.AddTransient<IAuditLogService, AuditLogServiceEF>();
 //user permission checker
 builder.Services.AddTransient<IUserPermissionChecker, UserPermissionChecker>();
 
+//workspace service
+builder.Services.AddTransient<IWorkspaceRolesService, WorkspaceRolesService>();
+
+//workspace role service
+builder.Services.AddTransient<IWorkspaceRolesService, WorkspaceRolesService>();
+
 //secret generator
 builder.Services.AddTransient<ISecretGenerator, SecretGenerator>();
 
