@@ -603,6 +603,65 @@ namespace RSecurityBackend.Services.Implementation
             }
         }
 
+        /// <summary>
+        /// add user to role in a workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="ownerOrModeratorId"></param>
+        /// <param name="userId"></param>
+        /// <param name="roleName"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> AddUserToRoleInWorkspaceAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, string roleName)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.AsNoTracking().Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                if (ws == null)
+                {
+                    return new RServiceResult<bool>(false, "Workspace not found.");
+                }
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                if (member == null)
+                {
+                    return new RServiceResult<bool>(false, "User is not a member.");
+                }
+
+                var admin = ws.Members.Where(m => m.RAppUserId == ownerOrModeratorId).SingleOrDefault();
+                if (admin.Status != RWSUserMembershipStatus.Owner && admin.Status != RWSUserMembershipStatus.Moderator)
+                {
+                    return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
+                }
+
+                var role = await _context.RWSRoles.AsNoTracking().Where(r => r.Name == roleName).SingleOrDefaultAsync();
+                if(role == null)
+                {
+                    return new RServiceResult<bool>(false, "Role not foune");
+                }
+
+                if(_context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).Any())
+                {
+                    return new RServiceResult<bool>(false, "User already in role.");
+                }
+
+                RWSUserRole userRole = new RWSUserRole()
+                {
+                    WorkspaceId = workspaceId,
+                    UserId = userId,
+                    RoleId = role.Id,
+                };
+
+                _context.Add(userRole);
+                await _context.SaveChangesAsync();
+
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
 
         /// <summary>
         /// restrict workspace adding

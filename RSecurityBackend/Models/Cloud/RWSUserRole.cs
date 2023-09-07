@@ -14,6 +14,16 @@ namespace RSecurityBackend.Models.Cloud
         public Guid Id { get; set; }
 
         /// <summary>
+        /// workspace id
+        /// </summary>
+        public Guid? WorkspaceId { get; set; }
+
+        /// <summary>
+        /// workspace
+        /// </summary>
+        public virtual RWorkspace Workspace { get; set; }
+
+        /// <summary>
         /// user id
         /// </summary>
         public Guid? UserId { get; set; }
