@@ -95,6 +95,15 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId);
 
         /// <summary>
+        /// process workspace invitation
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="reject"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> ProcessWorkspaceInvitationAsync(Guid workspaceId, Guid userId, bool reject);
+
+        /// <summary>
         /// restrict workspace adding
         /// </summary>
         bool RestrictWorkspaceCreationToAuthorizarion { get; }

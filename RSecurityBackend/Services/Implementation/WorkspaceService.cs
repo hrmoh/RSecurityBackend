@@ -491,6 +491,48 @@ namespace RSecurityBackend.Services.Implementation
             }
         }
 
+        /// <summary>
+        /// process workspace invitation
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="reject"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> ProcessWorkspaceInvitationAsync(Guid workspaceId, Guid userId, bool reject)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                if (ws == null)
+                {
+                    return new RServiceResult<bool>(false);//not found
+                }
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                if (member == null)
+                {
+                    return new RServiceResult<bool>(false, "User is not a member.");
+                }
+                if(reject)
+                {
+                    ws.Members.Remove(member);
+                }
+                else
+                {
+                    member.Status = RWSUserMembershipStatus.Member;
+                }
+               
+                _context.Update(ws);
+                await _context.SaveChangesAsync();
+
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
 
         /// <summary>
         /// restrict workspace adding
