@@ -1,4 +1,5 @@
-﻿using RSecurityBackend.Models.Cloud.ViewModels;
+﻿using RSecurityBackend.Models.Cloud;
+using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
 using System.Threading.Tasks;
@@ -102,6 +103,15 @@ namespace RSecurityBackend.Services
         /// <param name="reject"></param>
         /// <returns></returns>
         Task<RServiceResult<bool>> ProcessWorkspaceInvitationAsync(Guid workspaceId, Guid userId, bool reject);
+
+        /// <summary>
+        /// change member status
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status);
 
         /// <summary>
         /// restrict workspace adding

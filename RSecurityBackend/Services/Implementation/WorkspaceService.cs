@@ -492,6 +492,55 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// change member status
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status)
+        {
+            try
+            {
+                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                if (ws == null)
+                {
+                    return new RServiceResult<bool>(false);//not found
+                }
+                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
+                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                if (member == null)
+                {
+                    return new RServiceResult<bool>(false, "User is not a member.");
+                }
+
+                if(member.Status == status)
+                {
+                    return new RServiceResult<bool>(false, "New status is the same as original.");
+                }
+
+                if(status == RWSUserMembershipStatus.Owner)
+                {
+                    var alreadyUsedWorkspace = await _context.RWorkspaces.Include(w => w.Members).AsNoTracking().Where(w => w.Name == ws.Name && w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner)).FirstOrDefaultAsync();
+                    if (alreadyUsedWorkspace != null)
+                    {
+                        return new RServiceResult<bool>(false, $"The user aleady owns a workspace called {ws.Name} with code {alreadyUsedWorkspace.Id}");
+                    }
+                }
+
+                member.Status = status;
+                _context.Update(ws);
+                await _context.SaveChangesAsync();
+
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// process workspace invitation
         /// </summary>
         /// <param name="workspaceId"></param>
