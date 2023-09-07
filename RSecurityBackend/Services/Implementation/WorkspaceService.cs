@@ -60,6 +60,14 @@ namespace RSecurityBackend.Services.Implementation
                 };
                 _context.Add(ws);
                 await _context.SaveChangesAsync();
+                await _rolesService.AddRole
+                    (
+                    new RWSRole()
+                    {
+                        Name = _rolesService.AdministratorRoleName,
+                        Description = "Admin Role (Owners + Moderators)",
+                    }
+                    );
                 return new RServiceResult<WorkspaceViewModel>
                     (
                     new WorkspaceViewModel()
@@ -549,9 +557,29 @@ namespace RSecurityBackend.Services.Implementation
                     }
                 }
 
+                RWSUserMembershipStatus oldStatus = member.Status;
+
                 member.Status = status;
                 _context.Update(ws);
                 await _context.SaveChangesAsync();
+
+                if(
+                    oldStatus != RWSUserMembershipStatus.Owner && oldStatus != RWSUserMembershipStatus.Moderator
+                    &&
+                    (status == RWSUserMembershipStatus.Owner || status == RWSUserMembershipStatus.Moderator)
+                    )
+                {
+                    await AddUserToRoleInWorkspaceAsync(workspaceId, ownerOrModeratorId, userId, _rolesService.AdministratorRoleName);
+                }
+
+                if (
+                    status != RWSUserMembershipStatus.Owner && status != RWSUserMembershipStatus.Moderator
+                    &&
+                    (oldStatus == RWSUserMembershipStatus.Owner || oldStatus == RWSUserMembershipStatus.Moderator)
+                    )
+                {
+                    await RemoveUserFromRoleInWorkspaceAsync(workspaceId, ownerOrModeratorId, userId, _rolesService.AdministratorRoleName);
+                }
 
                 return new RServiceResult<bool>(true);
             }
@@ -738,6 +766,11 @@ namespace RSecurityBackend.Services.Implementation
         protected readonly RSecurityDbContext<RAppUser, RAppRole, Guid> _context;
 
         /// <summary>
+        /// Workspace roles servoce
+        /// </summary>
+        public IWorkspaceRolesService _rolesService { get; set; }
+
+        /// <summary>
         /// Identity User Manageer
         /// </summary>
         protected UserManager<RAppUser> _userManager;
@@ -757,12 +790,14 @@ namespace RSecurityBackend.Services.Implementation
         /// constructor
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="rolesService"></param>
         /// <param name="userManager"></param>
         /// <param name="optionsService"></param>
         /// <param name="notificationService"></param>
-        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager, IRGenericOptionsService optionsService, IRNotificationService notificationService)
+        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, IWorkspaceRolesService rolesService, UserManager<RAppUser> userManager, IRGenericOptionsService optionsService, IRNotificationService notificationService)
         {
             _context = context;
+            _rolesService = rolesService;
             _userManager = userManager;
             _optionsService = optionsService;
             _notificationService = notificationService;

@@ -14,7 +14,7 @@ namespace RSecurityBackend.Services.Implementation
     /// <summary>
     /// Workspace Role Service implementation
     /// </summary>
-    public class WorkspaceRolesService
+    public class WorkspaceRolesService : IWorkspaceRolesService
     {
         /// <summary>
         /// Administrator role name
