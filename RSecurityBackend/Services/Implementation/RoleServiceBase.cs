@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using RSecurityBackend.DbContext;
 using RSecurityBackend.Models.Auth.Db;
 using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Generic;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
