@@ -108,10 +108,11 @@ namespace RSecurityBackend.Services
         /// change member status
         /// </summary>
         /// <param name="workspaceId"></param>
+        /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status);
+        Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, RWSUserMembershipStatus status);
 
         /// <summary>
         /// restrict workspace adding

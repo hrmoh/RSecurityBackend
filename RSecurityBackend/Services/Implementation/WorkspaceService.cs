@@ -495,10 +495,11 @@ namespace RSecurityBackend.Services.Implementation
         /// change member status
         /// </summary>
         /// <param name="workspaceId"></param>
+        /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status)
+        public virtual async Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, RWSUserMembershipStatus status)
         {
             try
             {
@@ -514,6 +515,13 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
 
+                var admin = ws.Members.Where(m => m.RAppUserId == ownerOrModeratorId).SingleOrDefault();
+                if(admin.Status != RWSUserMembershipStatus.Owner && admin.Status != RWSUserMembershipStatus.Moderator)
+                {
+                    return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
+                }
+
+
                 if(member.Status == status)
                 {
                     return new RServiceResult<bool>(false, "New status is the same as original.");
@@ -525,6 +533,19 @@ namespace RSecurityBackend.Services.Implementation
                     if (alreadyUsedWorkspace != null)
                     {
                         return new RServiceResult<bool>(false, $"The user aleady owns a workspace called {ws.Name} with code {alreadyUsedWorkspace.Id}");
+                    }
+
+                    if (admin.Status != RWSUserMembershipStatus.Owner)
+                    {
+                        return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
+                    }
+                }
+
+                if(member.Status == RWSUserMembershipStatus.Owner)
+                {
+                    if(!ws.Members.Where(m => m.RAppUserId != userId && m.Status == RWSUserMembershipStatus.Owner).Any())
+                    {
+                        return new RServiceResult<bool>(false, "Workspace remains ownerless after this changes and it is not permitted.");
                     }
                 }
 

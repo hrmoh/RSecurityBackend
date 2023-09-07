@@ -325,6 +325,38 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
+        /// delete member
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        [HttpPut("{workspaceId}/member/{userId}/status/{status}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
+            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
+            {
+                return StatusCode((int)HttpStatusCode.Forbidden);
+            }
+
+            RServiceResult<bool> result = await _workspaceService.ChangeMemberStatusAsync(workspaceId, loggedOnUserId, userId, status);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
+        }
+
+
+
+        /// <summary>
         /// workspace service
         /// </summary>
         protected readonly IWorkspaceService _workspaceService;
