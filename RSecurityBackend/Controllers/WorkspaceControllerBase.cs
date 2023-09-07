@@ -212,13 +212,14 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="email"></param>
+        /// <param name="notify">notify user</param>
         /// <returns></returns>
-        [HttpPost("{workspaceId}/member/{email}")]
+        [HttpPost("{workspaceId}/member/{email}/{notify}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email)
+        public async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email, bool notify)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
@@ -228,7 +229,7 @@ namespace RSecurityBackend.Controllers
                 return StatusCode((int)HttpStatusCode.Forbidden);
             }
        
-            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspaceId, loggedOnUserId, email);
+            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspaceId, loggedOnUserId, email, notify);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if(!result.Result)

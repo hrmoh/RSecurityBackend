@@ -73,8 +73,9 @@ namespace RSecurityBackend.Services
         /// <param name="workspaceId"></param>
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="email"></param>
+        /// <param name="notifyUser"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email);
+        Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email, bool notifyUser);
 
         /// <summary>
         /// delete member

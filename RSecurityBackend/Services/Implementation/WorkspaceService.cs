@@ -369,8 +369,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="workspaceId"></param>
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="email"></param>
+        /// <param name="notifyUser"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email)
+        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email, bool notifyUser)
         {
             try
             {
@@ -406,6 +407,12 @@ namespace RSecurityBackend.Services.Implementation
                 });
                 _context.Update(ws);
                 await _context.SaveChangesAsync();
+
+                if(notifyUser)
+                {
+                    await _notificationService.PushNotification(user.Id, $"Invitation to {ws.Name}", $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == ownerOrModeratorId).SingleAsync()).Email} ");
+                }
+                
 
                 return new RServiceResult<bool>(true);
             }
@@ -516,6 +523,11 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         protected IRGenericOptionsService _optionsService;
 
+        /// <summary>
+        /// Notification Service
+        /// </summary>
+        protected IRNotificationService _notificationService;
+
 
         /// <summary>
         /// constructor
@@ -523,11 +535,13 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="context"></param>
         /// <param name="userManager"></param>
         /// <param name="optionsService"></param>
-        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager, IRGenericOptionsService optionsService)
+        /// <param name="notificationService"></param>
+        public WorkspaceService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager, IRGenericOptionsService optionsService, IRNotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
             _optionsService = optionsService;
+            _notificationService = notificationService;
         }
     }
 }
