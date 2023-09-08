@@ -672,14 +672,14 @@
             <summary>
             get user workspace information (if user is not the owner, owner data is invaid)
             </summary>
-            <param name="id"></param>
+            <param name="workspace"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.InviteMemberAsync(System.Guid,System.String,System.Boolean)">
             <summary>
              add member  (does not send any email)
             </summary>
-            <param name="workspaceId"></param>
+            <param name="workspace"></param>
             <param name="email"></param>
             <param name="notify">notify user</param>
             <returns></returns>
@@ -688,7 +688,7 @@
             <summary>
             delete member
             </summary>
-            <param name="workspaceId"></param>
+            <param name="workspace"></param>
             <param name="userId"></param>
             <returns></returns>
         </member>
@@ -696,22 +696,22 @@
             <summary>
             leave a workspace
             </summary>
-            <param name="workspaceId"></param>
+            <param name="workspace"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.ProcessWorkspaceInvitationAsync(System.Guid,System.Boolean)">
             <summary>
             process workspace invitation
             </summary>
-            <param name="workspaceId"></param>
+            <param name="workspace"></param>
             <param name="reject"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.ChangeMemberStatusAsync(System.Guid,System.Guid,RSecurityBackend.Models.Cloud.RWSUserMembershipStatus)">
             <summary>
-            delete member
+            change member status
             </summary>
-            <param name="workspaceId"></param>
+            <param name="workspace"></param>
             <param name="userId"></param>
             <param name="status"></param>
             <returns></returns>
@@ -720,7 +720,7 @@
             <summary>
             get logged on user securableitems (permissions) in workspace
             </summary>
-            <param name="workspaceId"></param>
+            <param name="workspace"></param>
             <returns></returns>
         </member>
         <member name="F:RSecurityBackend.Controllers.WorkspaceControllerBase._workspaceService">
@@ -1397,6 +1397,21 @@
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.Administer">
             <summary>
             administer
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.InviteMembersOperationShortName">
+            <summary>
+            invite members
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.RemoveMembersOperationShortName">
+            <summary>
+            remove members
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ChangeMemberStatusOperationShortName">
+            <summary>
+            change member status
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Items">
@@ -4094,37 +4109,37 @@
             <param name="appUserService"></param>
             <param name="workspaceService"></param>
         </member>
-        <member name="T:RSecurityBackend.Services.Implementation.WorkspaceRolesService">
+        <member name="T:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase">
             <summary>
             Workspace Role Service implementation
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Services.Implementation.WorkspaceRolesService.AdministratorRoleName">
+        <member name="P:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.AdministratorRoleName">
             <summary>
             Administrator role name
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.GetAllRoles">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetAllRoles">
             <summary>
             returns all user roles
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.FindByNameAsync(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.FindByNameAsync(System.String)">
             <summary>
             find role by name
             </summary>
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.GetRoleInformation(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRoleInformation(System.String)">
             <summary>
             returns user role information
             </summary>       
             <param name="roleName"></param>        
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.ModifyRole(System.String,RSecurityBackend.Models.Cloud.RWSRole)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.ModifyRole(System.String,RSecurityBackend.Models.Cloud.RWSRole)">
             <summary>
             modify existing user role
             </summary>
@@ -4132,21 +4147,21 @@
             <param name="updateRoleInfo"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.DeleteRole(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.String)">
             <summary>
             delete user role
             </summary>
             <param name="roleName"></param>
             <returns>true if succeeds</returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.AddRole(RSecurityBackend.Models.Cloud.RWSRole)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.AddRole(RSecurityBackend.Models.Cloud.RWSRole)">
             <summary>
             adds a new user role
             </summary>
             <param name="newRoleInfo">new role info</param>
             <returns>update user role info (id)</returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.HasPermission(System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.HasPermission(System.String,System.String,System.String)">
             <summary>
             Has role specified permission
             </summary>
@@ -4155,7 +4170,7 @@
             <param name="operationShortName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.GetRolesHavingPermission(System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRolesHavingPermission(System.String,System.String)">
             <summary>
             roles having specific permission
             </summary>
@@ -4163,20 +4178,20 @@
             <param name="operationShortName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.GetSecurableItems">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetSecurableItems">
             <summary>
             gets list of SecurableItem, should be reimplemented in end user applications
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.GetRoleSecurableItemsStatus(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRoleSecurableItemsStatus(System.String)">
             <summary>
             Lists role permissions
             </summary>
             <param name="roleName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.SetRoleSecurableItemsStatus(System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.SetRoleSecurableItemsStatus(System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
             <summary>
             Saves role permissions
             </summary>
@@ -4184,12 +4199,12 @@
             <param name="securableItems"></param>
             <returns></returns>
         </member>
-        <member name="F:RSecurityBackend.Services.Implementation.WorkspaceRolesService._context">
+        <member name="F:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase._context">
             <summary>
             Database Context
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesService.#ctor(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.#ctor(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid})">
             <summary>
             constructor
             </summary>

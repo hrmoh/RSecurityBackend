@@ -14,7 +14,7 @@ namespace RSecurityBackend.Services.Implementation
     /// <summary>
     /// Workspace Role Service implementation
     /// </summary>
-    public class WorkspaceRolesService : IWorkspaceRolesService
+    public class WorkspaceRolesServiceBase : IWorkspaceRolesService
     {
         /// <summary>
         /// Administrator role name
@@ -271,7 +271,7 @@ namespace RSecurityBackend.Services.Implementation
         /// constructor
         /// </summary>
         /// <param name="context"></param>
-        public WorkspaceRolesService(RSecurityDbContext<RAppUser, RAppRole, Guid> context)
+        public WorkspaceRolesServiceBase(RSecurityDbContext<RAppUser, RAppRole, Guid> context)
         {
             _context = context;
         }

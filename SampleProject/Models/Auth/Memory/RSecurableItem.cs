@@ -24,11 +24,13 @@ namespace SampleProject.Models.Auth.Memory
         /// <summary>
         /// workspace forms and their permissions
         /// </summary>
-        public new static RSecurableItem[] WorkspaceItems
+        public new static SecurableItem[] WorkspaceItems
         {
             get
             {
-                return new RSecurableItem[] { };
+                List<SecurableItem> lst = new List<SecurableItem>(SecurableItem.WorkspaceItems);
+                //lst.AddRange(new permissions);
+                return lst.ToArray();
             }
         }
     }

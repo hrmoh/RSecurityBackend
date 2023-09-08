@@ -63,6 +63,18 @@
         /// administer
         /// </summary>
         public const string Administer = "administer";
+        /// <summary>
+        /// invite members
+        /// </summary>
+        public const string InviteMembersOperationShortName = "invite";
+        /// <summary>
+        /// remove members
+        /// </summary>
+        public const string RemoveMembersOperationShortName = "deluser";
+        /// <summary>
+        /// change member status
+        /// </summary>
+        public const string ChangeMemberStatusOperationShortName = "moduser";
 
 
 
@@ -159,7 +171,10 @@
                         Description = "فضاهای کاری",
                         Operations = new SecurableItemOperation[]
                         {
-                            new SecurableItemOperation(ModifyOperationShortName, "ایجاد", false),
+                            new SecurableItemOperation(ModifyOperationShortName, "ویرایش", false),
+                            new SecurableItemOperation(InviteMembersOperationShortName, "دعوت عضو جدید", false),
+                            new SecurableItemOperation(RemoveMembersOperationShortName, "حذف عضو", false),
+                            new SecurableItemOperation(ChangeMemberStatusOperationShortName, "تغییر وضعیت عضو", false),
                         }
                     }
                 };

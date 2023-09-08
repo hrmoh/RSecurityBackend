@@ -66,7 +66,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="workspace"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("{workspace}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ModifyOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -155,18 +155,18 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// get user workspace information (if user is not the owner, owner data is invaid)
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="workspace"></param>
         /// <returns></returns>
-        [HttpGet("{id}")]
+        [HttpGet("{workspace}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid id)
+        public virtual async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid workspace)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<WorkspaceViewModel> result = await _workspaceService.GetUserWorkspaceByIdAsync(id, loggedOnUserId);
+            RServiceResult<WorkspaceViewModel> result = await _workspaceService.GetUserWorkspaceByIdAsync(workspace, loggedOnUserId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
 
@@ -179,19 +179,19 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         ///  add member  (does not send any email)
         /// </summary>
-        /// <param name="workspaceId"></param>
+        /// <param name="workspace"></param>
         /// <param name="email"></param>
         /// <param name="notify">notify user</param>
         /// <returns></returns>
-        [HttpPost("{workspaceId}/invite/{email}/{notify}")]
-        [Authorize]
+        [HttpPost("{workspace}/invite/{email}/{notify}")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email, bool notify)
+        public virtual async Task<IActionResult> InviteMemberAsync(Guid workspace, string email, bool notify)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspaceId, loggedOnUserId, email, notify);
+            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspace, loggedOnUserId, email, notify);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if(!result.Result)
@@ -202,19 +202,19 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// delete member
         /// </summary>
-        /// <param name="workspaceId"></param>
+        /// <param name="workspace"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpDelete("{workspaceId}/member/{userId}")]
-        [Authorize]
+        [HttpDelete("{workspace}/member/{userId}")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.RemoveMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspaceId, Guid userId)
+        public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspace, Guid userId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspaceId, loggedOnUserId, userId);
+            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, loggedOnUserId, userId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -225,18 +225,18 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// leave a workspace
         /// </summary>
-        /// <param name="workspaceId"></param>
+        /// <param name="workspace"></param>
         /// <returns></returns>
-        [HttpDelete("{workspaceId}/leave")]
+        [HttpDelete("{workspace}/leave")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> LeaveWorkspaceAsync(Guid workspaceId)
+        public virtual async Task<IActionResult> LeaveWorkspaceAsync(Guid workspace)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspaceId, loggedOnUserId);
+            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspace, loggedOnUserId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -247,19 +247,19 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// process workspace invitation
         /// </summary>
-        /// <param name="workspaceId"></param>
+        /// <param name="workspace"></param>
         /// <param name="reject"></param>
         /// <returns></returns>
-        [HttpPut("invitation/{workspaceId}/process/{reject}")]
+        [HttpPut("invitation/{workspace}/process/{reject}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> ProcessWorkspaceInvitationAsync(Guid workspaceId, bool reject)
+        public virtual async Task<IActionResult> ProcessWorkspaceInvitationAsync(Guid workspace, bool reject)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspaceId, loggedOnUserId, reject);
+            RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspace, loggedOnUserId, reject);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -269,22 +269,22 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
-        /// delete member
+        /// change member status
         /// </summary>
-        /// <param name="workspaceId"></param>
+        /// <param name="workspace"></param>
         /// <param name="userId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        [HttpPut("{workspaceId}/member/{userId}/status/{status}")]
-        [Authorize]
+        [HttpPut("{workspace}/member/{userId}/status/{status}")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberStatusOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status)
+        public virtual async Task<IActionResult> ChangeMemberStatusAsync(Guid workspace, Guid userId, RWSUserMembershipStatus status)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.ChangeMemberStatusAsync(workspaceId, loggedOnUserId, userId, status);
+            RServiceResult<bool> result = await _workspaceService.ChangeMemberStatusAsync(workspace, loggedOnUserId, userId, status);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -295,18 +295,18 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// get logged on user securableitems (permissions) in workspace
         /// </summary>
-        /// <param name="workspaceId"></param>
+        /// <param name="workspace"></param>
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        [Route("securableitems/{workspaceId}")]
+        [Route("securableitems/{workspace}")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<SecurableItem>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public virtual async Task<IActionResult> GetUserSecurableItemsStatus(Guid workspaceId)
+        public virtual async Task<IActionResult> GetUserSecurableItemsStatus(Guid workspace)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<SecurableItem[]> res = await _workspaceService.GetUserSecurableItemsStatus(workspaceId, loggedOnUserId);
+            RServiceResult<SecurableItem[]> res = await _workspaceService.GetUserSecurableItemsStatus(workspace, loggedOnUserId);
 
             if (!string.IsNullOrEmpty(res.ExceptionString))
             {
