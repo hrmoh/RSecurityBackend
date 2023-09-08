@@ -913,6 +913,11 @@
             Workspace Roles
             </summary>
         </member>
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.RWSUsers">
+            <summary>
+            Workspace Users
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.RWSUserRoles">
             <summary>
             User Workspace Roles
@@ -2028,6 +2033,11 @@
         <member name="P:RSecurityBackend.Models.Cloud.RWSUser.MemberFrom">
             <summary>
             member from
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.RWSUser.RWorkspaceId">
+            <summary>
+            workspace id
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWSUserMembershipStatus">
