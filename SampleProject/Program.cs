@@ -221,7 +221,7 @@ builder.Services.AddTransient<IAuditLogService, AuditLogServiceEF>();
 builder.Services.AddTransient<IUserPermissionChecker, UserPermissionChecker>();
 
 //workspace service
-builder.Services.AddTransient<IWorkspaceRolesService, WorkspaceRolesService>();
+builder.Services.AddTransient<IWorkspaceService, WorkspaceService>();
 
 //workspace role service
 builder.Services.AddTransient<IWorkspaceRolesService, WorkspaceRolesService>();

@@ -6,6 +6,7 @@ using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using RSecurityBackend.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -286,6 +287,29 @@ namespace RSecurityBackend.Controllers
             if (!result.Result)
                 return NotFound();
             return Ok(result.Result);
+        }
+
+        /// <summary>
+        /// get logged on user securableitems (permissions) in workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize]
+        [Route("securableitems/{workspaceId}")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<SecurableItem>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public virtual async Task<IActionResult> GetUserSecurableItemsStatus(Guid workspaceId)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+
+            RServiceResult<SecurableItem[]> res = await _workspaceService.GetUserSecurableItemsStatus(workspaceId, loggedOnUserId);
+
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+            {
+                return BadRequest(res.ExceptionString);
+            }
+            return Ok(res.Result);
         }
 
 

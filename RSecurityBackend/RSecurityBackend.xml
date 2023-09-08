@@ -709,6 +709,13 @@
             <param name="status"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserSecurableItemsStatus(System.Guid)">
+            <summary>
+            get logged on user securableitems (permissions) in workspace
+            </summary>
+            <param name="workspaceId"></param>
+            <returns></returns>
+        </member>
         <member name="F:RSecurityBackend.Controllers.WorkspaceControllerBase._workspaceService">
             <summary>
             workspace service
