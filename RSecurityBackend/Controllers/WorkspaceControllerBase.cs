@@ -291,6 +291,29 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// add user to role in a workspace
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="userId"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+
+        [HttpPut("{workspace}/member/{userId}/role/{role}")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> AddUserToRoleInWorkspaceAsync(Guid workspace, Guid userId, string role)
+        {
+            RServiceResult<bool> result = await _workspaceService.AddUserToRoleInWorkspaceAsync(workspace, userId, role);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
+        }
+
+        /// <summary>
         /// get logged on user securableitems (permissions) in workspace
         /// </summary>
         /// <param name="workspace"></param>

@@ -75,6 +75,10 @@
         /// change member status
         /// </summary>
         public const string ChangeMemberStatusOperationShortName = "moduser";
+        /// <summary>
+        /// modify member role
+        /// </summary>
+        public const string ChangeMemberRoleShortName = "wsuserrole";
 
 
 
@@ -175,6 +179,8 @@
                             new SecurableItemOperation(InviteMembersOperationShortName, "دعوت عضو جدید", false),
                             new SecurableItemOperation(RemoveMembersOperationShortName, "حذف عضو", false),
                             new SecurableItemOperation(ChangeMemberStatusOperationShortName, "تغییر وضعیت عضو", false),
+                            new SecurableItemOperation(ChangeMemberRoleShortName, "تغییر نقش عضو", false),
+                            
                         }
                     }
                 };

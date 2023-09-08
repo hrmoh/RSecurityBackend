@@ -716,6 +716,15 @@
             <param name="status"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            add user to role in a workspace
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <param name="role"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserSecurableItemsStatus(System.Guid)">
             <summary>
             get logged on user securableitems (permissions) in workspace
@@ -1412,6 +1421,11 @@
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ChangeMemberStatusOperationShortName">
             <summary>
             change member status
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ChangeMemberRoleShortName">
+            <summary>
+            modify member role
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Items">
@@ -4331,7 +4345,7 @@
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
             <summary>
-            remove user from role i
+            remove user from role in workspace
             </summary>
             <param name="workspaceId"></param>
             <param name="userId"></param>
