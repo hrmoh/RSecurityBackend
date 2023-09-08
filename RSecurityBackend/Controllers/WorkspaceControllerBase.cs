@@ -113,6 +113,8 @@ namespace RSecurityBackend.Controllers
         /// user workspaces (member or owner)
         /// </summary>
         /// <param name="onlyActive"></param>
+        /// <param name="onlyMember"></param>
+        /// <param name="onlyOwned"></param>
         /// <remarks>if user is not owner of a workspace owner data + users are invalid</remarks>
         /// <returns></returns>
         [HttpGet]
@@ -120,37 +122,17 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive)
+        public virtual async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive, bool onlyOwned, bool onlyMember)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<WorkspaceViewModel[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive);
+            RServiceResult<WorkspaceViewModel[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive, onlyOwned, onlyMember);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
 
             return Ok(result.Result);
         }
 
-        /// <summary>
-        /// get owned workspaces
-        /// </summary>
-        /// <param name="onlyActive"></param>
-        /// <returns></returns>
-        [HttpGet("owned")]
-        [Authorize]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel[]))]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> GetOwnedWorkspacesAsync(bool onlyActive)
-        {
-            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-
-            RServiceResult<WorkspaceViewModel[]> result = await _workspaceService.GetOwnedWorkspacesAsync(loggedOnUserId, onlyActive);
-            if (!string.IsNullOrEmpty(result.ExceptionString))
-                return BadRequest(result.ExceptionString);
-
-            return Ok(result.Result);
-        }
 
         /// <summary>
         /// get user workspace information (if user is not the owner, owner data is invaid)

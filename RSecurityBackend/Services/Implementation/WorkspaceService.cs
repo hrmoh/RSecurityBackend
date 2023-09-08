@@ -180,72 +180,24 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// get owner workspaces
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="onlyActive"></param>
-        /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive)
-        {
-            try
-            {
-                var workspaces = await _context.RWorkspaces.Include(w => w.Members).ThenInclude(m => m.RAppUser).AsNoTracking()
-                            .Where(w => w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner) && (onlyActive == false || w.Active == true))
-                            .OrderBy(w => w.WokspaceOrder)
-                            .ToArrayAsync();
-                return new RServiceResult<WorkspaceViewModel[]>(
-                   workspaces.Select(ws => new WorkspaceViewModel()
-                   {
-                       Id = ws.Id,
-                       Name = ws.Name,
-                       Description = ws.Description,
-                       IsPublic = ws.IsPublic,
-                       CreateDate = ws.CreateDate,
-                       Active = ws.Active,
-                       WokspaceOrder = ws.WokspaceOrder,
-                       Members = ws.Members.Select(m => new RWSUserViewModel()
-                       {
-                           Id = m.Id,
-                           RAppUser = new PublicRAppUser()
-                           {
-                               Id = m.RAppUser.Id,
-                               Username = m.RAppUser.UserName,
-                               Email = m.RAppUser.Email,
-                               FirstName = m.RAppUser.FirstName,
-                               SureName = m.RAppUser.SureName,
-                               PhoneNumber = m.RAppUser.PhoneNumber,
-                               RImageId = m.RAppUser.RImageId,
-                               Status = m.RAppUser.Status,
-                               NickName = m.RAppUser.NickName,
-                               Website = m.RAppUser.Website,
-                               Bio = m.RAppUser.Bio,
-                               EmailConfirmed = m.RAppUser.EmailConfirmed
-                           },
-                           Status = m.Status,
-                           InviteDate = m.InviteDate,
-                           MemberFrom = m.MemberFrom,
-                       }).ToArray(),
-                   }).ToArray()
-                    );
-            }
-            catch (Exception exp)
-            {
-                return new RServiceResult<WorkspaceViewModel[]>(null, exp.ToString());
-            }
-        }
-
-        /// <summary>
         /// member workspaces
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="onlyActive"></param>
+        /// <param name="onlyOwned"></param>
+        /// <param name="onlyMember"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive)
+        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive, bool onlyOwned, bool onlyMember)
         {
             try
             {
-                var workspaces = await _context.RWorkspaces.Include(w => w.Members).ThenInclude(m => m.RAppUser).AsNoTracking()
-                            .Where(w => w.Members.Any(m => m.RAppUserId == userId) && (onlyActive == false || w.Active == true))
+                var userWorkspaces = await _context.RWSUsers.AsNoTracking().
+                                        Where(u => u.RAppUserId == userId).ToArrayAsync();
+                var workspaces = await _context.RWorkspaces.AsNoTracking()
+                            .Where(w => userWorkspaces.Any(u => u.RWorkspaceId == w.Id 
+                            && (!onlyMember || u.Status == RWSUserMembershipStatus.Member)
+                            && (!onlyOwned || u.Status == RWSUserMembershipStatus.Owner)
+                            ) &&  (onlyActive == false || w.Active == true))
                             .OrderBy(w => w.WokspaceOrder)
                             .ToArrayAsync();
                 return new RServiceResult<WorkspaceViewModel[]>(
@@ -261,21 +213,6 @@ namespace RSecurityBackend.Services.Implementation
                        Members = ws.Members.Select(m => new RWSUserViewModel()
                        {
                            Id = m.Id,
-                           RAppUser = new PublicRAppUser()
-                           {
-                               Id = m.RAppUser.Id,
-                               Username = m.RAppUser.UserName,
-                               Email = m.RAppUser.Email,
-                               FirstName = m.RAppUser.FirstName,
-                               SureName = m.RAppUser.SureName,
-                               PhoneNumber = m.RAppUser.PhoneNumber,
-                               RImageId = m.RAppUser.RImageId,
-                               Status = m.RAppUser.Status,
-                               NickName = m.RAppUser.NickName,
-                               Website = m.RAppUser.Website,
-                               Bio = m.RAppUser.Bio,
-                               EmailConfirmed = m.RAppUser.EmailConfirmed
-                           },
                            Status = m.Status,
                            InviteDate = m.InviteDate,
                            MemberFrom = m.MemberFrom,

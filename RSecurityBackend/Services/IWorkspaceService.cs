@@ -40,20 +40,14 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> DeleteWorkspaceAsync(Guid userId, Guid id);
 
         /// <summary>
-        /// get owner workspaces
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="onlyActive"></param>
-        /// <returns></returns>
-        Task<RServiceResult<WorkspaceViewModel[]>> GetOwnedWorkspacesAsync(Guid userId, bool onlyActive);
-
-        /// <summary>
         /// member workspaces
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="onlyActive"></param>
+        /// <param name="onlyOwned"></param>
+        /// <param name="onlyMember"></param>
         /// <returns></returns>
-        Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive);
+        Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive, bool onlyOwned, bool onlyMember);
 
         /// <summary>
         /// get workspace by id
