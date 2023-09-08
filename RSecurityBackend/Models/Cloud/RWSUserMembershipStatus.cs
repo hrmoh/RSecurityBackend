@@ -20,10 +20,5 @@ namespace RSecurityBackend.Models.Cloud
         /// Member
         /// </summary>
         Member = 1,
-
-        /// <summary>
-        /// Invited
-        /// </summary>
-        Invited = 2,
     }
 }
