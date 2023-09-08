@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using RSecurityBackend.Models.Auth.Db;
 using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Generic;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
