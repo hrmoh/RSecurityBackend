@@ -4309,12 +4309,13 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid,System.Boolean)">
             <summary>
             get user workspace information
             </summary>
             <param name="id"></param>
             <param name="userId"></param>
+            <param name="includeMembers"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">
@@ -4815,12 +4816,13 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid,System.Boolean)">
             <summary>
             get user workspace information
             </summary>
             <param name="id"></param>
             <param name="userId"></param>
+            <param name="includeMembers"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">

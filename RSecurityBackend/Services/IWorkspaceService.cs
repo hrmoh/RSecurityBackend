@@ -61,8 +61,9 @@ namespace RSecurityBackend.Services
         /// </summary>
         /// <param name="id"></param>
         /// <param name="userId"></param>
+        /// <param name="includeMembers"></param>
         /// <returns></returns>
-        Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId);
+        Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId, bool includeMembers);
 
         /// <summary>
         /// is user workspace member

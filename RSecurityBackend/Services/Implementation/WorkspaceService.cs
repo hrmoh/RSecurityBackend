@@ -263,8 +263,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="id"></param>
         /// <param name="userId"></param>
+        /// <param name="includeMembers"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId, bool includeMembers)
         {
             try
             {
@@ -279,7 +280,7 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = ws.Members.Where(m => m.RAppUserId == userId).Select(m => new RWSUserViewModel()
+                        Members = includeMembers == false ? null : ws.Members.Where(m => m.RAppUserId == userId).Select(m => new RWSUserViewModel()
                         {
                             Id = m.Id,
                             RAppUser = new PublicRAppUser()
