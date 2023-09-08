@@ -706,7 +706,7 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// remove user from role i
+        /// remove user from role in workspace
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
