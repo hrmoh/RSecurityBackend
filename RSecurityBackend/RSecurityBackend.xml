@@ -3971,7 +3971,7 @@
             Permission checker service implementation
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.UserPermissionChecker.Check(System.Guid,System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.UserPermissionChecker.Check(System.Guid,System.Guid,System.String,System.String,System.Nullable{System.Guid})">
             <summary>
             check to see if user has permission to do operation
             </summary>
@@ -3979,6 +3979,7 @@
             <param name="sessionId"></param>
             <param name="securableItemShortName">form</param>
             <param name="operationShortName">operation</param>
+            <param name="workspaceId"></param>
             <returns>true if has permission</returns>
         </member>
         <member name="F:RSecurityBackend.Services.Implementation.UserPermissionChecker._appUserService">
@@ -3986,11 +3987,17 @@
             IAppUserService instance
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.UserPermissionChecker.#ctor(RSecurityBackend.Services.IAppUserService)">
+        <member name="F:RSecurityBackend.Services.Implementation.UserPermissionChecker._workspaceService">
+            <summary>
+            workspace service
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.UserPermissionChecker.#ctor(RSecurityBackend.Services.IAppUserService,RSecurityBackend.Services.IWorkspaceService)">
             <summary>
             constructor
             </summary>
             <param name="appUserService"></param>
+            <param name="workspaceService"></param>
         </member>
         <member name="T:RSecurityBackend.Services.Implementation.WorkspaceRolesService">
             <summary>
@@ -4221,6 +4228,42 @@
             <param name="roleName"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.IsInRoleAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            is user in role in workspace
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <param name="roleName"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserRoles(System.Guid,System.Guid)">
+            <summary>
+            get user roles
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.HasPermission(System.Guid,System.Guid,System.String,System.String)">
+            <summary>
+            has permission
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <param name="securableItemShortName"></param>
+            <param name="operationShortName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.IsAdmin(System.Guid,System.Guid)">
+            <summary>
+            is admin
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
         <member name="P:RSecurityBackend.Services.Implementation.WorkspaceService.RestrictWorkspaceCreationToAuthorizarion">
             <summary>
             restrict workspace adding
@@ -4364,7 +4407,7 @@
             Permission checker service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IUserPermissionChecker.Check(System.Guid,System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IUserPermissionChecker.Check(System.Guid,System.Guid,System.String,System.String,System.Nullable{System.Guid})">
             <summary>
             check to see if user has permission to do operation
             </summary>
@@ -4372,6 +4415,7 @@
             <param name="sessionId">sessionId</param>
             <param name="securableItemShortName">form</param>
             <param name="operationShortName">operation</param>
+            <param name="workspaceId"></param>
             <returns>true if has permission</returns>
         </member>
         <member name="T:RSecurityBackend.Services.IUserRoleService">
@@ -4673,6 +4717,42 @@
             <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <param name="roleName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.IsInRoleAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            is user in role in workspace
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <param name="roleName"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.IsAdmin(System.Guid,System.Guid)">
+            <summary>
+            is admin
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserRoles(System.Guid,System.Guid)">
+            <summary>
+            get user roles
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.HasPermission(System.Guid,System.Guid,System.String,System.String)">
+            <summary>
+            has permission
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <param name="securableItemShortName"></param>
+            <param name="operationShortName"></param>
             <returns></returns>
         </member>
         <member name="P:RSecurityBackend.Services.IWorkspaceService.RestrictWorkspaceCreationToAuthorizarion">

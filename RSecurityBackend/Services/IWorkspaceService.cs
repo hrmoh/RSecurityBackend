@@ -2,6 +2,7 @@
 using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RSecurityBackend.Services
@@ -133,6 +134,42 @@ namespace RSecurityBackend.Services
         /// <param name="roleName"></param>
         /// <returns></returns>
         Task<RServiceResult<bool>> RemoveUserFromRoleInWorkspaceAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, string roleName);
+
+        /// <summary>
+        /// is user in role in workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="roleName"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        Task<RServiceResult<bool>> IsInRoleAsync(Guid workspaceId, Guid userId, string roleName);
+
+        /// <summary>
+        /// is admin
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> IsAdmin(Guid workspaceId, Guid userId);
+
+        /// <summary>
+        /// get user roles
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<IList<string>>> GetUserRoles(Guid workspaceId, Guid userId);
+
+        /// <summary>
+        /// has permission
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="securableItemShortName"></param>
+        /// <param name="operationShortName"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> HasPermission(Guid workspaceId, Guid userId, string securableItemShortName, string operationShortName);
 
         /// <summary>
         /// restrict workspace adding

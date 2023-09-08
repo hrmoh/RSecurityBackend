@@ -45,21 +45,16 @@ namespace RSecurityBackend.Authorization
                 return;
             }
 
-            Guid workspaceId = Guid.Empty;
+            Guid? workspaceId = null;
 
             if (context.Resource is HttpContext httpContext)
             {
-                if(httpContext.GetRouteValue("workspaceId") != null)
+                if(httpContext.GetRouteValue("workspace") != null)
                 {
-                    workspaceId = Guid.Parse(httpContext.GetRouteValue("workspaceId").ToString());
+                    workspaceId = Guid.Parse(httpContext.GetRouteValue("workspace").ToString());
                 }
             }
 
-            if(workspaceId == Guid.Empty)
-            {
-                context.Fail();
-                return;
-            }
 
 
             RServiceResult<bool> result = await _userPermissionChecker.Check
@@ -67,7 +62,8 @@ namespace RSecurityBackend.Authorization
                 new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value),
                 new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
                 requirement.SecurableItemShortName,
-                requirement.OperationShortName                
+                requirement.OperationShortName,
+                workspaceId
                 );
 
             if(result.Result)

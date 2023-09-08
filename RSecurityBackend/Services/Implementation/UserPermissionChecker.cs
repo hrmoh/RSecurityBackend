@@ -18,8 +18,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="sessionId"></param>
         /// <param name="securableItemShortName">form</param>
         /// <param name="operationShortName">operation</param>
+        /// <param name="workspaceId"></param>
         /// <returns>true if has permission</returns>
-        public virtual async Task<RServiceResult<bool>> Check(Guid userId, Guid sessionId, string securableItemShortName, string operationShortName)
+        public virtual async Task<RServiceResult<bool>> Check(Guid userId, Guid sessionId, string securableItemShortName, string operationShortName, Guid? workspaceId)
         {
             RServiceResult<PublicRAppUser> userInfo = await _appUserService.GetUserInformation(userId);
             if (userInfo.Result == null)
@@ -41,24 +42,53 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<bool>(false);
             }
 
-            RServiceResult<bool> isAdminResult = await _appUserService.IsAdmin(userId);
-            if (!string.IsNullOrEmpty(isAdminResult.ExceptionString))
+            if(workspaceId == null)
             {
-                return new RServiceResult<bool>(false, isAdminResult.ExceptionString);
+                RServiceResult<bool> hasPermission =
+                    await _appUserService.HasPermission(userId, securableItemShortName, operationShortName);
+
+                if (hasPermission.Result)
+                {
+                    return new RServiceResult<bool>(true);
+                }
+
+                RServiceResult<bool> isAdminResult = await _appUserService.IsAdmin(userId);
+                if (!string.IsNullOrEmpty(isAdminResult.ExceptionString))
+                {
+                    return new RServiceResult<bool>(false, isAdminResult.ExceptionString);
+                }
+
+                if (isAdminResult.Result)
+                {
+                    return new RServiceResult<bool>(true);
+                }
+
+                return new RServiceResult<bool>(false);
+            }
+            else
+            {
+                RServiceResult<bool> hasPermission =
+                    await _workspaceService.HasPermission((Guid)workspaceId, userId, securableItemShortName, operationShortName);
+
+                if (hasPermission.Result)
+                {
+                    return new RServiceResult<bool>(true);
+                }
+
+                RServiceResult<bool> isAdminResult = await _workspaceService.IsAdmin((Guid)workspaceId, userId);
+                if (!string.IsNullOrEmpty(isAdminResult.ExceptionString))
+                {
+                    return new RServiceResult<bool>(false, isAdminResult.ExceptionString);
+                }
+
+                if (isAdminResult.Result)
+                {
+                    return new RServiceResult<bool>(true);
+                }
+
+                return new RServiceResult<bool>(false);
             }
 
-            if (isAdminResult.Result)
-            {
-                return new RServiceResult<bool>(true);
-            }
-            RServiceResult<bool> hasPermission =
-                await _appUserService.HasPermission(userId, securableItemShortName, operationShortName);
-
-            if (hasPermission.Result)
-            {
-                return new RServiceResult<bool>(true);
-            }
-            return new RServiceResult<bool>(false);
         }
 
         /// <summary>
@@ -66,16 +96,21 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         protected IAppUserService _appUserService;
 
-
+        /// <summary>
+        /// workspace service
+        /// </summary>
+        protected IWorkspaceService _workspaceService;
 
 
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="appUserService"></param>
-        public UserPermissionChecker(IAppUserService appUserService)
+        /// <param name="workspaceService"></param>
+        public UserPermissionChecker(IAppUserService appUserService, IWorkspaceService workspaceService)
         {
             _appUserService = appUserService;
+            _workspaceService = workspaceService;
         }
     }
 }

@@ -743,6 +743,108 @@ namespace RSecurityBackend.Services.Implementation
             }
         }
 
+        /// <summary>
+        /// is user in role in workspace
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="roleName"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<RServiceResult<bool>> IsInRoleAsync(Guid workspaceId, Guid userId, string roleName)
+        {
+            try
+            {
+                var role = await _context.RWSRoles.AsNoTracking().Where(r => r.Name == roleName).SingleOrDefaultAsync();
+                if (role == null)
+                {
+                    return new RServiceResult<bool>(false, "Role not foune");
+                }
+
+                return new RServiceResult<bool>(await _context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).AnyAsync());
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// get user roles
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<IList<string>>> GetUserRoles(Guid workspaceId, Guid userId)
+        {
+            try
+            {
+                return new RServiceResult<IList<string>>(
+                    await _context.RWSUserRoles.AsNoTracking()
+                            .Include(r => r.Role).Where(u => u.WorkspaceId == workspaceId && u.UserId == userId)
+                            .Select(r => r.Role.Name)
+                            .ToListAsync()
+                            );
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<IList<string>>(null, exp.ToString());
+            }
+
+        }
+
+        /// <summary>
+        /// has permission
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="securableItemShortName"></param>
+        /// <param name="operationShortName"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> HasPermission(Guid workspaceId, Guid userId, string securableItemShortName, string operationShortName)
+        {
+            try
+            {
+                RServiceResult<IList<string>> roles = await GetUserRoles(workspaceId, userId);
+                if (!string.IsNullOrEmpty(roles.ExceptionString))
+                    return new RServiceResult<bool>(false, roles.ExceptionString);
+
+                foreach (string role in roles.Result)
+                {
+                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(role, securableItemShortName, operationShortName);
+                    if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
+                        return new RServiceResult<bool>(false, hasPermission.ExceptionString);
+                    if (hasPermission.Result)
+                    {
+                        return new RServiceResult<bool>(true);
+                    }
+                }
+
+                return
+                    new RServiceResult<bool>
+                    (
+                        false
+                    );
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+           
+        }
+
+        /// <summary>
+        /// is admin
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> IsAdmin(Guid workspaceId, Guid userId)
+        {
+            return  await IsInRoleAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
+        }
+
+
 
         /// <summary>
         /// restrict workspace adding
