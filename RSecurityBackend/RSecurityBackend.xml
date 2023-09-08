@@ -745,6 +745,77 @@
             <param name="userPermissionChecker"></param>
             <param name="appUserService"></param>
         </member>
+        <member name="T:RSecurityBackend.Controllers.WorkspaceRoleControllerBase">
+            <summary>
+            Workspace User roles
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Get">
+            <summary>
+            All Roles Information
+            </summary>
+            <returns>All Roles Information</returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Get(System.String)">
+            <summary>
+            returns role information
+            </summary>
+            <param name="roleName">role name</param>
+            <returns>role information</returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Post(RSecurityBackend.Models.Cloud.RWSRole)">
+            <summary>
+            add a new role
+            </summary>
+            <param name="newGroupInfo"></param>
+            <returns>id if required could be retrieved from return value</returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Put(System.String,RSecurityBackend.Models.Cloud.RWSRole)">
+            <summary>
+            update existing role
+            </summary>
+            <param name="roleName">role name</param>
+            <param name="existingGroupInfo">existingGroupInfo.id could be passed empty and it is ignored completely</param>
+            <returns>true if succeeds</returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.String)">
+            <summary>
+            delete role
+            </summary>
+            <param name="roleName">role name</param>
+            <returns>true if succeeds</returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.GetRoleSecurableItemsStatus(System.String)">
+            <summary>
+            lists role permissions
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.SetRoleSecurableItemsStatus(System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
+            <summary>
+            Saves role permissions
+            </summary>
+            <param name="roleName">role name</param>
+            <param name="securableItems"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.GetSecurableItems">
+            <summary>
+            Get All SecurableItems
+            </summary>
+            <returns>All All SecurableItems</returns>
+        </member>
+        <member name="F:RSecurityBackend.Controllers.WorkspaceRoleControllerBase._roleService">
+            <summary>
+            IWorkspaceRolesService instance
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.#ctor(RSecurityBackend.Services.IWorkspaceRolesService)">
+            <summary>
+            constructor
+            </summary>
+            <param name="roleService"></param>
+        </member>
         <member name="T:RSecurityBackend.DbContext.RSecurityDbContext`3">
             <summary>
             Security EF DbContext
