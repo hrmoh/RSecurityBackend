@@ -18,7 +18,7 @@ namespace RSecurityBackend.Controllers
     /// </summary>
     [Produces("application/json")]
     [Route("api/workspace")]
-    public class WorkspaceControllerBase : Controller
+    public abstract class WorkspaceControllerBase : Controller
     {
         /// <summary>
         /// add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding)
@@ -180,7 +180,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="email"></param>
         /// <param name="notify">notify user</param>
         /// <returns></returns>
-        [HttpPost("{workspaceId}/member/{email}/{notify}")]
+        [HttpPost("{workspaceId}/invite/{email}/{notify}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]

@@ -373,6 +373,27 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// is user workspace member
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> IsUserWorkspaceMember(Guid workspaceId, Guid userId)
+        {
+            try
+            {
+                return new RServiceResult<bool>
+                    (
+                    await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId && w.Members.Any(m => m.RAppUserId == userId)).AnyAsync()
+                    );
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// add member
         /// </summary>
         /// <param name="workspaceId"></param>
@@ -456,6 +477,11 @@ namespace RSecurityBackend.Services.Implementation
 
                 ws.Members.Remove(member);
                 _context.Update(ws);
+                var roles = await _context.RWSUserRoles.Where(r => r.UserId == userId && r.WorkspaceId == workspaceId).ToListAsync();
+                if (roles.Any())
+                {
+                    _context.RemoveRange(roles);
+                }
                 await _context.SaveChangesAsync();
 
                 return new RServiceResult<bool>(true);
@@ -490,6 +516,12 @@ namespace RSecurityBackend.Services.Implementation
 
                 ws.Members.Remove(member);
                 _context.Update(ws);
+
+                var roles = await _context.RWSUserRoles.Where(r => r.UserId == userId && r.WorkspaceId == workspaceId).ToListAsync();
+                if (roles.Any())
+                {
+                    _context.RemoveRange(roles);
+                }
                 await _context.SaveChangesAsync();
 
                 return new RServiceResult<bool>(true);

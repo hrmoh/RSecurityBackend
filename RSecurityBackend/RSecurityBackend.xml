@@ -27,12 +27,18 @@
             IAppUserService instance
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Authorization.UserGroupPermissionHandler.#ctor(RSecurityBackend.Services.IUserPermissionChecker,RSecurityBackend.Services.IAppUserService)">
+        <member name="F:RSecurityBackend.Authorization.UserGroupPermissionHandler._workspaceService">
+            <summary>
+            workspace service
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Authorization.UserGroupPermissionHandler.#ctor(RSecurityBackend.Services.IUserPermissionChecker,RSecurityBackend.Services.IAppUserService,RSecurityBackend.Services.IWorkspaceService)">
             <summary>
             constructor
             </summary>
             <param name="userPermissionChecker"></param>
             <param name="appUserService"></param>
+            <param name="workspaceService"></param>
         </member>
         <member name="T:RSecurityBackend.Authorization.UserGroupPermissionRequirement">
             <summary>
@@ -4169,6 +4175,14 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">
+            <summary>
+            is user workspace member
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.InviteMemberAsync(System.Guid,System.Guid,System.String,System.Boolean)">
             <summary>
             add member
@@ -4665,6 +4679,14 @@
             get user workspace information
             </summary>
             <param name="id"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">
+            <summary>
+            is user workspace member
+            </summary>
+            <param name="workspaceId"></param>
             <param name="userId"></param>
             <returns></returns>
         </member>

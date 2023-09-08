@@ -29,31 +29,40 @@ namespace RSecurityBackend.Authorization
                 return;
             }
 
-            //this is the default policy to make sure the use session has not yet been deleted by him/her from another client
-            //or by an admin (Authorize with no policy should fail on deleted sessions)
-            if (requirement.SecurableItemShortName == "null"/* && requirement.OperationShortName == "null"*/)
-            {
-                RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value), new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value));
-                if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString) || !sessionCheckResult.Result)
-                {
-                    context.Fail();
-                    return;
-                }
-
-                context.Succeed(requirement);
-                return;
-            }
-
             Guid? workspaceId = null;
 
             if (context.Resource is HttpContext httpContext)
             {
-                if(httpContext.GetRouteValue("workspace") != null)
+                if (httpContext.GetRouteValue("workspace") != null)
                 {
                     workspaceId = Guid.Parse(httpContext.GetRouteValue("workspace").ToString());
                 }
             }
 
+            //this is the default policy to make sure the use session has not yet been deleted by him/her from another client
+            //or by an admin (Authorize with no policy should fail on deleted sessions)
+            if (requirement.SecurableItemShortName == "null"/* && requirement.OperationShortName == "null"*/)
+            {
+                RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value), new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value));
+                if (!sessionCheckResult.Result)
+                {
+                    context.Fail();
+                    return;
+                }
+
+                if(workspaceId != null)
+                {
+                    var res = await _workspaceService.IsUserWorkspaceMember((Guid)workspaceId, new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value));
+                    if(!res.Result)
+                    {
+                        context.Fail();
+                        return;
+                    }
+                }
+
+                context.Succeed(requirement);
+                return;
+            }
 
 
             RServiceResult<bool> result = await _userPermissionChecker.Check
@@ -86,16 +95,23 @@ namespace RSecurityBackend.Authorization
         /// </summary>
         protected IAppUserService _appUserService;
 
+        /// <summary>
+        /// workspace service
+        /// </summary>
+        protected readonly IWorkspaceService _workspaceService;
+
 
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="userPermissionChecker"></param>
         /// <param name="appUserService"></param>
-        public UserGroupPermissionHandler(IUserPermissionChecker userPermissionChecker, IAppUserService appUserService) : base()
+        /// <param name="workspaceService"></param>
+        public UserGroupPermissionHandler(IUserPermissionChecker userPermissionChecker, IAppUserService appUserService, IWorkspaceService workspaceService) : base()
         {
             _userPermissionChecker = userPermissionChecker;
             _appUserService = appUserService;
+            _workspaceService = workspaceService;
         }
     }
 }
