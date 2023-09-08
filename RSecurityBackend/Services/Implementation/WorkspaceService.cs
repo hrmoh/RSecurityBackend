@@ -397,11 +397,11 @@ namespace RSecurityBackend.Services.Implementation
         /// add member
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="invitingUserId"></param>
+        /// <param name="inviterId"></param>
         /// <param name="email"></param>
         /// <param name="notifyUser"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid invitingUserId, string email, bool notifyUser)
+        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid inviterId, string email, bool notifyUser)
         {
             try
             {
@@ -442,7 +442,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 if(notifyUser)
                 {
-                    await _notificationService.PushNotification(user.Id, $"Invitation to {ws.Name}", $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == invitingUserId).SingleAsync()).Email} ");
+                    await _notificationService.PushNotification(user.Id, $"Invitation to {ws.Name}", $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).Email} ");
                 }
                 
 

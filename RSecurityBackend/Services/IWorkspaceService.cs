@@ -82,11 +82,11 @@ namespace RSecurityBackend.Services
         /// add member (does not send any email)
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="invitingUserId"></param>
+        /// <param name="inviterId"></param>
         /// <param name="email"></param>
         /// <param name="notifyUser"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid invitingUserId, string email, bool notifyUser);
+        Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid inviterId, string email, bool notifyUser);
 
         /// <summary>
         /// delete member
