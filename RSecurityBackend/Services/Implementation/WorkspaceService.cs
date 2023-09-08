@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using RSecurityBackend.DbContext;
 using RSecurityBackend.Models.Auth.Db;
+using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Auth.ViewModels;
 using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Cloud.ViewModels;
@@ -842,6 +843,40 @@ namespace RSecurityBackend.Services.Implementation
         public virtual async Task<RServiceResult<bool>> IsAdmin(Guid workspaceId, Guid userId)
         {
             return  await IsInRoleAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
+        }
+
+        /// <summary>
+        /// Lists user permissions
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<SecurableItem[]>> GetUserSecurableItemsStatus(Guid workspaceId, Guid userId)
+        {
+            SecurableItem[] securableItems = _rolesService.GetSecurableItems();
+            RServiceResult<IList<string>> roles = await GetUserRoles(workspaceId, userId);
+            if (!string.IsNullOrEmpty(roles.ExceptionString))
+                return new RServiceResult<SecurableItem[]>(null, roles.ExceptionString);
+
+            bool isAdmin = (await IsAdmin(workspaceId, userId)).Result;
+
+            foreach (SecurableItem securableItem in securableItems)
+            {
+                foreach (SecurableItemOperation operation in securableItem.Operations)
+                {
+                    foreach (string role in roles.Result)
+                    {
+                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(role, securableItem.ShortName, operation.ShortName);
+                        if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
+                            return new RServiceResult<SecurableItem[]>(null, hasPermission.ExceptionString);
+                        if (isAdmin || hasPermission.Result)
+                        {
+                            operation.Status = true;
+                        }
+                    }
+                }
+            }
+            return new RServiceResult<SecurableItem[]>(securableItems);
         }
 
 

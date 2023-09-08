@@ -1,4 +1,5 @@
-﻿using RSecurityBackend.Models.Cloud;
+﻿using RSecurityBackend.Models.Auth.Memory;
+using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
@@ -170,6 +171,14 @@ namespace RSecurityBackend.Services
         /// <param name="operationShortName"></param>
         /// <returns></returns>
         Task<RServiceResult<bool>> HasPermission(Guid workspaceId, Guid userId, string securableItemShortName, string operationShortName);
+
+        /// <summary>
+        /// Lists user permissions
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<SecurableItem[]>> GetUserSecurableItemsStatus(Guid workspaceId, Guid userId);
 
         /// <summary>
         /// restrict workspace adding

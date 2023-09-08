@@ -4264,6 +4264,14 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserSecurableItemsStatus(System.Guid,System.Guid)">
+            <summary>
+            Lists user permissions
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
         <member name="P:RSecurityBackend.Services.Implementation.WorkspaceService.RestrictWorkspaceCreationToAuthorizarion">
             <summary>
             restrict workspace adding
@@ -4753,6 +4761,14 @@
             <param name="userId"></param>
             <param name="securableItemShortName"></param>
             <param name="operationShortName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserSecurableItemsStatus(System.Guid,System.Guid)">
+            <summary>
+            Lists user permissions
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
             <returns></returns>
         </member>
         <member name="P:RSecurityBackend.Services.IWorkspaceService.RestrictWorkspaceCreationToAuthorizarion">
