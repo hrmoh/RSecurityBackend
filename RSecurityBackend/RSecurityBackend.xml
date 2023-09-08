@@ -725,6 +725,15 @@
             <param name="role"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            remove user from role in workspace
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <param name="role"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserSecurableItemsStatus(System.Guid)">
             <summary>
             get logged on user securableitems (permissions) in workspace
