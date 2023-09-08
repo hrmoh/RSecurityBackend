@@ -4326,12 +4326,11 @@
             <param name="reject"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.Guid,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
             <summary>
             add user to role in a workspace
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <param name="roleName"></param>
             <returns></returns>
@@ -4832,12 +4831,11 @@
             <param name="status"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.Guid,System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
             <summary>
             add user to role in a workspace
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <param name="roleName"></param>
             <returns></returns>

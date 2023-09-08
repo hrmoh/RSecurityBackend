@@ -602,7 +602,7 @@ namespace RSecurityBackend.Services.Implementation
                     (status == RWSUserMembershipStatus.Owner || status == RWSUserMembershipStatus.Moderator)
                     )
                 {
-                    await AddUserToRoleInWorkspaceAsync(workspaceId, ownerOrModeratorId, userId, _rolesService.AdministratorRoleName);
+                    await AddUserToRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
                 }
 
                 if (
@@ -668,30 +668,22 @@ namespace RSecurityBackend.Services.Implementation
         /// add user to role in a workspace
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <param name="roleName"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> AddUserToRoleInWorkspaceAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, string roleName)
+        public virtual async Task<RServiceResult<bool>> AddUserToRoleInWorkspaceAsync(Guid workspaceId, Guid userId, string roleName)
         {
             try
             {
-                var ws = await _context.RWorkspaces.AsNoTracking().Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false, "Workspace not found.");
                 }
-                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
-                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                var member = await _context.RWSUsers.AsNoTracking().Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
-                }
-
-                var admin = ws.Members.Where(m => m.RAppUserId == ownerOrModeratorId).SingleOrDefault();
-                if (admin.Status != RWSUserMembershipStatus.Owner && admin.Status != RWSUserMembershipStatus.Moderator)
-                {
-                    return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
                 }
 
                 var role = await _context.RWSRoles.AsNoTracking().Where(r => r.Name == roleName).SingleOrDefaultAsync();
