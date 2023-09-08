@@ -17,18 +17,13 @@ namespace RSecurityBackend.Models.Cloud
         Owner = 0,
 
         /// <summary>
-        /// Moderator
-        /// </summary>
-        Moderator = 1,
-
-        /// <summary>
         /// Member
         /// </summary>
-        Member = 2,
+        Member = 1,
 
         /// <summary>
         /// Invited
         /// </summary>
-        Invited = 3,
+        Invited = 2,
     }
 }

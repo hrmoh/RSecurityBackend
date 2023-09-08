@@ -212,9 +212,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspace, Guid userId)
         {
-            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-
-            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, loggedOnUserId, userId);
+            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, userId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)

@@ -397,15 +397,15 @@ namespace RSecurityBackend.Services.Implementation
         /// add member
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="ownerOrModeratorId"></param>
+        /// <param name="invitingUserId"></param>
         /// <param name="email"></param>
         /// <param name="notifyUser"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, string email, bool notifyUser)
+        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid invitingUserId, string email, bool notifyUser)
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId && w.Members.Any(m => m.RAppUserId == ownerOrModeratorId && (m.Status == RWSUserMembershipStatus.Owner || m.Status == RWSUserMembershipStatus.Moderator))).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found
@@ -440,7 +440,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 if(notifyUser)
                 {
-                    await _notificationService.PushNotification(user.Id, $"Invitation to {ws.Name}", $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == ownerOrModeratorId).SingleAsync()).Email} ");
+                    await _notificationService.PushNotification(user.Id, $"Invitation to {ws.Name}", $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == invitingUserId).SingleAsync()).Email} ");
                 }
                 
 
@@ -456,26 +456,24 @@ namespace RSecurityBackend.Services.Implementation
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid userId)
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId && w.Members.Any(m => m.RAppUserId == ownerOrModeratorId && (m.Status == RWSUserMembershipStatus.Owner || m.Status == RWSUserMembershipStatus.Moderator))).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
-                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
-                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
 
-                ws.Members.Remove(member);
+                _context.Remove(member);
                 _context.Update(ws);
                 var roles = await _context.RWSUserRoles.Where(r => r.UserId == userId && r.WorkspaceId == workspaceId).ToListAsync();
                 if (roles.Any())
@@ -502,20 +500,18 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
-                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
-                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
 
-                ws.Members.Remove(member);
-                _context.Update(ws);
+                _context.Remove(member);
 
                 var roles = await _context.RWSUserRoles.Where(r => r.UserId == userId && r.WorkspaceId == workspaceId).ToListAsync();
                 if (roles.Any())
@@ -544,24 +540,16 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
-                var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
-                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
+                var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
-
-                var admin = ws.Members.Where(m => m.RAppUserId == ownerOrModeratorId).SingleOrDefault();
-                if(admin.Status != RWSUserMembershipStatus.Owner && admin.Status != RWSUserMembershipStatus.Moderator)
-                {
-                    return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
-                }
-
 
                 if(member.Status == status)
                 {
@@ -576,6 +564,8 @@ namespace RSecurityBackend.Services.Implementation
                         return new RServiceResult<bool>(false, $"The user aleady owns a workspace called {ws.Name} with code {alreadyUsedWorkspace.Id}");
                     }
 
+                    var admin = await _context.RWSUsers.AsNoTracking().Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == ownerOrModeratorId).SingleOrDefaultAsync();
+
                     if (admin.Status != RWSUserMembershipStatus.Owner)
                     {
                         return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
@@ -584,7 +574,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 if(member.Status == RWSUserMembershipStatus.Owner)
                 {
-                    if(!ws.Members.Where(m => m.RAppUserId != userId && m.Status == RWSUserMembershipStatus.Owner).Any())
+                    if(false == await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.Status == RWSUserMembershipStatus.Owner && u.RAppUserId != userId).AnyAsync())
                     {
                         return new RServiceResult<bool>(false, "Workspace remains ownerless after this changes and it is not permitted.");
                     }
@@ -593,22 +583,22 @@ namespace RSecurityBackend.Services.Implementation
                 RWSUserMembershipStatus oldStatus = member.Status;
 
                 member.Status = status;
-                _context.Update(ws);
+                _context.Update(member);
                 await _context.SaveChangesAsync();
 
                 if(
-                    oldStatus != RWSUserMembershipStatus.Owner && oldStatus != RWSUserMembershipStatus.Moderator
+                    oldStatus != RWSUserMembershipStatus.Owner
                     &&
-                    (status == RWSUserMembershipStatus.Owner || status == RWSUserMembershipStatus.Moderator)
+                    status == RWSUserMembershipStatus.Owner
                     )
                 {
                     await AddUserToRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
                 }
 
                 if (
-                    status != RWSUserMembershipStatus.Owner && status != RWSUserMembershipStatus.Moderator
+                    status != RWSUserMembershipStatus.Owner
                     &&
-                    (oldStatus == RWSUserMembershipStatus.Owner || oldStatus == RWSUserMembershipStatus.Moderator)
+                    oldStatus == RWSUserMembershipStatus.Owner
                     )
                 {
                     await RemoveUserFromRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName);

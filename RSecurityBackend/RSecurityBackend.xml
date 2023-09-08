@@ -2066,11 +2066,6 @@
             Owner
             </summary>
         </member>
-        <member name="F:RSecurityBackend.Models.Cloud.RWSUserMembershipStatus.Moderator">
-            <summary>
-            Moderator
-            </summary>
-        </member>
         <member name="F:RSecurityBackend.Models.Cloud.RWSUserMembershipStatus.Member">
             <summary>
             Member
@@ -4285,17 +4280,16 @@
             add member
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
+            <param name="invitingUserId"></param>
             <param name="email"></param>
             <param name="notifyUser"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.DeleteMemberAsync(System.Guid,System.Guid,System.Guid)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">
             <summary>
             delete member
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <returns></returns>
         </member>
@@ -4790,17 +4784,16 @@
             add member (does not send any email)
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
+            <param name="invitingUserId"></param>
             <param name="email"></param>
             <param name="notifyUser"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.DeleteMemberAsync(System.Guid,System.Guid,System.Guid)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">
             <summary>
             delete member
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <returns></returns>
         </member>
