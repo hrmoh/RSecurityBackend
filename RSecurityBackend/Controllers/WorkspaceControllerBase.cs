@@ -245,19 +245,19 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// process workspace invitation
         /// </summary>
-        /// <param name="workspace"></param>
+        /// <param name="workspaceId"></param>
         /// <param name="reject"></param>
         /// <returns></returns>
-        [HttpPut("invitation/{workspace}/process/{reject}")]
+        [HttpPut("invitation/{workspaceId}/process/{reject}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> ProcessWorkspaceInvitationAsync(Guid workspace, bool reject)
+        public virtual async Task<IActionResult> ProcessWorkspaceInvitationAsync(Guid workspaceId, bool reject)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspace, loggedOnUserId, reject);
+            RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspaceId, loggedOnUserId, reject);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)

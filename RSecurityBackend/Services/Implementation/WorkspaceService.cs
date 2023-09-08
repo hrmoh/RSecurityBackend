@@ -625,27 +625,30 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
                 var user = await _userManager.Users.AsNoTracking().Where(u => u.Id == userId).SingleAsync();
-                var member = ws.Members.Where(m => m.RAppUserId == userId).SingleOrDefault();
-                if (member == null)
+                var invitation = await _context.WorkspaceUserInvitations.Where(i => i.UserId == userId && i.WorkspaceId == ws.Id).FirstOrDefaultAsync();
+                if (invitation == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not a member.");
+                    return new RServiceResult<bool>(false, "User got not invitation.");
                 }
-                if(reject)
+                _context.Remove(invitation);
+                if (!reject)
                 {
-                    ws.Members.Remove(member);
+                    _context.RWSUsers.Add(
+                        new RWSUser()
+                        {
+                            RWorkspaceId = workspaceId,
+                            RAppUserId = userId,
+                            Status = RWSUserMembershipStatus.Member
+                        });
+
                 }
-                else
-                {
-                    member.Status = RWSUserMembershipStatus.Member;
-                }
-               
-                _context.Update(ws);
+
                 await _context.SaveChangesAsync();
 
                 return new RServiceResult<bool>(true);
