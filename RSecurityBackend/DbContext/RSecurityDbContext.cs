@@ -142,8 +142,15 @@ namespace RSecurityBackend.DbContext
         public DbSet<RWSRole> RWSRoles { get; set; }
 
         /// <summary>
+        /// Workspace Users
+        /// </summary>
+        public DbSet<RWSUser> RWSUsers { get; set; }
+
+        /// <summary>
         /// User Workspace Roles
         /// </summary>
         public DbSet<RWSUserRole> RWSUserRoles { get; set; }
+
+
     }
 }

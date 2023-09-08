@@ -37,5 +37,10 @@ namespace RSecurityBackend.Models.Cloud
         /// member from
         /// </summary>
         public DateTime? MemberFrom { get; set; }
+
+        /// <summary>
+        /// workspace id
+        /// </summary>
+        public Guid RWorkspaceId { get; set; }
     }
 }
