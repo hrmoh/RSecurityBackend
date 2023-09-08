@@ -4,6 +4,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using RSecurityBackend.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
 
 namespace RSecurityBackend.Authorization
 {
@@ -41,6 +44,23 @@ namespace RSecurityBackend.Authorization
                 context.Succeed(requirement);
                 return;
             }
+
+            Guid workspaceId = Guid.Empty;
+
+            if (context.Resource is HttpContext httpContext)
+            {
+                if(httpContext.GetRouteValue("workspaceId") != null)
+                {
+                    workspaceId = (Guid)httpContext.GetRouteValue("workspaceId");
+                }
+            }
+
+            if(workspaceId == Guid.Empty)
+            {
+                context.Fail();
+                return;
+            }
+
 
             RServiceResult<bool> result = await _userPermissionChecker.Check
                 (
