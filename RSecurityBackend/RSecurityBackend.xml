@@ -4336,12 +4336,11 @@
             <param name="roleName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.Guid,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
             <summary>
             remove user from role i
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <param name="roleName"></param>
             <returns></returns>
@@ -4843,12 +4842,11 @@
             <param name="roleName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.Guid,System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
             <summary>
             remove user from role i
             </summary>
             <param name="workspaceId"></param>
-            <param name="ownerOrModeratorId"></param>
             <param name="userId"></param>
             <param name="roleName"></param>
             <returns></returns>

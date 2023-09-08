@@ -138,11 +138,10 @@ namespace RSecurityBackend.Services
         /// remove user from role i
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <param name="roleName"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> RemoveUserFromRoleInWorkspaceAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, string roleName);
+        Task<RServiceResult<bool>> RemoveUserFromRoleInWorkspaceAsync(Guid workspaceId, Guid userId, string roleName);
 
         /// <summary>
         /// is user in role in workspace
