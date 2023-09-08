@@ -653,19 +653,14 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetMemberWorkspacesAsync(System.Boolean)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetMemberWorkspacesAsync(System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             user workspaces (member or owner)
             </summary>
             <param name="onlyActive"></param>
-            <remarks>if user is not owner of a workspace owner data + users are invalid</remarks>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetOwnedWorkspacesAsync(System.Boolean)">
-            <summary>
-            get owned workspaces
-            </summary>
-            <param name="onlyActive"></param>
+            <param name="onlyMember"></param>
+            <param name="onlyOwned"></param>
+            <remarks>members are invalid</remarks>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserWorkspaceByIdAsync(System.Guid)">
@@ -682,6 +677,14 @@
             <param name="workspace"></param>
             <param name="email"></param>
             <param name="notify">notify user</param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.RevokeInvitationAsync(System.Guid,System.Guid)">
+            <summary>
+            revoke member invitation to a workspace
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.DeleteMemberAsync(System.Guid,System.Guid)">
@@ -703,7 +706,7 @@
             <summary>
             process workspace invitation
             </summary>
-            <param name="workspace"></param>
+            <param name="workspaceId"></param>
             <param name="reject"></param>
             <returns></returns>
         </member>
@@ -940,6 +943,11 @@
         <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.RWSUserRoles">
             <summary>
             User Workspace Roles
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.WorkspaceUserInvitations">
+            <summary>
+            workspace user invitation
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Audit.Db.REvent">
@@ -2094,11 +2102,6 @@
             Member
             </summary>
         </member>
-        <member name="F:RSecurityBackend.Models.Cloud.RWSUserMembershipStatus.Invited">
-            <summary>
-            Invited
-            </summary>
-        </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWSUserRole">
             <summary>
             User Workspace Role
@@ -2232,6 +2235,36 @@
         <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.Active">
             <summary>
             active
+            </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Cloud.WorkspaceUserInvitation">
+            <summary>
+            workspace user invitation
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.WorkspaceUserInvitation.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.WorkspaceUserInvitation.UserId">
+            <summary>
+            user id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.WorkspaceUserInvitation.User">
+            <summary>
+            user
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.WorkspaceUserInvitation.WorkspaceId">
+            <summary>
+            workspace id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.WorkspaceUserInvitation.Workspace">
+            <summary>
+            workspace
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Generic.Db.RGenericOption">
@@ -4259,20 +4292,14 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetOwnedWorkspacesAsync(System.Guid,System.Boolean)">
-            <summary>
-            get owner workspaces
-            </summary>
-            <param name="userId"></param>
-            <param name="onlyActive"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetMemberWorkspacesAsync(System.Guid,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetMemberWorkspacesAsync(System.Guid,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             member workspaces
             </summary>
             <param name="userId"></param>
             <param name="onlyActive"></param>
+            <param name="onlyOwned"></param>
+            <param name="onlyMember"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetWorkspaceByIdAsync(System.Guid)">
@@ -4303,9 +4330,17 @@
             add member
             </summary>
             <param name="workspaceId"></param>
-            <param name="invitingUserId"></param>
+            <param name="inviterId"></param>
             <param name="email"></param>
             <param name="notifyUser"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.RevokeInvitationAsync(System.Guid,System.Guid)">
+            <summary>
+            revoke invitation
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">
@@ -4763,20 +4798,14 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetOwnedWorkspacesAsync(System.Guid,System.Boolean)">
-            <summary>
-            get owner workspaces
-            </summary>
-            <param name="userId"></param>
-            <param name="onlyActive"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetMemberWorkspacesAsync(System.Guid,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetMemberWorkspacesAsync(System.Guid,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             member workspaces
             </summary>
             <param name="userId"></param>
             <param name="onlyActive"></param>
+            <param name="onlyOwned"></param>
+            <param name="onlyMember"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.GetWorkspaceByIdAsync(System.Guid)">
@@ -4807,9 +4836,17 @@
             add member (does not send any email)
             </summary>
             <param name="workspaceId"></param>
-            <param name="invitingUserId"></param>
+            <param name="inviterId"></param>
             <param name="email"></param>
             <param name="notifyUser"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.RevokeInvitationAsync(System.Guid,System.Guid)">
+            <summary>
+            revoke invitation
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="userId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">

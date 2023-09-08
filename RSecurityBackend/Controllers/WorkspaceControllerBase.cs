@@ -115,7 +115,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="onlyActive"></param>
         /// <param name="onlyMember"></param>
         /// <param name="onlyOwned"></param>
-        /// <remarks>if user is not owner of a workspace owner data + users are invalid</remarks>
+        /// <remarks>members are invalid</remarks>
         /// <returns></returns>
         [HttpGet]
         [Authorize]
