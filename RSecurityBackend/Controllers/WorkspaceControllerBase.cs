@@ -32,14 +32,9 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> AddWorkpspaceAsync([FromBody] NewWorkspaceModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
             if (_workspaceService.RestrictWorkspaceCreationToAuthorizarion)
             {
+                Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
                 RServiceResult<bool>
                     canAdd =
                         await _userPermissionChecker.Check
@@ -77,12 +72,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> UpdateWorkpspaceAsync([FromBody] WorkspaceViewModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
             
             RServiceResult<bool> result = await _workspaceService.UpdateWorkpspaceAsync(loggedOnUserId, model);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -106,12 +95,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> DeleteWorkspaceAsync(Guid id)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<bool> result = await _workspaceService.DeleteWorkspaceAsync(loggedOnUserId, id);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -136,12 +119,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<WorkspaceViewModel[]> result = await _workspaceService.GetMemberWorkspacesAsync(loggedOnUserId, onlyActive);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -163,12 +140,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> GetOwnedWorkspacesAsync(bool onlyActive)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<WorkspaceViewModel[]> result = await _workspaceService.GetOwnedWorkspacesAsync(loggedOnUserId, onlyActive);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -190,12 +161,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid id)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<WorkspaceViewModel> result = await _workspaceService.GetUserWorkspaceByIdAsync(id, loggedOnUserId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -222,13 +187,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> InviteMemberAsync(Guid workspaceId, string email, bool notify)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
-       
             RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspaceId, loggedOnUserId, email, notify);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
@@ -251,12 +209,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspaceId, Guid userId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspaceId, loggedOnUserId, userId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -279,12 +231,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> LeaveWorkspaceAsync(Guid workspaceId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspaceId, loggedOnUserId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -308,12 +254,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> ProcessWorkspaceInvitationAsync(Guid workspaceId, bool reject)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspaceId, loggedOnUserId, reject);
             if (!string.IsNullOrEmpty(result.ExceptionString))
@@ -339,12 +279,6 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> ChangeMemberStatusAsync(Guid workspaceId, Guid userId, RWSUserMembershipStatus status)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(loggedOnUserId, sessionId);
-            if (!string.IsNullOrEmpty(sessionCheckResult.ExceptionString))
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden);
-            }
 
             RServiceResult<bool> result = await _workspaceService.ChangeMemberStatusAsync(workspaceId, loggedOnUserId, userId, status);
             if (!string.IsNullOrEmpty(result.ExceptionString))
