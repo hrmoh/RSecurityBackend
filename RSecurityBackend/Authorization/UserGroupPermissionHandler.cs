@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using RSecurityBackend.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 
 namespace RSecurityBackend.Authorization
@@ -31,7 +30,7 @@ namespace RSecurityBackend.Authorization
             }
 
             //this is the default policy to make sure the use session has not yet been deleted by him/her from another client
-            //or by an addmin (Authorize with no policy should fail on deleted sessions)
+            //or by an admin (Authorize with no policy should fail on deleted sessions)
             if (requirement.SecurableItemShortName == "null"/* && requirement.OperationShortName == "null"*/)
             {
                 RServiceResult<bool> sessionCheckResult = await _appUserService.SessionExists(new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value), new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value));
