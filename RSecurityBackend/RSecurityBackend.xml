@@ -638,10 +638,11 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.UpdateWorkpspaceAsync(RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.UpdateWorkpspaceAsync(System.Guid,RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel)">
             <summary>
             Update workspace
             </summary>
+            <param name="workspace"></param>
             <param name="model"></param>
             <returns></returns>
         </member>

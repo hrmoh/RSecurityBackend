@@ -151,7 +151,18 @@
         {
             get
             {
-                return new SecurableItem[] { };
+                return new SecurableItem[] 
+                {
+                    new SecurableItem()
+                    {
+                        ShortName = WorkpsaceEntityShortName,
+                        Description = "فضاهای کاری",
+                        Operations = new SecurableItemOperation[]
+                        {
+                            new SecurableItemOperation(ModifyOperationShortName, "ایجاد", false),
+                        }
+                    }
+                };
             }
         }
 

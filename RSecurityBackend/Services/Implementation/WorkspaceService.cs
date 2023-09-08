@@ -121,7 +121,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == model.Id && w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner)).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.Where(w => w.Id == model.Id).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found

@@ -63,15 +63,18 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// Update workspace
         /// </summary>
+        /// <param name="workspace"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        [Authorize]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ModifyOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> UpdateWorkpspaceAsync([FromBody] WorkspaceViewModel model)
+        public virtual async Task<IActionResult> UpdateWorkpspaceAsync(Guid workspace, [FromBody] WorkspaceViewModel model)
         {
+            if (model.Id != workspace)
+                return BadRequest("model.Id != workspace");
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             
             RServiceResult<bool> result = await _workspaceService.UpdateWorkpspaceAsync(loggedOnUserId, model);
