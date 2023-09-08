@@ -429,13 +429,15 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     return new RServiceResult<bool>(false, "User does not allow adding him/her to workpsaces");
                 }
-                ws.Members.Add(new RWSUser()
-                {
-                    RAppUserId = user.Id,
-                    Status = RWSUserMembershipStatus.Invited,
-                    InviteDate = DateTime.Now,
-                });
-                _context.Update(ws);
+
+                _context.WorkspaceUserInvitations.Add
+                    (
+                    new WorkspaceUserInvitation()
+                    {
+                        UserId = user.Id,
+                        WorkspaceId = workspaceId,
+                    }
+                    );
                 await _context.SaveChangesAsync();
 
                 if(notifyUser)

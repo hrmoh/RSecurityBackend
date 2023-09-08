@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RSecurityBackend.Models.Cloud
+﻿namespace RSecurityBackend.Models.Cloud
 {
     /// <summary>
     /// User Memnership status
