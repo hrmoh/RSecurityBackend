@@ -51,7 +51,7 @@ namespace RSecurityBackend.Authorization
             {
                 if(httpContext.GetRouteValue("workspaceId") != null)
                 {
-                    workspaceId = (Guid)httpContext.GetRouteValue("workspaceId");
+                    workspaceId = Guid.Parse(httpContext.GetRouteValue("workspaceId").ToString());
                 }
             }
 
