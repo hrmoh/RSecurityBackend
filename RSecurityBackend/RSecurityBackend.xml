@@ -663,11 +663,12 @@
             <remarks>members are invalid</remarks>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserWorkspaceByIdAsync(System.Guid)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserWorkspaceByIdAsync(System.Guid,System.Boolean)">
             <summary>
             get user workspace information (if user is not the owner, owner data is invaid)
             </summary>
             <param name="workspace"></param>
+            <param name="includeMembers"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.InviteMemberAsync(System.Guid,System.String,System.Boolean)">
