@@ -89,6 +89,14 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid inviterId, string email, bool notifyUser);
 
         /// <summary>
+        /// revoke invitation
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> RevokeInvitationAsync(Guid workspaceId, Guid userId);
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>

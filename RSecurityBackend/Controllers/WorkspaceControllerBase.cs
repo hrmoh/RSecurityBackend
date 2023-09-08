@@ -200,6 +200,28 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// revoke member invitation to a workspace
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+
+        [HttpDelete("{workspace}/invite/{userId}")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> RevokeInvitationAsync(Guid workspace, Guid userId)
+        {
+            RServiceResult<bool> result = await _workspaceService.RevokeInvitationAsync(workspace, userId);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
+        }
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspace"></param>

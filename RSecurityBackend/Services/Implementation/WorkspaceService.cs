@@ -455,6 +455,31 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// revoke invitation
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> RevokeInvitationAsync(Guid workspaceId, Guid userId)
+        {
+            try
+            {
+                var invitation = await _context.WorkspaceUserInvitations.Where(i => i.UserId == userId && i.WorkspaceId == workspaceId).FirstOrDefaultAsync();
+                if (invitation == null)
+                {
+                    return new RServiceResult<bool>(false, "User got not invitation.");
+                }
+                _context.Remove(invitation);
+                await _context.SaveChangesAsync();
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>
