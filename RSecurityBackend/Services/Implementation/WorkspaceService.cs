@@ -342,7 +342,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var ws = await _context.RWorkspaces.Include(w => w.Members).Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
+                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
                     return new RServiceResult<bool>(false);//not found
