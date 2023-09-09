@@ -2183,6 +2183,26 @@
             member from
             </summary>
         </member>
+        <member name="T:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceUserInvitationViewModel">
+            <summary>
+            workspace user invitation
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceUserInvitationViewModel.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceUserInvitationViewModel.User">
+            <summary>
+            User
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceUserInvitationViewModel.Workspace">
+            <summary>
+            Workspace
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel">
             <summary>
             Workspace view model
@@ -4329,6 +4349,13 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserInvitationsAsync(System.Guid)">
+            <summary>
+            user invitations
+            </summary>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">
             <summary>
             delete member
@@ -4832,6 +4859,13 @@
             revoke invitation
             </summary>
             <param name="workspaceId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserInvitationsAsync(System.Guid)">
+            <summary>
+            user invitations
+            </summary>
             <param name="userId"></param>
             <returns></returns>
         </member>

@@ -411,6 +411,45 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// user invitations
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetUserInvitationsAsync(Guid userId)
+        {
+            try
+            {
+                var invitations = await _context.WorkspaceUserInvitations.AsNoTracking().Include(i => i.Workspace).Where(i => i.UserId == userId).ToListAsync();
+                List<WorkspaceUserInvitationViewModel> lst = new List<WorkspaceUserInvitationViewModel>();
+
+                foreach (var invitation in invitations)
+                {
+                    lst.Add
+                        (
+                        new WorkspaceUserInvitationViewModel()
+                        {
+                            Id = invitation.Id,
+                            Workspace = new WorkspaceViewModel()
+                            {
+                                Id = invitation.Workspace.Id,
+                                Name = invitation.Workspace.Name,
+                                Description = invitation.Workspace.Description,
+                                CreateDate = invitation.Workspace.CreateDate,
+                                Active = invitation.Workspace.Active,
+                                WokspaceOrder = invitation.Workspace.WokspaceOrder,
+                            }
+                        }
+                        );
+                }
+                return new RServiceResult<WorkspaceUserInvitationViewModel[]>(lst.ToArray());
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<WorkspaceUserInvitationViewModel[]>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>
