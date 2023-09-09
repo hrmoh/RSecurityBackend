@@ -205,6 +205,24 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// user workspace invitations
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet("my/invitations")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceUserInvitationViewModel[]))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public virtual async Task<IActionResult> GetUserInvitationsAsync()
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetUserInvitationsAsync(loggedOnUserId);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            return Ok(result.Result);
+        }
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspace"></param>

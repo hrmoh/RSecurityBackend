@@ -688,6 +688,12 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserInvitationsAsync">
+            <summary>
+            user workspace invitations
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.DeleteMemberAsync(System.Guid,System.Guid)">
             <summary>
             delete member
