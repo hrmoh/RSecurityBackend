@@ -25,9 +25,8 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="name"></param>
         /// <param name="description"></param>
-        /// <param name="isPublic"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description)
         {
             try
             {
@@ -45,7 +44,6 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     Name = name,
                     Description = description,
-                    IsPublic = isPublic,
                     CreateDate = DateTime.Now,
                     Active = true,
                     Members = new List<RWSUser>()
@@ -76,7 +74,6 @@ namespace RSecurityBackend.Services.Implementation
                         Id = ws.Id,
                         Name = ws.Name,
                         Description = ws.Description,
-                        IsPublic = ws.IsPublic,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
@@ -139,7 +136,6 @@ namespace RSecurityBackend.Services.Implementation
 
                 ws.Name = model.Name;
                 ws.Description = model.Description;
-                ws.IsPublic = model.IsPublic;
                 ws.Active = model.Active;
                 ws.WokspaceOrder = model.WokspaceOrder;
 
@@ -206,7 +202,6 @@ namespace RSecurityBackend.Services.Implementation
                        Id = ws.Id,
                        Name = ws.Name,
                        Description = ws.Description,
-                       IsPublic = ws.IsPublic,
                        CreateDate = ws.CreateDate,
                        Active = ws.Active,
                        WokspaceOrder = ws.WokspaceOrder,
@@ -244,7 +239,6 @@ namespace RSecurityBackend.Services.Implementation
                         Id = ws.Id,
                         Name = ws.Name,
                         Description = ws.Description,
-                        IsPublic = ws.IsPublic,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
@@ -276,7 +270,6 @@ namespace RSecurityBackend.Services.Implementation
                         Id = ws.Id,
                         Name = ws.Name,
                         Description = ws.Description,
-                        IsPublic = ws.IsPublic,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,

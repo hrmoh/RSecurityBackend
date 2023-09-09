@@ -14,10 +14,5 @@
         /// description
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// every user has access to it (Users is ignored)
-        /// </summary>
-        public bool IsPublic { get; set; }
     }
 }

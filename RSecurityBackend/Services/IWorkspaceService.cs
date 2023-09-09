@@ -19,9 +19,8 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <param name="name"></param>
         /// <param name="description"></param>
-        /// <param name="isPublic"></param>
         /// <returns></returns>
-        Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, bool isPublic);
+        Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description);
 
         /// <summary>
         /// Update workspace

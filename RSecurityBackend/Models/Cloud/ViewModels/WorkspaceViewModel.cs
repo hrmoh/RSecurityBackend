@@ -39,11 +39,6 @@ namespace RSecurityBackend.Models.Cloud.ViewModels
         public ICollection<RWSUserViewModel> Members { get; set; }
 
         /// <summary>
-        /// every user has access to it (Users is ignored)
-        /// </summary>
-        public bool IsPublic { get; set; }
-
-        /// <summary>
         /// active
         /// </summary>
         public bool Active { get; set; }

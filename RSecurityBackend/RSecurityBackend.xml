@@ -1985,11 +1985,6 @@
             users having access to the workspace
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Cloud.RWorkspace.IsPublic">
-            <summary>
-            every user has access to it (Users is ignored)
-            </summary>
-        </member>
         <member name="P:RSecurityBackend.Models.Cloud.RWorkspace.Active">
             <summary>
             active
@@ -2158,11 +2153,6 @@
             description
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.NewWorkspaceModel.IsPublic">
-            <summary>
-            every user has access to it (Users is ignored)
-            </summary>
-        </member>
         <member name="T:RSecurityBackend.Models.Cloud.ViewModels.RWSUserViewModel">
             <summary>
              Workspace User View Model
@@ -2226,11 +2216,6 @@
         <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.Members">
             <summary>
             users having access to the workspace
-            </summary>
-        </member>
-        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.IsPublic">
-            <summary>
-            every user has access to it (Users is ignored)
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.Active">
@@ -4267,14 +4252,13 @@
             Workspace service implementation
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.AddWorkpspaceAsync(System.Guid,System.String,System.String,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.AddWorkpspaceAsync(System.Guid,System.String,System.String)">
             <summary>
             add workspace
             </summary>
             <param name="userId"></param>
             <param name="name"></param>
             <param name="description"></param>
-            <param name="isPublic"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.UpdateWorkpspaceAsync(System.Guid,RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel)">
@@ -4774,14 +4758,13 @@
             Workspace service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.AddWorkpspaceAsync(System.Guid,System.String,System.String,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.AddWorkpspaceAsync(System.Guid,System.String,System.String)">
             <summary>
             add workspace
             </summary>
             <param name="userId"></param>
             <param name="name"></param>
             <param name="description"></param>
-            <param name="isPublic"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.UpdateWorkpspaceAsync(System.Guid,RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel)">

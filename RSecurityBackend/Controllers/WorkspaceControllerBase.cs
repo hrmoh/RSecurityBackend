@@ -54,7 +54,7 @@ namespace RSecurityBackend.Controllers
                     return StatusCode((int)HttpStatusCode.Forbidden);
                 }
             }
-            RServiceResult<WorkspaceViewModel> result = await _workspaceService.AddWorkpspaceAsync(loggedOnUserId, model.Name, model.Description, model.IsPublic);
+            RServiceResult<WorkspaceViewModel> result = await _workspaceService.AddWorkpspaceAsync(loggedOnUserId, model.Name, model.Description);
             if (result.Result == null)
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);
