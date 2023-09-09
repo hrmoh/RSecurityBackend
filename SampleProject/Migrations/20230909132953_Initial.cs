@@ -106,7 +106,6 @@ namespace SampleProject.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WokspaceOrder = table.Column<int>(type: "int", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsPublic = table.Column<bool>(type: "bit", nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -495,6 +494,30 @@ namespace SampleProject.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "WorkspaceUserInvitations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkspaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkspaceUserInvitations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceUserInvitations_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceUserInvitations_RWorkspaces_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "RWorkspaces",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -607,6 +630,16 @@ namespace SampleProject.Migrations
                 column: "Secret",
                 unique: true,
                 filter: "[Secret] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceUserInvitations_UserId",
+                table: "WorkspaceUserInvitations",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceUserInvitations_WorkspaceId",
+                table: "WorkspaceUserInvitations",
+                column: "WorkspaceId");
         }
 
         /// <inheritdoc />
@@ -667,16 +700,19 @@ namespace SampleProject.Migrations
                 name: "VerifyQueueItems");
 
             migrationBuilder.DropTable(
+                name: "WorkspaceUserInvitations");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "RWSRoles");
 
             migrationBuilder.DropTable(
-                name: "RWorkspaces");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "RWorkspaces");
 
             migrationBuilder.DropTable(
                 name: "GeneralImages");

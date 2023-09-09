@@ -567,9 +567,6 @@ namespace SampleProject.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -579,6 +576,27 @@ namespace SampleProject.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("RWorkspaces");
+                });
+
+            modelBuilder.Entity("RSecurityBackend.Models.Cloud.WorkspaceUserInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("WorkspaceUserInvitations");
                 });
 
             modelBuilder.Entity("RSecurityBackend.Models.Generic.Db.RGenericOption", b =>
@@ -842,6 +860,23 @@ namespace SampleProject.Migrations
                         .HasForeignKey("WorkspaceId");
 
                     b.Navigation("Role");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("RSecurityBackend.Models.Cloud.WorkspaceUserInvitation", b =>
+                {
+                    b.HasOne("RSecurityBackend.Models.Auth.Db.RAppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RSecurityBackend.Models.Cloud.RWorkspace", "Workspace")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId");
 
                     b.Navigation("User");
 
