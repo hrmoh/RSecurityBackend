@@ -450,6 +450,51 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// workspace invitations
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetWorkspaceInvitationsAsync(Guid workspaceId)
+        {
+            try
+            {
+                var invitations = await _context.WorkspaceUserInvitations.AsNoTracking().Include(w => w.Workspace).Where(i => i.WorkspaceId == workspaceId).ToListAsync();
+                List<WorkspaceUserInvitationViewModel> lst = new List<WorkspaceUserInvitationViewModel>();
+
+                foreach (var invitation in invitations)
+                {
+                    lst.Add
+                        (
+                        new WorkspaceUserInvitationViewModel()
+                        {
+                            Id = invitation.Id,
+                            User = new PublicRAppUser()
+                            {
+                                Id = invitation.User.Id,
+                                Username = invitation.User.UserName,
+                                Email = invitation.User.Email,
+                                FirstName = invitation.User.FirstName,
+                                SureName = invitation.User.SureName,
+                                PhoneNumber = invitation.User.PhoneNumber,
+                                RImageId = invitation.User.RImageId,
+                                Status = invitation.User.Status,
+                                NickName = invitation.User.NickName,
+                                Website = invitation.User.Website,
+                                Bio = invitation.User.Bio,
+                                EmailConfirmed = invitation.User.EmailConfirmed
+                            },
+                        }
+                        );
+                }
+                return new RServiceResult<WorkspaceUserInvitationViewModel[]>(lst.ToArray());
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<WorkspaceUserInvitationViewModel[]>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>

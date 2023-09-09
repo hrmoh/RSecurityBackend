@@ -4362,6 +4362,13 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetWorkspaceInvitationsAsync(System.Guid)">
+            <summary>
+            workspace invitations
+            </summary>
+            <param name="workspaceId"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">
             <summary>
             delete member
@@ -4873,6 +4880,13 @@
             user invitations
             </summary>
             <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetWorkspaceInvitationsAsync(System.Guid)">
+            <summary>
+            workspace invitations
+            </summary>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.DeleteMemberAsync(System.Guid,System.Guid)">

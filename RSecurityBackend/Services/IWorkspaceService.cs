@@ -98,6 +98,13 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetUserInvitationsAsync(Guid userId);
 
         /// <summary>
+        /// workspace invitations
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetWorkspaceInvitationsAsync(Guid workspaceId);
+
+        /// <summary>
         /// delete member
         /// </summary>
         /// <param name="workspaceId"></param>
