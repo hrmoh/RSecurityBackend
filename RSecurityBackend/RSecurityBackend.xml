@@ -694,6 +694,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetWorkspaceInvitationsAsync(System.Guid)">
+            <summary>
+            workspace invitations
+            </summary>
+            <param name="workspace"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.DeleteMemberAsync(System.Guid,System.Guid)">
             <summary>
             delete member

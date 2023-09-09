@@ -209,7 +209,7 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <returns></returns>
 
-        [HttpGet("my/invitations")]
+        [HttpGet("invitations/mine")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceUserInvitationViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -217,6 +217,24 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetUserInvitationsAsync(loggedOnUserId);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            return Ok(result.Result);
+        }
+
+        /// <summary>
+        /// workspace invitations
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <returns></returns>
+
+        [HttpGet("{workspace}/invitations")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceUserInvitationViewModel[]))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public virtual async Task<IActionResult> GetWorkspaceInvitationsAsync(Guid workspace)
+        {
+            RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetWorkspaceInvitationsAsync(workspace);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);
