@@ -149,6 +149,13 @@ builder.Services.AddAuthorization(options =>
             options.AddPolicy($"{Item.ShortName}:{Operation.ShortName}", policy => policy.Requirements.Add(new UserGroupPermissionRequirement(Item.ShortName, Operation.ShortName)));
         }
     }
+    foreach (SecurableItem Item in RSecurableItem.WorkspaceItems)
+    {
+        foreach (SecurableItemOperation Operation in Item.Operations)
+        {
+            options.AddPolicy($"{Item.ShortName}:{Operation.ShortName}", policy => policy.Requirements.Add(new UserGroupPermissionRequirement(Item.ShortName, Operation.ShortName)));
+        }
+    }
 });
 
 builder.Services.AddSwaggerGen(c =>

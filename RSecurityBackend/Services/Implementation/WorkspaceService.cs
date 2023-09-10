@@ -59,7 +59,7 @@ namespace RSecurityBackend.Services.Implementation
                 };
                 _context.Add(ws);
                 await _context.SaveChangesAsync();
-                await _rolesService.AddRole
+                var roleCreationResult = await _rolesService.AddRole
                     (
                     new RWSRole()
                     {
@@ -67,6 +67,12 @@ namespace RSecurityBackend.Services.Implementation
                         Description = "Admin Role (Owners + Moderators)",
                     }
                     );
+                if (!string.IsNullOrEmpty(roleCreationResult.ExceptionString))
+                    return new RServiceResult<WorkspaceViewModel>(null, roleCreationResult.ExceptionString);
+
+                var roleAssignmentResult =  await AddUserToRoleInWorkspaceAsync(ws.Id, userId, _rolesService.AdministratorRoleName);
+                if (!string.IsNullOrEmpty(roleAssignmentResult.ExceptionString))
+                    return new RServiceResult<WorkspaceViewModel>(null, roleAssignmentResult.ExceptionString);
                 return new RServiceResult<WorkspaceViewModel>
                     (
                     new WorkspaceViewModel()
@@ -234,7 +240,6 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = null,
                     }
                     );
             }
@@ -249,9 +254,8 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="id"></param>
         /// <param name="userId"></param>
-        /// <param name="includeMembers"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId, bool includeMembers)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
         {
             try
             {
@@ -265,28 +269,6 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = includeMembers == false ? null : ws.Members.Where(m => m.RAppUserId == userId).Select(m => new RWSUserViewModel()
-                        {
-                            Id = m.Id,
-                            RAppUser = new PublicRAppUser()
-                            {
-                                Id = m.RAppUser.Id,
-                                Username = m.RAppUser.UserName,
-                                Email = m.RAppUser.Email,
-                                FirstName = m.RAppUser.FirstName,
-                                SureName = m.RAppUser.SureName,
-                                PhoneNumber = m.RAppUser.PhoneNumber,
-                                RImageId = m.RAppUser.RImageId,
-                                Status = m.RAppUser.Status,
-                                NickName = m.RAppUser.NickName,
-                                Website = m.RAppUser.Website,
-                                Bio = m.RAppUser.Bio,
-                                EmailConfirmed = m.RAppUser.EmailConfirmed
-                            },
-                            Status = m.Status,
-                            InviteDate = m.InviteDate,
-                            MemberFrom = m.MemberFrom,
-                        }).ToArray(),
                     });
             }
             catch (Exception exp)
@@ -856,7 +838,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 foreach (string role in roles.Result)
                 {
-                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(role, securableItemShortName, operationShortName);
+                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItemShortName, operationShortName);
                     if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
                         return new RServiceResult<bool>(false, hasPermission.ExceptionString);
                     if (hasPermission.Result)
@@ -910,7 +892,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     foreach (string role in roles.Result)
                     {
-                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(role, securableItem.ShortName, operation.ShortName);
+                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItem.ShortName, operation.ShortName);
                         if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
                             return new RServiceResult<SecurableItem[]>(null, hasPermission.ExceptionString);
                         if (isAdmin || hasPermission.Result)

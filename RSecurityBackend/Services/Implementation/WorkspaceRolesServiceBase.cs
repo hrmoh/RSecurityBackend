@@ -24,12 +24,13 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// returns all user roles
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RWSRole[]>> GetAllRoles()
+        public async Task<RServiceResult<RWSRole[]>> GetAllRoles(Guid workspaceId)
         {
             try
             {
-                return new RServiceResult<RWSRole[]>(await _context.RWSRoles.AsNoTracking().Include(r => r.Permissions).ToArrayAsync());
+                return new RServiceResult<RWSRole[]>(await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId).Include(r => r.Permissions).ToArrayAsync());
             }
             catch (Exception exp)
             {
@@ -40,11 +41,12 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// find role by name
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public async Task<RWSRole> FindByNameAsync(string name)
+        public async Task<RWSRole> FindByNameAsync(Guid workspaceId, string name)
         {
-            return await _context.RWSRoles.AsNoTracking().Where(r => r.Name == name).FirstOrDefaultAsync();
+            return await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId && r.Name == name).FirstOrDefaultAsync();
         }
 
 
@@ -52,12 +54,13 @@ namespace RSecurityBackend.Services.Implementation
         /// returns user role information
         /// </summary>       
         /// <param name="roleName"></param>        
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RWSRole>> GetRoleInformation(string roleName)
+        public async Task<RServiceResult<RWSRole>> GetRoleInformation( Guid workspaceId, string roleName)
         {
             try
             {
-                return new RServiceResult<RWSRole>(await FindByNameAsync(roleName));
+                return new RServiceResult<RWSRole>(await FindByNameAsync(workspaceId, roleName));
             }
             catch (Exception exp)
             {
@@ -70,12 +73,13 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// modify existing user role
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <param name="updateRoleInfo"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> ModifyRole(string roleName, RWSRole updateRoleInfo)
+        public async Task<RServiceResult<bool>> ModifyRole(Guid workspaceId, string roleName, RWSRole updateRoleInfo)
         {
-            RWSRole existingInfo = await _context.RWSRoles.Where(r => r.Name == roleName).FirstOrDefaultAsync();
+            RWSRole existingInfo = await _context.RWSRoles.Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).FirstOrDefaultAsync();
             if (existingInfo == null)
             {
                 return new RServiceResult<bool>(false, "role not found");
@@ -83,7 +87,7 @@ namespace RSecurityBackend.Services.Implementation
             if (existingInfo.Name != updateRoleInfo.Name)
             {
 
-                RWSRole anotherWithSameName = await _context.RWSRoles.AsNoTracking().Where(g => g.Name == updateRoleInfo.Name && g.Id != existingInfo.Id).SingleOrDefaultAsync();
+                RWSRole anotherWithSameName = await _context.RWSRoles.AsNoTracking().Where(g => g.WorkspaceId == workspaceId && g.Name == updateRoleInfo.Name && g.Id != existingInfo.Id).SingleOrDefaultAsync();
 
                 if (anotherWithSameName != null)
                 {
@@ -101,11 +105,12 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// delete user role
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <returns>true if succeeds</returns>
-        public async Task<RServiceResult<bool>> DeleteRole(string roleName)
+        public async Task<RServiceResult<bool>> DeleteRole(Guid workspaceId, string roleName)
         {
-            RWSRole existingInfo = await _context.RWSRoles.Where(r => r.Name == roleName).FirstOrDefaultAsync();
+            RWSRole existingInfo = await _context.RWSRoles.Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).FirstOrDefaultAsync();
             if (existingInfo != null)
             {
                 _context.Remove(existingInfo);
@@ -123,7 +128,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <returns>update user role info (id)</returns>
         public async Task<RServiceResult<RWSRole>> AddRole(RWSRole newRoleInfo)
         {
-            RWSRole existingRole = await FindByNameAsync(newRoleInfo.Name);
+            RWSRole existingRole = await FindByNameAsync((Guid)newRoleInfo.WorkspaceId, newRoleInfo.Name);
             if (existingRole != null)
             {
                 return new RServiceResult<RWSRole>(null, "Role name is in use");
@@ -136,13 +141,14 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// Has role specified permission
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <param name="securableItemShortName"></param>
         /// <param name="operationShortName"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> HasPermission(string roleName, string securableItemShortName, string operationShortName)
+        public async Task<RServiceResult<bool>> HasPermission(Guid workspaceId, string roleName, string securableItemShortName, string operationShortName)
         {
-            RWSRole roleByName = await FindByNameAsync(roleName);
+            RWSRole roleByName = await FindByNameAsync(workspaceId, roleName);
             if (roleByName == null)
             {
                 return new RServiceResult<bool>(false, "role not found");
@@ -163,14 +169,15 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// roles having specific permission
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="securableItemShortName"></param>
         /// <param name="operationShortName"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RWSRole[]>> GetRolesHavingPermission(string securableItemShortName, string operationShortName)
+        public async Task<RServiceResult<RWSRole[]>> GetRolesHavingPermission(Guid workspaceId, string securableItemShortName, string operationShortName)
         {
             RWSRole[] rolesInfo = await _context.RWSRoles.AsNoTracking()
                                                         .Include(r => r.Permissions)
-                                                        .Where(r => r.Name == AdministratorRoleName || r.Permissions.Any(p => p.SecurableItemShortName == securableItemShortName && p.OperationShortName == operationShortName))
+                                                        .Where(r => r.WorkspaceId == workspaceId && (r.Name == AdministratorRoleName || r.Permissions.Any(p => p.SecurableItemShortName == securableItemShortName && p.OperationShortName == operationShortName)))
                                                         .ToArrayAsync();
             return new RServiceResult<RWSRole[]>(rolesInfo);
         }
@@ -187,11 +194,12 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// Lists role permissions
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<SecurableItem[]>> GetRoleSecurableItemsStatus(string roleName)
+        public async Task<RServiceResult<SecurableItem[]>> GetRoleSecurableItemsStatus(Guid workspaceId, string roleName)
         {
-            RWSRole roleByName = await FindByNameAsync(roleName);
+            RWSRole roleByName = await FindByNameAsync(workspaceId, roleName);
             if (roleByName == null)
             {
                 return new RServiceResult<SecurableItem[]>(null, "role not found");
@@ -227,12 +235,13 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// Saves role permissions
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <param name="securableItems"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<bool>> SetRoleSecurableItemsStatus(string roleName, SecurableItem[] securableItems)
+        public async Task<RServiceResult<bool>> SetRoleSecurableItemsStatus(Guid workspaceId, string roleName, SecurableItem[] securableItems)
         {
-            RWSRole roleByName = await FindByNameAsync(roleName);
+            RWSRole roleByName = await FindByNameAsync(workspaceId, roleName);
             if (roleByName == null)
             {
                 return new RServiceResult<bool>(false, "role not found");

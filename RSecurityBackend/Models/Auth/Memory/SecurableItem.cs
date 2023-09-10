@@ -30,6 +30,10 @@
         /// </summary>
         public const string WorkpsaceEntityShortName = "workspace";
 
+        /// <summary>
+        /// worspace role
+        /// </summary>
+        public const string WorkspaceRoleEntityShortName = "wsrole";
 
         /// <summary>
         /// view
@@ -182,7 +186,19 @@
                             new SecurableItemOperation(ChangeMemberRoleShortName, "تغییر نقش عضو", false),
                             
                         }
-                    }
+                    },
+                     new SecurableItem()
+                    {
+                        ShortName = WorkspaceRoleEntityShortName,
+                        Description = "نقش‌های فضای کاری",
+                        Operations = new SecurableItemOperation[]
+                        {
+                            new SecurableItemOperation(ViewOperationShortName, "مشاهده", false),
+                            new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
+                            new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false),
+                            new SecurableItemOperation(DeleteOperationShortName, "حذف", false),
+                        }
+                    },
                 };
             }
         }

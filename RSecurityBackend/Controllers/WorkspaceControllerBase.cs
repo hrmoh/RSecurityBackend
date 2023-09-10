@@ -135,21 +135,20 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
-        /// get user workspace information (if user is not the owner, owner data is invaid)
+        /// get user workspace information
         /// </summary>
         /// <param name="workspace"></param>
-        /// <param name="includeMembers"></param>
         /// <returns></returns>
         [HttpGet("{workspace}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid workspace, bool includeMembers = false)
+        public virtual async Task<IActionResult> GetUserWorkspaceByIdAsync(Guid workspace)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<WorkspaceViewModel> result = await _workspaceService.GetUserWorkspaceByIdAsync(workspace, loggedOnUserId, includeMembers);
+            RServiceResult<WorkspaceViewModel> result = await _workspaceService.GetUserWorkspaceByIdAsync(workspace, loggedOnUserId);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
 
