@@ -279,6 +279,52 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// get workspace members
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<RWSUserViewModel[]>> GetWorkspaceMembersAsync(Guid workspaceId)
+        {
+            try
+            {
+                var m = await _context.RWSUsers.AsNoTracking().Include(r => r.RAppUser).Where(r => r.RWorkspaceId == workspaceId).ToListAsync();
+                List<RWSUserViewModel> members = new List<RWSUserViewModel>();
+                foreach (var item in m)
+                {
+                    members.Add
+                        (
+                        new RWSUserViewModel()
+                        {
+                            Id = item.Id,
+                            RAppUser = new PublicRAppUser()
+                            {
+                                Id = item.RAppUser.Id,
+                                Username = item.RAppUser.UserName,
+                                Email = item.RAppUser.Email,
+                                FirstName = item.RAppUser.FirstName,
+                                SureName = item.RAppUser.SureName,
+                                PhoneNumber = item.RAppUser.PhoneNumber,
+                                RImageId = item.RAppUser.RImageId,
+                                Status = item.RAppUser.Status,
+                                NickName = item.RAppUser.NickName,
+                                Website = item.RAppUser.Website,
+                                Bio = item.RAppUser.Bio,
+                                EmailConfirmed = item.RAppUser.EmailConfirmed
+                            },
+                            InviteDate = item.InviteDate,
+                            Status = item.Status,
+                        }
+                        );
+                }
+                return new RServiceResult<RWSUserViewModel[]>(members.ToArray());
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<RWSUserViewModel[]>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
         /// is user workspace member
         /// </summary>
         /// <param name="workspaceId"></param>

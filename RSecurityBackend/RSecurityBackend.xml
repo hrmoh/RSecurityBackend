@@ -723,6 +723,13 @@
             <param name="reject"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members
+            </summary>
+            <param name="workspace"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.ChangeMemberStatusAsync(System.Guid,System.Guid,RSecurityBackend.Models.Cloud.RWSUserMembershipStatus)">
             <summary>
             change member status
@@ -4358,6 +4365,13 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members
+            </summary>
+            <param name="workspaceId"></param>
+            <returns></returns>
+        </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">
             <summary>
             is user workspace member
@@ -4884,6 +4898,13 @@
             </summary>
             <param name="id"></param>
             <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members
+            </summary>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">

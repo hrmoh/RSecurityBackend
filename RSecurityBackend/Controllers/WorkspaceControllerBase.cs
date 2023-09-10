@@ -305,6 +305,23 @@ namespace RSecurityBackend.Controllers
             return Ok(result.Result);
         }
 
+        /// <summary>
+        /// get workspace members
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <returns></returns>
+        [HttpGet("{workspace}/member")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWSUserViewModel[]))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public virtual async Task<IActionResult> GetWorkspaceMembersAsync(Guid workspace)
+        {
+            RServiceResult<RWSUserViewModel[]> result = await _workspaceService.GetWorkspaceMembersAsync(workspace);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            return Ok(result.Result);
+        }
+
 
         /// <summary>
         /// change member status
