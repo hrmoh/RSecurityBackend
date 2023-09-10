@@ -317,7 +317,11 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<bool>(false);//not found
                 }
                 var user = await _userManager.FindByEmailAsync(email);
-                if (ws.Members.Any(m => m.RAppUserId == user.Id))
+                if(user == null)
+                {
+                    return new RServiceResult<bool>(false, "User not found");
+                }
+                if (true == await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == user.Id && u.RWorkspaceId == workspaceId).AnyAsync())
                 {
                     return new RServiceResult<bool>(false, "User is already a member.");
                 }
