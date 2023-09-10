@@ -63,6 +63,7 @@ namespace RSecurityBackend.Services.Implementation
                     (
                     new RWSRole()
                     {
+                        WorkspaceId = ws.Id,
                         Name = _rolesService.AdministratorRoleName,
                         Description = "Admin Role (Owners + Moderators)",
                     }
