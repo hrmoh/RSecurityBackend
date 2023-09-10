@@ -9,6 +9,7 @@ using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -972,6 +973,14 @@ namespace RSecurityBackend.Services.Implementation
         public virtual bool AllowInvitingUsersToWorkspacesByDefault
         { 
             get { return true; } 
+        }
+
+        /// <summary>
+        /// restrict worpspace members query
+        /// </summary>
+        public virtual bool RestrictWorkspaceMembersQueryToAuthorizarion
+        {
+            get { return false; }
         }
 
         /// <summary>

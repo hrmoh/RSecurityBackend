@@ -21,7 +21,7 @@ namespace RSecurityBackend.Controllers
     public abstract class WorkspaceControllerBase : Controller
     {
         /// <summary>
-        /// add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding)
+        /// add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding to look at workspace:add )
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -306,7 +306,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// get workspace members
+        /// get workspace members (if RestrictWorkspaceMembersQueryToAuthorizarion returns true looks at workspace:vumembers)
         /// </summary>
         /// <param name="workspace"></param>
         /// <returns></returns>
@@ -316,6 +316,28 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> GetWorkspaceMembersAsync(Guid workspace)
         {
+            if(_workspaceService.RestrictWorkspaceMembersQueryToAuthorizarion)
+            {
+                Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+                Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+                RServiceResult<bool>
+                    canAdd =
+                        await _userPermissionChecker.Check
+                            (
+                                loggedOnUserId,
+                                sessionId,
+                                SecurableItem.WorkpsaceEntityShortName,
+                                SecurableItem.QueryMembersListOperationShortName
+                                );
+                if (!string.IsNullOrEmpty(canAdd.ExceptionString))
+                {
+                    return BadRequest(canAdd.ExceptionString);
+                }
+                if (canAdd.Result == false)
+                {
+                    return StatusCode((int)HttpStatusCode.Forbidden);
+                }
+            }
             RServiceResult<RWSUserViewModel[]> result = await _workspaceService.GetWorkspaceMembersAsync(workspace);
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);

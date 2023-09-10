@@ -633,7 +633,7 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.AddWorkpspaceAsync(RSecurityBackend.Models.Cloud.ViewModels.NewWorkspaceModel)">
             <summary>
-            add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding)
+            add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding to look at workspace:add )
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -725,7 +725,7 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetWorkspaceMembersAsync(System.Guid)">
             <summary>
-            get workspace members
+            get workspace members (if RestrictWorkspaceMembersQueryToAuthorizarion returns true looks at workspace:vumembers)
             </summary>
             <param name="workspace"></param>
             <returns></returns>
@@ -1473,6 +1473,11 @@
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ChangeMemberRoleShortName">
             <summary>
             modify member role
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.QueryMembersListOperationShortName">
+            <summary>
+            view members
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Items">
@@ -4519,6 +4524,11 @@
             allow inviting users to workspaces by default
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Services.Implementation.WorkspaceService.RestrictWorkspaceMembersQueryToAuthorizarion">
+            <summary>
+            restrict worpspace members query
+            </summary>
+        </member>
         <member name="F:RSecurityBackend.Services.Implementation.WorkspaceService._context">
             <summary>
             Database Context
@@ -5052,6 +5062,11 @@
         <member name="P:RSecurityBackend.Services.IWorkspaceService.AllowInvitingUsersToWorkspacesByDefault">
             <summary>
             allow inviting users to workspaces by default
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Services.IWorkspaceService.RestrictWorkspaceMembersQueryToAuthorizarion">
+            <summary>
+            restrict worpspace members query
             </summary>
         </member>
         <member name="T:RSecurityBackend.Utilities.AuditNetEnvironmentSkippingContractResolver">

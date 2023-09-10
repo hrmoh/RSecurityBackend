@@ -83,6 +83,10 @@
         /// modify member role
         /// </summary>
         public const string ChangeMemberRoleShortName = "wsuserrole";
+        /// <summary>
+        /// view members
+        /// </summary>
+        public const string QueryMembersListOperationShortName = "vumembers";
 
 
 
@@ -184,6 +188,7 @@
                             new SecurableItemOperation(RemoveMembersOperationShortName, "حذف عضو", false),
                             new SecurableItemOperation(ChangeMemberStatusOperationShortName, "تغییر وضعیت عضو", false),
                             new SecurableItemOperation(ChangeMemberRoleShortName, "تغییر نقش عضو", false),
+                            new SecurableItemOperation(QueryMembersListOperationShortName, "مشاهدهٔ فهرست اعضا", false),
                             
                         }
                     },
