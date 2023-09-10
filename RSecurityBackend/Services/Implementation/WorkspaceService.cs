@@ -189,13 +189,32 @@ namespace RSecurityBackend.Services.Implementation
             {
                 var userWorkspaces = await _context.RWSUsers.AsNoTracking().
                                         Where(u => u.RAppUserId == userId).ToArrayAsync();
-                var workspaces = await _context.RWorkspaces.AsNoTracking()
-                            .Where(w => userWorkspaces.Any(u => u.RWorkspaceId == w.Id 
-                            && (!onlyMember || u.Status == RWSUserMembershipStatus.Member)
-                            && (!onlyOwned || u.Status == RWSUserMembershipStatus.Owner)
-                            ) &&  (onlyActive == false || w.Active == true))
-                            .OrderBy(w => w.WokspaceOrder)
-                            .ToArrayAsync();
+                var idArray = userWorkspaces.Select(w => w.Id).ToArray();
+
+                var workspacesUnfiltered = await _context.RWorkspaces.AsNoTracking().Where(w => idArray.Contains(w.Id)).ToArrayAsync();
+
+                List<RWorkspace> workspaces = new List<RWorkspace>();
+                foreach (var workspace in workspacesUnfiltered)
+                {
+                    if(onlyActive)
+                    {
+                        if (workspace.Active == false)
+                            continue;
+                    }
+                    if(onlyOwned)
+                    {
+                        if (!userWorkspaces.Any(u => u.RWorkspaceId == workspace.Id && u.Status == RWSUserMembershipStatus.Owner))
+                            continue;
+                    }
+                    if(onlyMember)
+                    {
+                        if (!userWorkspaces.Any(u => u.RWorkspaceId == workspace.Id && u.Status == RWSUserMembershipStatus.Member))
+                            continue;
+                    }
+                    workspaces.Add(workspace);
+                }
+
+                
                 return new RServiceResult<WorkspaceViewModel[]>(
                    workspaces.Select(ws => new WorkspaceViewModel()
                    {
