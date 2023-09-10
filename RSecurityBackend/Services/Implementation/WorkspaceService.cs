@@ -77,28 +77,6 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = ws.Members.Select(m => new RWSUserViewModel()
-                        {
-                            Id = m.Id,
-                            RAppUser = new PublicRAppUser()
-                            {
-                                Id = m.RAppUser.Id,
-                                Username = m.RAppUser.UserName,
-                                Email = m.RAppUser.Email,
-                                FirstName = m.RAppUser.FirstName,
-                                SureName = m.RAppUser.SureName,
-                                PhoneNumber = m.RAppUser.PhoneNumber,
-                                RImageId = m.RAppUser.RImageId,
-                                Status = m.RAppUser.Status,
-                                NickName = m.RAppUser.NickName,
-                                Website = m.RAppUser.Website,
-                                Bio = m.RAppUser.Bio,
-                                EmailConfirmed = m.RAppUser.EmailConfirmed
-                            },
-                            Status = m.Status,
-                            InviteDate = m.InviteDate,
-                            MemberFrom = m.MemberFrom,
-                        }).ToArray(),
                     }
                     );
             }
@@ -187,9 +165,11 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
+                if (onlyMember && onlyOwned)
+                    return new RServiceResult<WorkspaceViewModel[]>(null, "onlyMember && onlyOwned");
                 var userWorkspaces = await _context.RWSUsers.AsNoTracking().
                                         Where(u => u.RAppUserId == userId).ToArrayAsync();
-                var idArray = userWorkspaces.Select(w => w.Id).ToArray();
+                var idArray = userWorkspaces.Select(w => w.RWorkspaceId).ToArray();
 
                 var workspacesUnfiltered = await _context.RWorkspaces.AsNoTracking().Where(w => idArray.Contains(w.Id)).ToArrayAsync();
 
@@ -224,13 +204,6 @@ namespace RSecurityBackend.Services.Implementation
                        CreateDate = ws.CreateDate,
                        Active = ws.Active,
                        WokspaceOrder = ws.WokspaceOrder,
-                       Members = ws.Members.Select(m => new RWSUserViewModel()
-                       {
-                           Id = m.Id,
-                           Status = m.Status,
-                           InviteDate = m.InviteDate,
-                           MemberFrom = m.MemberFrom,
-                       }).ToArray(),
                    }).ToArray()
                     );
             }

@@ -122,7 +122,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive, bool onlyOwned, bool onlyMember)
+        public virtual async Task<IActionResult> GetMemberWorkspacesAsync(bool onlyActive = true, bool onlyOwned = false, bool onlyMember = true)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
