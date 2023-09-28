@@ -135,7 +135,7 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
-        /// get user workspace information (if user is not the owner, owner data is invaid)
+        /// get user workspace information
         /// </summary>
         /// <param name="workspace"></param>
         /// <param name="includeMembers"></param>
