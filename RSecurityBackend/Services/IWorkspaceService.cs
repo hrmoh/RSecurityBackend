@@ -60,9 +60,15 @@ namespace RSecurityBackend.Services
         /// </summary>
         /// <param name="id"></param>
         /// <param name="userId"></param>
-        /// <param name="includeMembers"></param>
         /// <returns></returns>
-        Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId, bool includeMembers);
+        Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId);
+
+        /// <summary>
+        /// get workspace members
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<RWSUserViewModel[]>> GetWorkspaceMembersAsync(Guid workspaceId);
 
         /// <summary>
         /// is user workspace member
@@ -210,5 +216,10 @@ namespace RSecurityBackend.Services
         /// allow inviting users to workspaces by default
         /// </summary>
         bool AllowInvitingUsersToWorkspacesByDefault { get; }
+
+        /// <summary>
+        /// restrict worpspace members query
+        /// </summary>
+        bool RestrictWorkspaceMembersQueryToAuthorizarion { get; }
     }
 }

@@ -12,7 +12,7 @@ using SampleProject.DbContext;
 namespace SampleProject.Migrations
 {
     [DbContext(typeof(RDbContext))]
-    [Migration("20230909132953_Initial")]
+    [Migration("20230910082325_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -494,7 +494,12 @@ namespace SampleProject.Migrations
                     b.Property<string>("NormalizedName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("RWSRoles");
                 });
@@ -831,6 +836,15 @@ namespace SampleProject.Migrations
                     b.HasOne("RSecurityBackend.Models.Cloud.RWSRole", null)
                         .WithMany("Permissions")
                         .HasForeignKey("RWSRoleId");
+                });
+
+            modelBuilder.Entity("RSecurityBackend.Models.Cloud.RWSRole", b =>
+                {
+                    b.HasOne("RSecurityBackend.Models.Cloud.RWorkspace", "Workspace")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("RSecurityBackend.Models.Cloud.RWSUser", b =>

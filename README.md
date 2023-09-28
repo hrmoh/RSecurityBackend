@@ -8,6 +8,10 @@ As a real and working client application you may check the RMuseum project at [G
 # Note
 If you are upgrading from a version prior to 1.2.2 you should add these additional lines to your program.cs:
 
+//workspace service
+
 builder.Services.AddTransient<IWorkspaceService, WorkspaceService>();
 
-builder.Services.AddTransient<IWorkspaceRolesService, WorkspaceRolesService>();
+//workspace role service (you actually need to derive your own class from WorkspaceRolesServiceBase to have you own GetSecurableItems)
+
+builder.Services.AddTransient<IWorkspaceRolesService, WorkspaceRolesServiceBase>();

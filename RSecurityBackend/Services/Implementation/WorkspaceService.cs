@@ -9,6 +9,7 @@ using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,14 +60,21 @@ namespace RSecurityBackend.Services.Implementation
                 };
                 _context.Add(ws);
                 await _context.SaveChangesAsync();
-                await _rolesService.AddRole
+                var roleCreationResult = await _rolesService.AddRole
                     (
                     new RWSRole()
                     {
+                        WorkspaceId = ws.Id,
                         Name = _rolesService.AdministratorRoleName,
                         Description = "Admin Role (Owners + Moderators)",
                     }
                     );
+                if (!string.IsNullOrEmpty(roleCreationResult.ExceptionString))
+                    return new RServiceResult<WorkspaceViewModel>(null, roleCreationResult.ExceptionString);
+
+                var roleAssignmentResult =  await AddUserToRoleInWorkspaceAsync(ws.Id, userId, _rolesService.AdministratorRoleName);
+                if (!string.IsNullOrEmpty(roleAssignmentResult.ExceptionString))
+                    return new RServiceResult<WorkspaceViewModel>(null, roleAssignmentResult.ExceptionString);
                 return new RServiceResult<WorkspaceViewModel>
                     (
                     new WorkspaceViewModel()
@@ -77,28 +85,6 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = ws.Members.Select(m => new RWSUserViewModel()
-                        {
-                            Id = m.Id,
-                            RAppUser = new PublicRAppUser()
-                            {
-                                Id = m.RAppUser.Id,
-                                Username = m.RAppUser.UserName,
-                                Email = m.RAppUser.Email,
-                                FirstName = m.RAppUser.FirstName,
-                                SureName = m.RAppUser.SureName,
-                                PhoneNumber = m.RAppUser.PhoneNumber,
-                                RImageId = m.RAppUser.RImageId,
-                                Status = m.RAppUser.Status,
-                                NickName = m.RAppUser.NickName,
-                                Website = m.RAppUser.Website,
-                                Bio = m.RAppUser.Bio,
-                                EmailConfirmed = m.RAppUser.EmailConfirmed
-                            },
-                            Status = m.Status,
-                            InviteDate = m.InviteDate,
-                            MemberFrom = m.MemberFrom,
-                        }).ToArray(),
                     }
                     );
             }
@@ -187,15 +173,36 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
+                if (onlyMember && onlyOwned)
+                    return new RServiceResult<WorkspaceViewModel[]>(null, "onlyMember && onlyOwned");
                 var userWorkspaces = await _context.RWSUsers.AsNoTracking().
                                         Where(u => u.RAppUserId == userId).ToArrayAsync();
-                var workspaces = await _context.RWorkspaces.AsNoTracking()
-                            .Where(w => userWorkspaces.Any(u => u.RWorkspaceId == w.Id 
-                            && (!onlyMember || u.Status == RWSUserMembershipStatus.Member)
-                            && (!onlyOwned || u.Status == RWSUserMembershipStatus.Owner)
-                            ) &&  (onlyActive == false || w.Active == true))
-                            .OrderBy(w => w.WokspaceOrder)
-                            .ToArrayAsync();
+                var idArray = userWorkspaces.Select(w => w.RWorkspaceId).ToArray();
+
+                var workspacesUnfiltered = await _context.RWorkspaces.AsNoTracking().Where(w => idArray.Contains(w.Id)).ToArrayAsync();
+
+                List<RWorkspace> workspaces = new List<RWorkspace>();
+                foreach (var workspace in workspacesUnfiltered)
+                {
+                    if(onlyActive)
+                    {
+                        if (workspace.Active == false)
+                            continue;
+                    }
+                    if(onlyOwned)
+                    {
+                        if (!userWorkspaces.Any(u => u.RWorkspaceId == workspace.Id && u.Status == RWSUserMembershipStatus.Owner))
+                            continue;
+                    }
+                    if(onlyMember)
+                    {
+                        if (!userWorkspaces.Any(u => u.RWorkspaceId == workspace.Id && u.Status == RWSUserMembershipStatus.Member))
+                            continue;
+                    }
+                    workspaces.Add(workspace);
+                }
+
+                
                 return new RServiceResult<WorkspaceViewModel[]>(
                    workspaces.Select(ws => new WorkspaceViewModel()
                    {
@@ -205,13 +212,6 @@ namespace RSecurityBackend.Services.Implementation
                        CreateDate = ws.CreateDate,
                        Active = ws.Active,
                        WokspaceOrder = ws.WokspaceOrder,
-                       Members = ws.Members.Select(m => new RWSUserViewModel()
-                       {
-                           Id = m.Id,
-                           Status = m.Status,
-                           InviteDate = m.InviteDate,
-                           MemberFrom = m.MemberFrom,
-                       }).ToArray(),
                    }).ToArray()
                     );
             }
@@ -242,7 +242,6 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = null,
                     }
                     );
             }
@@ -257,9 +256,8 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="id"></param>
         /// <param name="userId"></param>
-        /// <param name="includeMembers"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId, bool includeMembers)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
         {
             try
             {
@@ -273,33 +271,57 @@ namespace RSecurityBackend.Services.Implementation
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
                         WokspaceOrder = ws.WokspaceOrder,
-                        Members = includeMembers == false ? null : ws.Members.Where(m => m.RAppUserId == userId).Select(m => new RWSUserViewModel()
-                        {
-                            Id = m.Id,
-                            RAppUser = new PublicRAppUser()
-                            {
-                                Id = m.RAppUser.Id,
-                                Username = m.RAppUser.UserName,
-                                Email = m.RAppUser.Email,
-                                FirstName = m.RAppUser.FirstName,
-                                SureName = m.RAppUser.SureName,
-                                PhoneNumber = m.RAppUser.PhoneNumber,
-                                RImageId = m.RAppUser.RImageId,
-                                Status = m.RAppUser.Status,
-                                NickName = m.RAppUser.NickName,
-                                Website = m.RAppUser.Website,
-                                Bio = m.RAppUser.Bio,
-                                EmailConfirmed = m.RAppUser.EmailConfirmed
-                            },
-                            Status = m.Status,
-                            InviteDate = m.InviteDate,
-                            MemberFrom = m.MemberFrom,
-                        }).ToArray(),
                     });
             }
             catch (Exception exp)
             {
                 return new RServiceResult<WorkspaceViewModel>(null, exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// get workspace members
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<RWSUserViewModel[]>> GetWorkspaceMembersAsync(Guid workspaceId)
+        {
+            try
+            {
+                var m = await _context.RWSUsers.AsNoTracking().Include(r => r.RAppUser).Where(r => r.RWorkspaceId == workspaceId).ToListAsync();
+                List<RWSUserViewModel> members = new List<RWSUserViewModel>();
+                foreach (var item in m)
+                {
+                    members.Add
+                        (
+                        new RWSUserViewModel()
+                        {
+                            Id = item.Id,
+                            RAppUser = new PublicRAppUser()
+                            {
+                                Id = item.RAppUser.Id,
+                                Username = item.RAppUser.UserName,
+                                Email = item.RAppUser.Email,
+                                FirstName = item.RAppUser.FirstName,
+                                SureName = item.RAppUser.SureName,
+                                PhoneNumber = item.RAppUser.PhoneNumber,
+                                RImageId = item.RAppUser.RImageId,
+                                Status = item.RAppUser.Status,
+                                NickName = item.RAppUser.NickName,
+                                Website = item.RAppUser.Website,
+                                Bio = item.RAppUser.Bio,
+                                EmailConfirmed = item.RAppUser.EmailConfirmed
+                            },
+                            InviteDate = item.InviteDate,
+                            Status = item.Status,
+                        }
+                        );
+                }
+                return new RServiceResult<RWSUserViewModel[]>(members.ToArray());
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<RWSUserViewModel[]>(null, exp.ToString());
             }
         }
 
@@ -342,7 +364,11 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<bool>(false);//not found
                 }
                 var user = await _userManager.FindByEmailAsync(email);
-                if (ws.Members.Any(m => m.RAppUserId == user.Id))
+                if(user == null)
+                {
+                    return new RServiceResult<bool>(false, "User not found");
+                }
+                if (true == await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == user.Id && u.RWorkspaceId == workspaceId).AnyAsync())
                 {
                     return new RServiceResult<bool>(false, "User is already a member.");
                 }
@@ -864,7 +890,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 foreach (string role in roles.Result)
                 {
-                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(role, securableItemShortName, operationShortName);
+                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItemShortName, operationShortName);
                     if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
                         return new RServiceResult<bool>(false, hasPermission.ExceptionString);
                     if (hasPermission.Result)
@@ -918,7 +944,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     foreach (string role in roles.Result)
                     {
-                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(role, securableItem.ShortName, operation.ShortName);
+                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItem.ShortName, operation.ShortName);
                         if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
                             return new RServiceResult<SecurableItem[]>(null, hasPermission.ExceptionString);
                         if (isAdmin || hasPermission.Result)
@@ -947,6 +973,14 @@ namespace RSecurityBackend.Services.Implementation
         public virtual bool AllowInvitingUsersToWorkspacesByDefault
         { 
             get { return true; } 
+        }
+
+        /// <summary>
+        /// restrict worpspace members query
+        /// </summary>
+        public virtual bool RestrictWorkspaceMembersQueryToAuthorizarion
+        {
+            get { return false; }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Generic;
+using System;
 using System.Threading.Tasks;
 
 namespace RSecurityBackend.Services
@@ -18,38 +19,43 @@ namespace RSecurityBackend.Services
         /// <summary>
         /// returns all user roles
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        Task<RServiceResult<RWSRole[]>> GetAllRoles();
+        Task<RServiceResult<RWSRole[]>> GetAllRoles(Guid workspaceId);
 
         /// <summary>
         /// find role by name
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        Task<RWSRole> FindByNameAsync(string name);
+        Task<RWSRole> FindByNameAsync(Guid workspaceId, string name);
 
 
         /// <summary>
         /// returns user role information
         /// </summary>       
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>        
         /// <returns></returns>
-        Task<RServiceResult<RWSRole>> GetRoleInformation(string roleName);
+        Task<RServiceResult<RWSRole>> GetRoleInformation(Guid workspaceId, string roleName);
 
         /// <summary>
         /// modify existing user role
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <param name="updateRoleInfo"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> ModifyRole(string roleName, RWSRole updateRoleInfo);
+        Task<RServiceResult<bool>> ModifyRole(Guid workspaceId, string roleName, RWSRole updateRoleInfo);
 
         /// <summary>
         /// delete user role
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <returns>true if succeeds</returns>
-        Task<RServiceResult<bool>> DeleteRole(string roleName);
+        Task<RServiceResult<bool>> DeleteRole(Guid workspaceId, string roleName);
 
         /// <summary>
         /// adds a new user role
@@ -61,19 +67,21 @@ namespace RSecurityBackend.Services
         /// <summary>
         /// Has role specified permission
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <param name="securableItemShortName"></param>
         /// <param name="operationShortName"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> HasPermission(string roleName, string securableItemShortName, string operationShortName);
+        Task<RServiceResult<bool>> HasPermission(Guid workspaceId, string roleName, string securableItemShortName, string operationShortName);
 
         /// <summary>
         /// roles having specific permission
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="securableItemShortName"></param>
         /// <param name="operationShortName"></param>
         /// <returns></returns>
-        Task<RServiceResult<RWSRole[]>> GetRolesHavingPermission(string securableItemShortName, string operationShortName);
+        Task<RServiceResult<RWSRole[]>> GetRolesHavingPermission(Guid workspaceId, string securableItemShortName, string operationShortName);
 
         /// <summary>
         /// gets list of SecurableItem, should be reimplemented in end user applications
@@ -84,16 +92,18 @@ namespace RSecurityBackend.Services
         /// <summary>
         /// Lists role permissions
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <returns></returns>
-        Task<RServiceResult<SecurableItem[]>> GetRoleSecurableItemsStatus(string roleName);
+        Task<RServiceResult<SecurableItem[]>> GetRoleSecurableItemsStatus(Guid workspaceId, string roleName);
 
         /// <summary>
         /// Saves role permissions
         /// </summary>
+        /// <param name="workspaceId"></param>
         /// <param name="roleName"></param>
         /// <param name="securableItems"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> SetRoleSecurableItemsStatus(string roleName, SecurableItem[] securableItems);
+        Task<RServiceResult<bool>> SetRoleSecurableItemsStatus(Guid workspaceId, string roleName, SecurableItem[] securableItems);
     }
 }

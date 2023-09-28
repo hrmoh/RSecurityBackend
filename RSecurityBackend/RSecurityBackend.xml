@@ -633,7 +633,7 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.AddWorkpspaceAsync(RSecurityBackend.Models.Cloud.ViewModels.NewWorkspaceModel)">
             <summary>
-            add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding)
+            add workspace (if you want it to be limited override WorkspaceService.RestrictWorkspaceAdding to look at workspace:add )
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -663,12 +663,11 @@
             <remarks>members are invalid</remarks>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserWorkspaceByIdAsync(System.Guid,System.Boolean)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserWorkspaceByIdAsync(System.Guid)">
             <summary>
-            get user workspace information (if user is not the owner, owner data is invaid)
+            get user workspace information
             </summary>
             <param name="workspace"></param>
-            <param name="includeMembers"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.InviteMemberAsync(System.Guid,System.String,System.Boolean)">
@@ -722,6 +721,13 @@
             </summary>
             <param name="workspaceId"></param>
             <param name="reject"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members (if RestrictWorkspaceMembersQueryToAuthorizarion returns true looks at workspace:vumembers)
+            </summary>
+            <param name="workspace"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.ChangeMemberStatusAsync(System.Guid,System.Guid,RSecurityBackend.Models.Cloud.RWSUserMembershipStatus)">
@@ -786,51 +792,56 @@
             Workspace User roles
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Get">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Get(System.Guid)">
             <summary>
             All Roles Information
             </summary>
             <returns>All Roles Information</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Get(System.String)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Get(System.Guid,System.String)">
             <summary>
             returns role information
             </summary>
+            <param name="workspace"></param>
             <param name="roleName">role name</param>
             <returns>role information</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Post(RSecurityBackend.Models.Cloud.RWSRole)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Post(System.Guid,RSecurityBackend.Models.Cloud.RWSRole)">
             <summary>
             add a new role
             </summary>
+            <param name="workspace"></param>
             <param name="newGroupInfo"></param>
             <returns>id if required could be retrieved from return value</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Put(System.String,RSecurityBackend.Models.Cloud.RWSRole)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Put(System.Guid,System.String,RSecurityBackend.Models.Cloud.RWSRole)">
             <summary>
             update existing role
             </summary>
+            <param name="workspace"></param>
             <param name="roleName">role name</param>
             <param name="existingGroupInfo">existingGroupInfo.id could be passed empty and it is ignored completely</param>
             <returns>true if succeeds</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.String)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.Guid,System.String)">
             <summary>
             delete role
             </summary>
+            <param name="workspace"></param>
             <param name="roleName">role name</param>
             <returns>true if succeeds</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.GetRoleSecurableItemsStatus(System.String)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.GetRoleSecurableItemsStatus(System.Guid,System.String)">
             <summary>
             lists role permissions
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.SetRoleSecurableItemsStatus(System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.SetRoleSecurableItemsStatus(System.Guid,System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
             <summary>
             Saves role permissions
             </summary>
+            <param name="workspace"></param>
             <param name="roleName">role name</param>
             <param name="securableItems"></param>
             <returns></returns>
@@ -1399,6 +1410,11 @@
             workspaces
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.WorkspaceRoleEntityShortName">
+            <summary>
+            worspace role
+            </summary>
+        </member>
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ViewOperationShortName">
             <summary>
             view
@@ -1457,6 +1473,11 @@
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ChangeMemberRoleShortName">
             <summary>
             modify member role
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.QueryMembersListOperationShortName">
+            <summary>
+            view members
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Items">
@@ -2046,6 +2067,16 @@
             </summary>
             <param name="roleName"></param>
         </member>
+        <member name="P:RSecurityBackend.Models.Cloud.RWSRole.WorkspaceId">
+            <summary>
+            workspace id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Cloud.RWSRole.Workspace">
+            <summary>
+            workspace
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.Models.Cloud.RWSRole.Description">
             <summary>
             Description
@@ -2244,11 +2275,6 @@
         <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.CreateDate">
             <summary>
             worspace create date
-            </summary>
-        </member>
-        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.Members">
-            <summary>
-            users having access to the workspace
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.Active">
@@ -4189,38 +4215,43 @@
             Administrator role name
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetAllRoles">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetAllRoles(System.Guid)">
             <summary>
             returns all user roles
             </summary>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.FindByNameAsync(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.FindByNameAsync(System.Guid,System.String)">
             <summary>
             find role by name
             </summary>
+            <param name="workspaceId"></param>
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRoleInformation(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRoleInformation(System.Guid,System.String)">
             <summary>
             returns user role information
             </summary>       
             <param name="roleName"></param>        
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.ModifyRole(System.String,RSecurityBackend.Models.Cloud.RWSRole)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.ModifyRole(System.Guid,System.String,RSecurityBackend.Models.Cloud.RWSRole)">
             <summary>
             modify existing user role
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <param name="updateRoleInfo"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.Guid,System.String)">
             <summary>
             delete user role
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <returns>true if succeeds</returns>
         </member>
@@ -4231,19 +4262,21 @@
             <param name="newRoleInfo">new role info</param>
             <returns>update user role info (id)</returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.HasPermission(System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.HasPermission(System.Guid,System.String,System.String,System.String)">
             <summary>
             Has role specified permission
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <param name="securableItemShortName"></param>
             <param name="operationShortName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRolesHavingPermission(System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRolesHavingPermission(System.Guid,System.String,System.String)">
             <summary>
             roles having specific permission
             </summary>
+            <param name="workspaceId"></param>
             <param name="securableItemShortName"></param>
             <param name="operationShortName"></param>
             <returns></returns>
@@ -4254,17 +4287,19 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRoleSecurableItemsStatus(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.GetRoleSecurableItemsStatus(System.Guid,System.String)">
             <summary>
             Lists role permissions
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.SetRoleSecurableItemsStatus(System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.SetRoleSecurableItemsStatus(System.Guid,System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
             <summary>
             Saves role permissions
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <param name="securableItems"></param>
             <returns></returns>
@@ -4327,13 +4362,19 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid)">
             <summary>
             get user workspace information
             </summary>
             <param name="id"></param>
             <param name="userId"></param>
-            <param name="includeMembers"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members
+            </summary>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.WorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">
@@ -4481,6 +4522,11 @@
         <member name="P:RSecurityBackend.Services.Implementation.WorkspaceService.AllowInvitingUsersToWorkspacesByDefault">
             <summary>
             allow inviting users to workspaces by default
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Services.Implementation.WorkspaceService.RestrictWorkspaceMembersQueryToAuthorizarion">
+            <summary>
+            restrict worpspace members query
             </summary>
         </member>
         <member name="F:RSecurityBackend.Services.Implementation.WorkspaceService._context">
@@ -4720,38 +4766,43 @@
             Administrator role name
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetAllRoles">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetAllRoles(System.Guid)">
             <summary>
             returns all user roles
             </summary>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.FindByNameAsync(System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.FindByNameAsync(System.Guid,System.String)">
             <summary>
             find role by name
             </summary>
+            <param name="workspaceId"></param>
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetRoleInformation(System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetRoleInformation(System.Guid,System.String)">
             <summary>
             returns user role information
             </summary>       
+            <param name="workspaceId"></param>
             <param name="roleName"></param>        
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.ModifyRole(System.String,RSecurityBackend.Models.Cloud.RWSRole)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.ModifyRole(System.Guid,System.String,RSecurityBackend.Models.Cloud.RWSRole)">
             <summary>
             modify existing user role
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <param name="updateRoleInfo"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.DeleteRole(System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.DeleteRole(System.Guid,System.String)">
             <summary>
             delete user role
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <returns>true if succeeds</returns>
         </member>
@@ -4762,19 +4813,21 @@
             <param name="newRoleInfo">new role info</param>
             <returns>update user role info (id)</returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.HasPermission(System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.HasPermission(System.Guid,System.String,System.String,System.String)">
             <summary>
             Has role specified permission
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <param name="securableItemShortName"></param>
             <param name="operationShortName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetRolesHavingPermission(System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetRolesHavingPermission(System.Guid,System.String,System.String)">
             <summary>
             roles having specific permission
             </summary>
+            <param name="workspaceId"></param>
             <param name="securableItemShortName"></param>
             <param name="operationShortName"></param>
             <returns></returns>
@@ -4785,17 +4838,19 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetRoleSecurableItemsStatus(System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.GetRoleSecurableItemsStatus(System.Guid,System.String)">
             <summary>
             Lists role permissions
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.SetRoleSecurableItemsStatus(System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.SetRoleSecurableItemsStatus(System.Guid,System.String,RSecurityBackend.Models.Auth.Memory.SecurableItem[])">
             <summary>
             Saves role permissions
             </summary>
+            <param name="workspaceId"></param>
             <param name="roleName"></param>
             <param name="securableItems"></param>
             <returns></returns>
@@ -4847,13 +4902,19 @@
             <param name="id"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid,System.Boolean)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetUserWorkspaceByIdAsync(System.Guid,System.Guid)">
             <summary>
             get user workspace information
             </summary>
             <param name="id"></param>
             <param name="userId"></param>
-            <param name="includeMembers"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IWorkspaceService.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members
+            </summary>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IWorkspaceService.IsUserWorkspaceMember(System.Guid,System.Guid)">
@@ -5001,6 +5062,11 @@
         <member name="P:RSecurityBackend.Services.IWorkspaceService.AllowInvitingUsersToWorkspacesByDefault">
             <summary>
             allow inviting users to workspaces by default
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Services.IWorkspaceService.RestrictWorkspaceMembersQueryToAuthorizarion">
+            <summary>
+            restrict worpspace members query
             </summary>
         </member>
         <member name="T:RSecurityBackend.Utilities.AuditNetEnvironmentSkippingContractResolver">

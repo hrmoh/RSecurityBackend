@@ -30,6 +30,10 @@
         /// </summary>
         public const string WorkpsaceEntityShortName = "workspace";
 
+        /// <summary>
+        /// worspace role
+        /// </summary>
+        public const string WorkspaceRoleEntityShortName = "wsrole";
 
         /// <summary>
         /// view
@@ -79,6 +83,10 @@
         /// modify member role
         /// </summary>
         public const string ChangeMemberRoleShortName = "wsuserrole";
+        /// <summary>
+        /// view members
+        /// </summary>
+        public const string QueryMembersListOperationShortName = "vumembers";
 
 
 
@@ -180,9 +188,22 @@
                             new SecurableItemOperation(RemoveMembersOperationShortName, "حذف عضو", false),
                             new SecurableItemOperation(ChangeMemberStatusOperationShortName, "تغییر وضعیت عضو", false),
                             new SecurableItemOperation(ChangeMemberRoleShortName, "تغییر نقش عضو", false),
+                            new SecurableItemOperation(QueryMembersListOperationShortName, "مشاهدهٔ فهرست اعضا", false),
                             
                         }
-                    }
+                    },
+                     new SecurableItem()
+                    {
+                        ShortName = WorkspaceRoleEntityShortName,
+                        Description = "نقش‌های فضای کاری",
+                        Operations = new SecurableItemOperation[]
+                        {
+                            new SecurableItemOperation(ViewOperationShortName, "مشاهده", false),
+                            new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
+                            new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false),
+                            new SecurableItemOperation(DeleteOperationShortName, "حذف", false),
+                        }
+                    },
                 };
             }
         }

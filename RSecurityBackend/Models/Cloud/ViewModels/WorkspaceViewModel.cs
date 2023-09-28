@@ -34,11 +34,6 @@ namespace RSecurityBackend.Models.Cloud.ViewModels
         public DateTime CreateDate { get; set; }
 
         /// <summary>
-        /// users having access to the workspace
-        /// </summary>
-        public ICollection<RWSUserViewModel> Members { get; set; }
-
-        /// <summary>
         /// active
         /// </summary>
         public bool Active { get; set; }

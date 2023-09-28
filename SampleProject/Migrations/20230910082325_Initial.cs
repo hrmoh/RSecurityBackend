@@ -114,21 +114,6 @@ namespace SampleProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RWSRoles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RWSRoles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "VerifyQueueItems",
                 columns: table => new
                 {
@@ -248,21 +233,23 @@ namespace SampleProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RWSPermissions",
+                name: "RWSRoles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SecurableItemShortName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OperationShortName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RWSRoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    WorkspaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RWSPermissions", x => x.Id);
+                    table.PrimaryKey("PK_RWSRoles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RWSPermissions_RWSRoles_RWSRoleId",
-                        column: x => x.RWSRoleId,
-                        principalTable: "RWSRoles",
+                        name: "FK_RWSRoles_RWorkspaces_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "RWorkspaces",
                         principalColumn: "Id");
                 });
 
@@ -394,35 +381,6 @@ namespace SampleProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RWSUserRoles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    WorkspaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RWSUserRoles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RWSUserRoles_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_RWSUserRoles_RWSRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "RWSRoles",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_RWSUserRoles_RWorkspaces_WorkspaceId",
-                        column: x => x.WorkspaceId,
-                        principalTable: "RWorkspaces",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "RWSUsers",
                 columns: table => new
                 {
@@ -518,6 +476,54 @@ namespace SampleProject.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RWSPermissions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SecurableItemShortName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OperationShortName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RWSRoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RWSPermissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RWSPermissions_RWSRoles_RWSRoleId",
+                        column: x => x.RWSRoleId,
+                        principalTable: "RWSRoles",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RWSUserRoles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkspaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RWSUserRoles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RWSUserRoles_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_RWSUserRoles_RWSRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "RWSRoles",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_RWSUserRoles_RWorkspaces_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "RWorkspaces",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -588,6 +594,11 @@ namespace SampleProject.Migrations
                 name: "IX_RWSPermissions_RWSRoleId",
                 table: "RWSPermissions",
                 column: "RWSRoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RWSRoles_WorkspaceId",
+                table: "RWSRoles",
+                column: "WorkspaceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RWSUserRoles_RoleId",
