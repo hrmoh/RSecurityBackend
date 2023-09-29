@@ -151,6 +151,16 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
+                var userRoles = await _context.RWSUserRoles.Where(w => w.WorkspaceId == id).ToListAsync();
+                if(userRoles.Any())
+                {
+                    _context.RemoveRange(userRoles);
+                }
+                var roles = await _context.RWSRoles.Where(w => w.WorkspaceId == id).ToListAsync();
+                if (roles.Any())
+                {
+                    _context.RemoveRange(roles);
+                }
                 _context.Remove(ws);
                 await _context.SaveChangesAsync();
                 return new RServiceResult<bool>(true);
