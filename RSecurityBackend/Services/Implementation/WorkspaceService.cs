@@ -809,7 +809,7 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
 
-                var role = await _context.RWSRoles.AsNoTracking().Where(r => r.Name == roleName).SingleOrDefaultAsync();
+                var role = await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).SingleOrDefaultAsync();
                 if (role == null)
                 {
                     return new RServiceResult<bool>(false, "Role not foune");
@@ -844,7 +844,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var role = await _context.RWSRoles.AsNoTracking().Where(r => r.Name == roleName).SingleOrDefaultAsync();
+                var role = await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).SingleOrDefaultAsync();
                 if (role == null)
                 {
                     return new RServiceResult<bool>(false, "Role not foune");
