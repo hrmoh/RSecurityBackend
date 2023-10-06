@@ -102,7 +102,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        User.Claims.FirstOrDefault(c => c.Type == "Language") == null ? "fa-IR" : User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                         SecurableItem.UserEntityShortName,
                         SecurableItem.DelOtherUserSessionOperationShortName
                         );

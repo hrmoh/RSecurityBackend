@@ -69,6 +69,8 @@ namespace RSecurityBackend.Services.Implementation
                         Name = _rolesService.AdministratorRoleName,
                         Description = "Admin Role (Owners + Moderators)",
                     }
+                    ,
+                    language
                     );
                 if (!string.IsNullOrEmpty(roleCreationResult.ExceptionString))
                     return new RServiceResult<WorkspaceViewModel>(null, roleCreationResult.ExceptionString);
@@ -921,7 +923,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 foreach (string role in roles.Result)
                 {
-                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItemShortName, operationShortName);
+                    RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItemShortName, operationShortName, language);
                     if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
                         return new RServiceResult<bool>(false, hasPermission.ExceptionString);
                     if (hasPermission.Result)
@@ -977,7 +979,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     foreach (string role in roles.Result)
                     {
-                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItem.ShortName, operation.ShortName);
+                        RServiceResult<bool> hasPermission = await _rolesService.HasPermission(workspaceId, role, securableItem.ShortName, operation.ShortName, language);
                         if (!string.IsNullOrEmpty(hasPermission.ExceptionString))
                             return new RServiceResult<SecurableItem[]>(null, hasPermission.ExceptionString);
                         if (isAdmin || hasPermission.Result)
