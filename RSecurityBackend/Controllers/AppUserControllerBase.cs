@@ -102,6 +102,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                         SecurableItem.UserEntityShortName,
                         SecurableItem.DelOtherUserSessionOperationShortName
                         );
@@ -187,6 +188,7 @@ namespace RSecurityBackend.Controllers
                 (
                     loggedOnUserId,
                     new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                    User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                     SecurableItem.UserEntityShortName,
                     SecurableItem.ViewAllOperationShortName
                     );
@@ -252,6 +254,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                         SecurableItem.UserEntityShortName,
                         SecurableItem.ViewAllOperationShortName
                         );
@@ -354,6 +357,7 @@ namespace RSecurityBackend.Controllers
                         (
                             loggedOnUserId,
                             new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                            User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                             SecurableItem.UserEntityShortName,
                             SecurableItem.ModifyOperationShortName
                             );
@@ -630,6 +634,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                         SecurableItem.UserEntityShortName,
                         SecurableItem.SessionsOperationShortName
                         );
@@ -679,6 +684,7 @@ namespace RSecurityBackend.Controllers
                         (
                             loggedOnUserId,
                             new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                            User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                             SecurableItem.UserEntityShortName,
                             SecurableItem.ModifyOperationShortName
                             );
@@ -819,6 +825,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                         SecurableItem.UserEntityShortName,
                         SecurableItem.ViewAllOperationShortName
                         );

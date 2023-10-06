@@ -52,7 +52,7 @@ namespace RSecurityBackend.Authorization
 
                 if(workspaceId != null)
                 {
-                    var res = await _workspaceService.IsUserWorkspaceMember((Guid)workspaceId, new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value));
+                    var res = await _workspaceService.IsUserWorkspaceMember((Guid)workspaceId, new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value), context.User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
                     if(!res.Result)
                     {
                         context.Fail();
@@ -69,6 +69,7 @@ namespace RSecurityBackend.Authorization
                 (
                 new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value),
                 new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                context.User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
                 requirement.SecurableItemShortName,
                 requirement.OperationShortName,
                 workspaceId

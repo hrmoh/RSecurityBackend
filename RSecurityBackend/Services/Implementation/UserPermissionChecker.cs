@@ -16,11 +16,12 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="userId">userId</param>
         /// <param name="sessionId"></param>
+        /// <param name="language"></param>
         /// <param name="securableItemShortName">form</param>
         /// <param name="operationShortName">operation</param>
         /// <param name="workspaceId"></param>
         /// <returns>true if has permission</returns>
-        public virtual async Task<RServiceResult<bool>> Check(Guid userId, Guid sessionId, string securableItemShortName, string operationShortName, Guid? workspaceId)
+        public virtual async Task<RServiceResult<bool>> Check(Guid userId, Guid sessionId, string language, string securableItemShortName, string operationShortName, Guid? workspaceId)
         {
             RServiceResult<PublicRAppUser> userInfo = await _appUserService.GetUserInformation(userId);
             if (userInfo.Result == null)
@@ -68,14 +69,14 @@ namespace RSecurityBackend.Services.Implementation
             else
             {
                 RServiceResult<bool> hasPermission =
-                    await _workspaceService.HasPermission((Guid)workspaceId, userId, securableItemShortName, operationShortName);
+                    await _workspaceService.HasPermission((Guid)workspaceId, userId, securableItemShortName, operationShortName, language);
 
                 if (hasPermission.Result)
                 {
                     return new RServiceResult<bool>(true);
                 }
 
-                RServiceResult<bool> isAdminResult = await _workspaceService.IsAdmin((Guid)workspaceId, userId);
+                RServiceResult<bool> isAdminResult = await _workspaceService.IsAdmin((Guid)workspaceId, userId, language);
                 if (!string.IsNullOrEmpty(isAdminResult.ExceptionString))
                 {
                     return new RServiceResult<bool>(false, isAdminResult.ExceptionString);

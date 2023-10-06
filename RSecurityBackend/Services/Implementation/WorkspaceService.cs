@@ -26,8 +26,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="name"></param>
         /// <param name="description"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> AddWorkpspaceAsync(Guid userId, string name, string description, string language)
         {
             try
             {
@@ -72,7 +73,7 @@ namespace RSecurityBackend.Services.Implementation
                 if (!string.IsNullOrEmpty(roleCreationResult.ExceptionString))
                     return new RServiceResult<WorkspaceViewModel>(null, roleCreationResult.ExceptionString);
 
-                var roleAssignmentResult =  await AddUserToRoleInWorkspaceAsync(ws.Id, userId, _rolesService.AdministratorRoleName);
+                var roleAssignmentResult =  await AddUserToRoleInWorkspaceAsync(ws.Id, userId, _rolesService.AdministratorRoleName, language);
                 if (!string.IsNullOrEmpty(roleAssignmentResult.ExceptionString))
                     return new RServiceResult<WorkspaceViewModel>(null, roleAssignmentResult.ExceptionString);
                 return new RServiceResult<WorkspaceViewModel>
@@ -98,9 +99,10 @@ namespace RSecurityBackend.Services.Implementation
         /// Update workspace
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, WorkspaceViewModel model)
+        public virtual async Task<RServiceResult<bool>> UpdateWorkpspaceAsync(Guid userId, string language, WorkspaceViewModel model)
         {
             try
             {
@@ -140,9 +142,10 @@ namespace RSecurityBackend.Services.Implementation
         /// delete workspace
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> DeleteWorkspaceAsync(Guid userId, Guid id)
+        public virtual async Task<RServiceResult<bool>> DeleteWorkspaceAsync(Guid userId, string language, Guid id)
         {
             try
             {
@@ -175,11 +178,12 @@ namespace RSecurityBackend.Services.Implementation
         /// member workspaces
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <param name="onlyActive"></param>
         /// <param name="onlyOwned"></param>
         /// <param name="onlyMember"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, bool onlyActive, bool onlyOwned, bool onlyMember)
+        public virtual async Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, string language, bool onlyActive, bool onlyOwned, bool onlyMember)
         {
             try
             {
@@ -235,8 +239,9 @@ namespace RSecurityBackend.Services.Implementation
         /// get workspace by id
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id, string language)
         {
             try
             {
@@ -266,8 +271,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="id"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId)
+        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetUserWorkspaceByIdAsync(Guid id, Guid userId, string language)
         {
             try
             {
@@ -293,8 +299,9 @@ namespace RSecurityBackend.Services.Implementation
         /// get workspace members
         /// </summary>
         /// <param name="workspaceId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<RWSUserViewModel[]>> GetWorkspaceMembersAsync(Guid workspaceId)
+        public virtual async Task<RServiceResult<RWSUserViewModel[]>> GetWorkspaceMembersAsync(Guid workspaceId, string language)
         {
             try
             {
@@ -340,8 +347,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> IsUserWorkspaceMember(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> IsUserWorkspaceMember(Guid workspaceId, Guid userId, string language)
         {
             try
             {
@@ -363,8 +371,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="inviterId"></param>
         /// <param name="email"></param>
         /// <param name="notifyUser"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid inviterId, string email, bool notifyUser)
+        public virtual async Task<RServiceResult<bool>> InviteMemberAsync(Guid workspaceId, Guid inviterId, string email, bool notifyUser, string language)
         {
             try
             {
@@ -426,8 +435,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> RevokeInvitationAsync(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> RevokeInvitationAsync(Guid workspaceId, Guid userId, string language)
         {
             try
             {
@@ -450,8 +460,9 @@ namespace RSecurityBackend.Services.Implementation
         /// user invitations
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetUserInvitationsAsync(Guid userId)
+        public virtual async Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetUserInvitationsAsync(Guid userId, string language)
         {
             try
             {
@@ -489,8 +500,9 @@ namespace RSecurityBackend.Services.Implementation
         /// workspace invitations
         /// </summary>
         /// <param name="workspaceId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetWorkspaceInvitationsAsync(Guid workspaceId)
+        public virtual async Task<RServiceResult<WorkspaceUserInvitationViewModel[]>> GetWorkspaceInvitationsAsync(Guid workspaceId, string language)
         {
             try
             {
@@ -535,8 +547,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> DeleteMemberAsync(Guid workspaceId, Guid userId, string language)
         {
             try
             {
@@ -573,8 +586,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> LeaveWorkspaceAsync(Guid workspaceId, Guid userId, string language)
         {
             try
             {
@@ -613,8 +627,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="ownerOrModeratorId"></param>
         /// <param name="userId"></param>
         /// <param name="status"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, RWSUserMembershipStatus status)
+        public virtual async Task<RServiceResult<bool>> ChangeMemberStatusAsync(Guid workspaceId, Guid ownerOrModeratorId, Guid userId, RWSUserMembershipStatus status, string language)
         {
             try
             {
@@ -670,7 +685,7 @@ namespace RSecurityBackend.Services.Implementation
                     status == RWSUserMembershipStatus.Owner
                     )
                 {
-                    await AddUserToRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
+                    await AddUserToRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName, language);
                 }
 
                 if (
@@ -679,7 +694,7 @@ namespace RSecurityBackend.Services.Implementation
                     oldStatus == RWSUserMembershipStatus.Owner
                     )
                 {
-                    await RemoveUserFromRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
+                    await RemoveUserFromRoleInWorkspaceAsync(workspaceId, userId, _rolesService.AdministratorRoleName, language);
                 }
 
                 return new RServiceResult<bool>(true);
@@ -696,8 +711,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
         /// <param name="reject"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> ProcessWorkspaceInvitationAsync(Guid workspaceId, Guid userId, bool reject)
+        public virtual async Task<RServiceResult<bool>> ProcessWorkspaceInvitationAsync(Guid workspaceId, Guid userId, bool reject, string language)
         {
             try
             {
@@ -741,8 +757,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
         /// <param name="roleName"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> AddUserToRoleInWorkspaceAsync(Guid workspaceId, Guid userId, string roleName)
+        public virtual async Task<RServiceResult<bool>> AddUserToRoleInWorkspaceAsync(Guid workspaceId, Guid userId, string roleName, string language)
         {
             try
             {
@@ -792,8 +809,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
         /// <param name="roleName"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> RemoveUserFromRoleInWorkspaceAsync(Guid workspaceId, Guid userId, string roleName)
+        public virtual async Task<RServiceResult<bool>> RemoveUserFromRoleInWorkspaceAsync(Guid workspaceId, Guid userId, string roleName, string language)
         {
             try
             {
@@ -838,9 +856,10 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
         /// <param name="roleName"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<RServiceResult<bool>> IsInRoleAsync(Guid workspaceId, Guid userId, string roleName)
+        public async Task<RServiceResult<bool>> IsInRoleAsync(Guid workspaceId, Guid userId, string roleName, string language)
         {
             try
             {
@@ -863,8 +882,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<IList<string>>> GetUserRoles(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<IList<string>>> GetUserRoles(Guid workspaceId, Guid userId, string language)
         {
             try
             {
@@ -889,12 +909,13 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="securableItemShortName"></param>
         /// <param name="operationShortName"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> HasPermission(Guid workspaceId, Guid userId, string securableItemShortName, string operationShortName)
+        public virtual async Task<RServiceResult<bool>> HasPermission(Guid workspaceId, Guid userId, string securableItemShortName, string operationShortName, string language)
         {
             try
             {
-                RServiceResult<IList<string>> roles = await GetUserRoles(workspaceId, userId);
+                RServiceResult<IList<string>> roles = await GetUserRoles(workspaceId, userId, language);
                 if (!string.IsNullOrEmpty(roles.ExceptionString))
                     return new RServiceResult<bool>(false, roles.ExceptionString);
 
@@ -927,10 +948,11 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> IsAdmin(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<bool>> IsAdmin(Guid workspaceId, Guid userId, string language)
         {
-            return  await IsInRoleAsync(workspaceId, userId, _rolesService.AdministratorRoleName);
+            return  await IsInRoleAsync(workspaceId, userId, _rolesService.AdministratorRoleName, language);
         }
 
         /// <summary>
@@ -938,15 +960,16 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="workspaceId"></param>
         /// <param name="userId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<SecurableItem[]>> GetUserSecurableItemsStatus(Guid workspaceId, Guid userId)
+        public virtual async Task<RServiceResult<SecurableItem[]>> GetUserSecurableItemsStatus(Guid workspaceId, Guid userId, string language)
         {
             SecurableItem[] securableItems = _rolesService.GetSecurableItems();
-            RServiceResult<IList<string>> roles = await GetUserRoles(workspaceId, userId);
+            RServiceResult<IList<string>> roles = await GetUserRoles(workspaceId, userId, language);
             if (!string.IsNullOrEmpty(roles.ExceptionString))
                 return new RServiceResult<SecurableItem[]>(null, roles.ExceptionString);
 
-            bool isAdmin = (await IsAdmin(workspaceId, userId)).Result;
+            bool isAdmin = (await IsAdmin(workspaceId, userId, language)).Result;
 
             foreach (SecurableItem securableItem in securableItems)
             {
