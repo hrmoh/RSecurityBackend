@@ -121,7 +121,7 @@ namespace RSecurityBackend.Services.Implementation
 
             await _context.SaveChangesAsync();
 
-            RServiceResult<string> userToken = await GenerateToken(loginViewModel.Username, appUser.Id, userSession.Id);
+            RServiceResult<string> userToken = await GenerateToken(loginViewModel.Username, appUser.Id, userSession.Id, loginViewModel.Language);
             if (userToken.Result == null)
             {
                 return new RServiceResult<LoggedOnUserModel>(null, userToken.ExceptionString);
@@ -198,7 +198,7 @@ namespace RSecurityBackend.Services.Implementation
 
             await _context.SaveChangesAsync();
 
-            RServiceResult<string> userToken = await GenerateToken(appUser.UserName, appUser.Id, newSession.Id);
+            RServiceResult<string> userToken = await GenerateToken(appUser.UserName, appUser.Id, newSession.Id, oldSession.Language);
             if (userToken.Result == null)
             {
                 return new RServiceResult<LoggedOnUserModel>(null, userToken.ExceptionString);
@@ -1491,8 +1491,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="username"></param>
         /// <param name="userId"></param>
         /// <param name="sessionId"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        private async Task<RServiceResult<string>> GenerateToken(string username, Guid userId, Guid sessionId)
+        private async Task<RServiceResult<string>> GenerateToken(string username, Guid userId, Guid sessionId, string language)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
@@ -1503,6 +1504,7 @@ namespace RSecurityBackend.Services.Implementation
                 new Claim(ClaimTypes.Name, username),
                 new Claim("UserId", userId.ToString()),
                 new Claim("SessionId", sessionId.ToString()),
+                new Claim("Language", language)
             };
 
             var userClaims = await _userManager.GetClaimsAsync(user);
