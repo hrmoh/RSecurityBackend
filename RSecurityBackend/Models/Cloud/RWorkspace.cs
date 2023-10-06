@@ -29,7 +29,7 @@ namespace RSecurityBackend.Models.Cloud
         /// <summary>
         /// order
         /// </summary>
-        public int WokspaceOrder { get; set; }
+        public int WorkspaceOrder { get; set; }
 
         /// <summary>
         /// worspace create date

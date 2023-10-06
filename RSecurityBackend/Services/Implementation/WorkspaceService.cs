@@ -84,7 +84,7 @@ namespace RSecurityBackend.Services.Implementation
                         Description = ws.Description,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
-                        WokspaceOrder = ws.WokspaceOrder,
+                        WorkspaceOrder = ws.WorkspaceOrder,
                     }
                     );
             }
@@ -123,7 +123,7 @@ namespace RSecurityBackend.Services.Implementation
                 ws.Name = model.Name;
                 ws.Description = model.Description;
                 ws.Active = model.Active;
-                ws.WokspaceOrder = model.WokspaceOrder;
+                ws.WorkspaceOrder = model.WorkspaceOrder;
 
                 _context.Update(ws);
                 await _context.SaveChangesAsync();
@@ -221,7 +221,7 @@ namespace RSecurityBackend.Services.Implementation
                        Description = ws.Description,
                        CreateDate = ws.CreateDate,
                        Active = ws.Active,
-                       WokspaceOrder = ws.WokspaceOrder,
+                       WorkspaceOrder = ws.WorkspaceOrder,
                    }).ToArray()
                     );
             }
@@ -251,7 +251,7 @@ namespace RSecurityBackend.Services.Implementation
                         Description = ws.Description,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
-                        WokspaceOrder = ws.WokspaceOrder,
+                        WorkspaceOrder = ws.WorkspaceOrder,
                     }
                     );
             }
@@ -280,7 +280,7 @@ namespace RSecurityBackend.Services.Implementation
                         Description = ws.Description,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
-                        WokspaceOrder = ws.WokspaceOrder,
+                        WorkspaceOrder = ws.WorkspaceOrder,
                     });
             }
             catch (Exception exp)
@@ -472,7 +472,7 @@ namespace RSecurityBackend.Services.Implementation
                                 Description = invitation.Workspace.Description,
                                 CreateDate = invitation.Workspace.CreateDate,
                                 Active = invitation.Workspace.Active,
-                                WokspaceOrder = invitation.Workspace.WokspaceOrder,
+                                WorkspaceOrder = invitation.Workspace.WorkspaceOrder,
                             }
                         }
                         );
