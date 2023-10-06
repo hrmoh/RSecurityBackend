@@ -2004,7 +2004,7 @@
             description
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Cloud.RWorkspace.WokspaceOrder">
+        <member name="P:RSecurityBackend.Models.Cloud.RWorkspace.WorkspaceOrder">
             <summary>
             order
             </summary>
@@ -2267,7 +2267,7 @@
             description
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.WokspaceOrder">
+        <member name="P:RSecurityBackend.Models.Cloud.ViewModels.WorkspaceViewModel.WorkspaceOrder">
             <summary>
             order
             </summary>
