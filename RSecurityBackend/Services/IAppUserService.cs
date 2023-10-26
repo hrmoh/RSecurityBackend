@@ -120,8 +120,9 @@ namespace RSecurityBackend.Services
         /// </summary>
         /// <param name="paging"></param>
         /// <param name="filterByEmail"></param>
+        /// <param name="filterByNickName"></param>
         /// <returns></returns>
-        Task<RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>> GetAllUsersInformation(PagingParameterModel paging, string filterByEmail);
+        Task<RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>> GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName);
 
         /// <summary>
         /// all users having a certain permission

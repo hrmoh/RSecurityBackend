@@ -174,12 +174,13 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <param name="paging"></param>
         /// <param name="filterByEmail"></param>
+        /// <param name="filterByNickName"></param>
         /// <returns>All Users Information</returns>
         [HttpGet]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<PublicRAppUser>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null)
+        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null, string filterByNickName = null)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -199,7 +200,7 @@ namespace RSecurityBackend.Controllers
                 if (!string.IsNullOrEmpty(filterByEmail))
                     filterByEmail = filterByEmail.Trim();
                 RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)> usersInfo
-                    = await _appUserService.GetAllUsersInformation(paging, filterByEmail);
+                    = await _appUserService.GetAllUsersInformation(paging, filterByEmail, filterByNickName);
                 if (!string.IsNullOrEmpty(usersInfo.ExceptionString))
                 {
                     return BadRequest(usersInfo.ExceptionString);
