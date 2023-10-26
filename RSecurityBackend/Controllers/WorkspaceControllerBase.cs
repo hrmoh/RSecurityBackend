@@ -417,6 +417,49 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// get user rols
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{workspace}/member/{userId}/role")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string[]))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        public virtual async Task<IActionResult> GetUserRoles(Guid workspace, Guid id)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+
+            if (loggedOnUserId != id)
+            {
+                RServiceResult<bool> canViewAllUsersInformation =
+                    await _userPermissionChecker.Check
+                    (
+                        loggedOnUserId,
+                        new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
+                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        SecurableItem.WorkpsaceEntityShortName,
+                        SecurableItem.ChangeMemberRoleShortName,
+                        workspace
+                        );
+                if (!string.IsNullOrEmpty(canViewAllUsersInformation.ExceptionString))
+                    return BadRequest(canViewAllUsersInformation.ExceptionString);
+
+                if (!canViewAllUsersInformation.Result)
+                    return Forbid();
+            }
+
+
+            RServiceResult<IList<string>> roles = await _workspaceService.GetUserRoles(workspace, id, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            if (!string.IsNullOrEmpty(roles.ExceptionString))
+                return BadRequest(roles.ExceptionString);
+
+            return Ok(roles.Result.ToArray());
+        }
+
+        /// <summary>
         /// get logged on user securableitems (permissions) in workspace
         /// </summary>
         /// <param name="workspace"></param>
