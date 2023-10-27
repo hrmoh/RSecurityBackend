@@ -420,7 +420,7 @@ namespace RSecurityBackend.Controllers
         /// get user rols
         /// </summary>
         /// <param name="workspace"></param>
-        /// <param name="id"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet("{workspace}/member/{userId}/role")]
         [Authorize]
@@ -428,11 +428,11 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public virtual async Task<IActionResult> GetUserRoles(Guid workspace, Guid id)
+        public virtual async Task<IActionResult> GetUserRoles(Guid workspace, Guid userId)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            if (loggedOnUserId != id)
+            if (loggedOnUserId != userId)
             {
                 RServiceResult<bool> canViewAllUsersInformation =
                     await _userPermissionChecker.Check
@@ -452,7 +452,7 @@ namespace RSecurityBackend.Controllers
             }
 
 
-            RServiceResult<IList<string>> roles = await _workspaceService.GetUserRoles(workspace, id, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<IList<string>> roles = await _workspaceService.GetUserRoles(workspace, userId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
             if (!string.IsNullOrEmpty(roles.ExceptionString))
                 return BadRequest(roles.ExceptionString);
 
