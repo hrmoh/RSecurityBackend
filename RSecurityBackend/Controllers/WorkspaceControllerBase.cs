@@ -189,7 +189,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
 
-        [HttpDelete("{workspace}/invite/{userId}")]
+        [HttpDelete("invitation/{workspace}/{userId}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -246,7 +246,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="workspace"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpDelete("{workspace}/member/{userId}")]
+        [HttpDelete("member/{workspace}/{userId}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.RemoveMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -266,7 +266,7 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <param name="workspace"></param>
         /// <returns></returns>
-        [HttpDelete("{workspace}/leave")]
+        [HttpDelete("leave/{workspace}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -401,7 +401,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="userId"></param>
         /// <param name="role"></param>
         /// <returns></returns>
-        [HttpDelete("{workspace}/member/{userId}/role/{role}")]
+        [HttpDelete("member/{userId}/from/{role}/in/{workspace}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
