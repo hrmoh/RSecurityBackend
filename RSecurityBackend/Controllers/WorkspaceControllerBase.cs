@@ -166,7 +166,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="email"></param>
         /// <param name="notify">notify user</param>
         /// <returns></returns>
-        [HttpPost("{workspace}/invite/{email}/{notify}")]
+        [HttpPost("invitation/{workspace}/{email}/{notify}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -209,7 +209,7 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <returns></returns>
 
-        [HttpGet("invitations/mine")]
+        [HttpGet("invitation/mine")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceUserInvitationViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -228,7 +228,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="workspace"></param>
         /// <returns></returns>
 
-        [HttpGet("{workspace}/invitations")]
+        [HttpGet("invitation/{workspace}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceUserInvitationViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -240,48 +240,6 @@ namespace RSecurityBackend.Controllers
             return Ok(result.Result);
         }
 
-        /// <summary>
-        /// delete member
-        /// </summary>
-        /// <param name="workspace"></param>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        [HttpDelete("member/{workspace}/{userId}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.RemoveMembersOperationShortName)]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspace, Guid userId)
-        {
-            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, userId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
-            if (!string.IsNullOrEmpty(result.ExceptionString))
-                return BadRequest(result.ExceptionString);
-            if (!result.Result)
-                return NotFound();
-            return Ok(result.Result);
-        }
-
-        /// <summary>
-        /// leave a workspace
-        /// </summary>
-        /// <param name="workspace"></param>
-        /// <returns></returns>
-        [HttpDelete("leave/{workspace}")]
-        [Authorize]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> LeaveWorkspaceAsync(Guid workspace)
-        {
-            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-
-            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspace, loggedOnUserId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
-            if (!string.IsNullOrEmpty(result.ExceptionString))
-                return BadRequest(result.ExceptionString);
-            if (!result.Result)
-                return NotFound();
-            return Ok(result.Result);
-        }
 
         /// <summary>
         /// process workspace invitation
@@ -307,11 +265,33 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// delete member
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpDelete("member/{userId}/from/{workspace}")]
+        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.RemoveMembersOperationShortName)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspace, Guid userId)
+        {
+            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, userId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
+        }
+
+
+        /// <summary>
         /// get workspace members (if RestrictWorkspaceMembersQueryToAuthorizarion returns true looks at workspace:vumembers)
         /// </summary>
         /// <param name="workspace"></param>
         /// <returns></returns>
-        [HttpGet("{workspace}/member")]
+        [HttpGet("member/{workspace}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RWSUserViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -354,7 +334,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="userId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        [HttpPut("{workspace}/member/{userId}/status/{status}")]
+        [HttpPut("member/{userId}/in/{workspace}/status/{status}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberStatusOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -379,7 +359,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="role"></param>
         /// <returns></returns>
 
-        [HttpPut("{workspace}/member/{userId}/role/{role}")]
+        [HttpPost("member/{userId}/in/{workspace}/role/{role}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -422,7 +402,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="workspace"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpGet("{workspace}/member/{userId}/role")]
+        [HttpGet("member/{userId}/in/{workspace}/role")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
@@ -457,6 +437,28 @@ namespace RSecurityBackend.Controllers
                 return BadRequest(roles.ExceptionString);
 
             return Ok(roles.Result.ToArray());
+        }
+
+        /// <summary>
+        /// leave a workspace
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <returns></returns>
+        [HttpDelete("leave/{workspace}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> LeaveWorkspaceAsync(Guid workspace)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+
+            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspace, loggedOnUserId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok(result.Result);
         }
 
         /// <summary>
