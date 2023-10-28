@@ -555,19 +555,13 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var ws = await _context.RWorkspaces.Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
-                if (ws == null)
-                {
-                    return new RServiceResult<bool>(false);//not found
-                }
                 var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
-
                 _context.Remove(member);
-                _context.Update(ws);
+
                 var roles = await _context.RWSUserRoles.Where(r => r.UserId == userId && r.WorkspaceId == workspaceId).ToListAsync();
                 if (roles.Any())
                 {
