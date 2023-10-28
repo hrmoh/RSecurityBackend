@@ -671,108 +671,6 @@
             <param name="workspace"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.InviteMemberAsync(System.Guid,System.String,System.Boolean)">
-            <summary>
-             add member  (does not send any email)
-            </summary>
-            <param name="workspace"></param>
-            <param name="email"></param>
-            <param name="notify">notify user</param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.RevokeInvitationAsync(System.Guid,System.Guid)">
-            <summary>
-            revoke member invitation to a workspace
-            </summary>
-            <param name="workspace"></param>
-            <param name="userId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserInvitationsAsync">
-            <summary>
-            user workspace invitations
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetWorkspaceInvitationsAsync(System.Guid)">
-            <summary>
-            workspace invitations
-            </summary>
-            <param name="workspace"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.ProcessWorkspaceInvitationAsync(System.Guid,System.Boolean)">
-            <summary>
-            process workspace invitation
-            </summary>
-            <param name="workspaceId"></param>
-            <param name="reject"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.DeleteMemberAsync(System.Guid,System.Guid)">
-            <summary>
-            delete member
-            </summary>
-            <param name="workspace"></param>
-            <param name="userId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetWorkspaceMembersAsync(System.Guid)">
-            <summary>
-            get workspace members (if RestrictWorkspaceMembersQueryToAuthorizarion returns true looks at workspace:vumembers)
-            </summary>
-            <param name="workspace"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.ChangeMemberStatusAsync(System.Guid,System.Guid,RSecurityBackend.Models.Cloud.RWSUserMembershipStatus)">
-            <summary>
-            change member status
-            </summary>
-            <param name="workspace"></param>
-            <param name="userId"></param>
-            <param name="status"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
-            <summary>
-            add user to role in a workspace
-            </summary>
-            <param name="workspace"></param>
-            <param name="userId"></param>
-            <param name="role"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
-            <summary>
-            remove user from role in workspace
-            </summary>
-            <param name="workspace"></param>
-            <param name="userId"></param>
-            <param name="role"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserRoles(System.Guid,System.Guid)">
-            <summary>
-            get user rols
-            </summary>
-            <param name="workspace"></param>
-            <param name="userId"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.LeaveWorkspaceAsync(System.Guid)">
-            <summary>
-            leave a workspace
-            </summary>
-            <param name="workspace"></param>
-            <returns></returns>
-        </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.GetUserSecurableItemsStatus(System.Guid)">
-            <summary>
-            get logged on user securableitems (permissions) in workspace
-            </summary>
-            <param name="workspace"></param>
-            <returns></returns>
-        </member>
         <member name="F:RSecurityBackend.Controllers.WorkspaceControllerBase._workspaceService">
             <summary>
             workspace service
@@ -789,6 +687,136 @@
             </summary>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceControllerBase.#ctor(RSecurityBackend.Services.IWorkspaceService,RSecurityBackend.Services.IUserPermissionChecker,RSecurityBackend.Services.IAppUserService)">
+            <summary>
+            workspace service
+            </summary>
+            <param name="workspaceService"></param>
+            <param name="userPermissionChecker"></param>
+            <param name="appUserService"></param>
+        </member>
+        <member name="T:RSecurityBackend.Controllers.WorkspaceMemberControllerBase">
+            <summary>
+            Workspace Members
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.DeleteMemberAsync(System.Guid,System.Guid)">
+            <summary>
+            delete member
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.GetWorkspaceMembersAsync(System.Guid)">
+            <summary>
+            get workspace members (if RestrictWorkspaceMembersQueryToAuthorizarion returns true looks at workspace:vumembers)
+            </summary>
+            <param name="workspace"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.ChangeMemberStatusAsync(System.Guid,System.Guid,RSecurityBackend.Models.Cloud.RWSUserMembershipStatus)">
+            <summary>
+            change member status
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <param name="status"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.AddUserToRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            add user to role in a workspace
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <param name="role"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.RemoveUserFromRoleInWorkspaceAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            remove user from role in workspace
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <param name="role"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.GetUserRoles(System.Guid,System.Guid)">
+            <summary>
+            get user rols
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.InviteMemberAsync(System.Guid,System.String,System.Boolean)">
+            <summary>
+             add member  (does not send any email)
+            </summary>
+            <param name="workspace"></param>
+            <param name="email"></param>
+            <param name="notify">notify user</param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.RevokeInvitationAsync(System.Guid,System.Guid)">
+            <summary>
+            revoke member invitation to a workspace
+            </summary>
+            <param name="workspace"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.GetUserInvitationsAsync">
+            <summary>
+            user workspace invitations
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.GetWorkspaceInvitationsAsync(System.Guid)">
+            <summary>
+            workspace invitations
+            </summary>
+            <param name="workspace"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.ProcessWorkspaceInvitationAsync(System.Guid,System.Boolean)">
+            <summary>
+            process workspace invitation
+            </summary>
+            <param name="workspaceId"></param>
+            <param name="reject"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.LeaveWorkspaceAsync(System.Guid)">
+            <summary>
+            leave a workspace
+            </summary>
+            <param name="workspace"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.GetUserSecurableItemsStatus(System.Guid)">
+            <summary>
+            get logged on user securableitems (permissions) in workspace
+            </summary>
+            <param name="workspace"></param>
+            <returns></returns>
+        </member>
+        <member name="F:RSecurityBackend.Controllers.WorkspaceMemberControllerBase._workspaceService">
+            <summary>
+            workspace service
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Controllers.WorkspaceMemberControllerBase._userPermissionChecker">
+            <summary>
+            IUserPermissionChecker instance
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Controllers.WorkspaceMemberControllerBase._appUserService">
+            <summary>
+            IAppUserService instance
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.WorkspaceMemberControllerBase.#ctor(RSecurityBackend.Services.IWorkspaceService,RSecurityBackend.Services.IUserPermissionChecker,RSecurityBackend.Services.IAppUserService)">
             <summary>
             workspace service
             </summary>
