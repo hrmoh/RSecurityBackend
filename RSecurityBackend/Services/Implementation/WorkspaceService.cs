@@ -843,6 +843,11 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<bool>(false, "User is not in role.");
                 }
 
+                if(member.Status == RWSUserMembershipStatus.Owner && role.Name == _rolesService.AdministratorRoleName)
+                {
+                    return new RServiceResult<bool>(false, "You cannot revoke administration role from owner.");
+                }
+
                 _context.Remove(userRole);
                 await _context.SaveChangesAsync();
 
