@@ -559,6 +559,10 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
                 }
+                if(member.Status == RWSUserMembershipStatus.Owner)
+                {
+                    return new RServiceResult<bool>(false, "Owner can not be removed.");
+                }
                 _context.Remove(member);
 
                 var roles = await _context.RWSUserRoles.Where(r => r.UserId == userId && r.WorkspaceId == workspaceId).ToListAsync();
@@ -596,6 +600,11 @@ namespace RSecurityBackend.Services.Implementation
                 if (member == null)
                 {
                     return new RServiceResult<bool>(false, "User is not a member.");
+                }
+
+                if (member.Status == RWSUserMembershipStatus.Owner)
+                {
+                    return new RServiceResult<bool>(false, "Owner can not be removed. You may try to delete the workspace instead");
                 }
 
                 _context.Remove(member);
