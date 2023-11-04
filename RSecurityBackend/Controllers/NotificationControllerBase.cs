@@ -17,7 +17,7 @@ namespace RSecurityBackend.Controllers
     /// </summary>
     [Produces("application/json")]
     [Route("api/notifications")]
-    public abstract class NoificationControllerBase : Controller
+    public abstract class NotificationControllerBase : Controller
     {
         /// <summary>
         /// Get User Notifications
@@ -174,7 +174,7 @@ namespace RSecurityBackend.Controllers
         /// constructor
         /// </summary>
         /// <param name="notificationService"></param>
-        public NoificationControllerBase(IRNotificationService notificationService)
+        public NotificationControllerBase(IRNotificationService notificationService)
         {
             _notificationService = notificationService;
         }
