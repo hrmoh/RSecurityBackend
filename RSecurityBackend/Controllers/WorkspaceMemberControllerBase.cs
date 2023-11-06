@@ -34,7 +34,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public virtual async Task<IActionResult> DeleteMemberAsync(Guid workspace, Guid userId)
         {
-            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, userId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.DeleteMemberAsync(workspace, userId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -64,7 +64,7 @@ namespace RSecurityBackend.Controllers
                             (
                                 loggedOnUserId,
                                 sessionId,
-                                User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                                User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                                 SecurableItem.WorkpsaceEntityShortName,
                                 SecurableItem.QueryMembersListOperationShortName
                                 );
@@ -77,7 +77,7 @@ namespace RSecurityBackend.Controllers
                     return StatusCode((int)HttpStatusCode.Forbidden);
                 }
             }
-            RServiceResult<RWSUserViewModel[]> result = await _workspaceService.GetWorkspaceMembersAsync(workspace, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<RWSUserViewModel[]> result = await _workspaceService.GetWorkspaceMembersAsync(workspace, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);
@@ -100,7 +100,7 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.ChangeMemberStatusAsync(workspace, loggedOnUserId, userId, status, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.ChangeMemberStatusAsync(workspace, loggedOnUserId, userId, status, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -123,7 +123,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public virtual async Task<IActionResult> AddUserToRoleInWorkspaceAsync(Guid workspace, Guid userId, string role)
         {
-            RServiceResult<bool> result = await _workspaceService.AddUserToRoleInWorkspaceAsync(workspace, userId, role, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.AddUserToRoleInWorkspaceAsync(workspace, userId, role, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -145,7 +145,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public virtual async Task<IActionResult> RemoveUserFromRoleInWorkspaceAsync(Guid workspace, Guid userId, string role)
         {
-            RServiceResult<bool> result = await _workspaceService.RemoveUserFromRoleInWorkspaceAsync(workspace, userId, role, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.RemoveUserFromRoleInWorkspaceAsync(workspace, userId, role, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -176,7 +176,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                         SecurableItem.WorkpsaceEntityShortName,
                         SecurableItem.ChangeMemberRoleShortName,
                         workspace
@@ -189,7 +189,7 @@ namespace RSecurityBackend.Controllers
             }
 
 
-            RServiceResult<IList<string>> roles = await _workspaceService.GetUserRoles(workspace, userId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<IList<string>> roles = await _workspaceService.GetUserRoles(workspace, userId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(roles.ExceptionString))
                 return BadRequest(roles.ExceptionString);
 
@@ -211,7 +211,7 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> InviteMemberAsync(Guid workspace, string email, bool notify)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspace, loggedOnUserId, email, notify, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspace, loggedOnUserId, email, notify, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -233,7 +233,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public virtual async Task<IActionResult> RevokeInvitationAsync(Guid workspace, Guid userId)
         {
-            RServiceResult<bool> result = await _workspaceService.RevokeInvitationAsync(workspace, userId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.RevokeInvitationAsync(workspace, userId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -253,7 +253,7 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> GetUserInvitationsAsync()
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetUserInvitationsAsync(loggedOnUserId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetUserInvitationsAsync(loggedOnUserId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);
@@ -271,7 +271,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> GetWorkspaceInvitationsAsync(Guid workspace)
         {
-            RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetWorkspaceInvitationsAsync(workspace, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<WorkspaceUserInvitationViewModel[]> result = await _workspaceService.GetWorkspaceInvitationsAsync(workspace, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);
@@ -293,7 +293,7 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspaceId, loggedOnUserId, reject, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.ProcessWorkspaceInvitationAsync(workspaceId, loggedOnUserId, reject, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -316,7 +316,7 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspace, loggedOnUserId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> result = await _workspaceService.LeaveWorkspaceAsync(workspace, loggedOnUserId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
@@ -338,7 +338,7 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            RServiceResult<SecurableItem[]> res = await _workspaceService.GetUserSecurableItemsStatus(workspace, loggedOnUserId, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<SecurableItem[]> res = await _workspaceService.GetUserSecurableItemsStatus(workspace, loggedOnUserId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
 
             if (!string.IsNullOrEmpty(res.ExceptionString))
             {

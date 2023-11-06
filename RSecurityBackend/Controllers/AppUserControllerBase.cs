@@ -102,7 +102,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                        User.Claims.FirstOrDefault(c => c.Type == "Language") == null ? "fa-IR" : User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        User.Claims.Any(c => c.Type == "Language") ? User.Claims.First(c => c.Type == "Language").Value : "fa-IR",
                         SecurableItem.UserEntityShortName,
                         SecurableItem.DelOtherUserSessionOperationShortName
                         );
@@ -189,7 +189,7 @@ namespace RSecurityBackend.Controllers
                 (
                     loggedOnUserId,
                     new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                    User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                    User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                     SecurableItem.UserEntityShortName,
                     SecurableItem.ViewAllOperationShortName
                     );
@@ -255,7 +255,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                         SecurableItem.UserEntityShortName,
                         SecurableItem.ViewAllOperationShortName
                         );
@@ -358,7 +358,7 @@ namespace RSecurityBackend.Controllers
                         (
                             loggedOnUserId,
                             new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                            User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                            User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                             SecurableItem.UserEntityShortName,
                             SecurableItem.ModifyOperationShortName
                             );
@@ -635,7 +635,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                         SecurableItem.UserEntityShortName,
                         SecurableItem.SessionsOperationShortName
                         );
@@ -685,7 +685,7 @@ namespace RSecurityBackend.Controllers
                         (
                             loggedOnUserId,
                             new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                            User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                            User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                             SecurableItem.UserEntityShortName,
                             SecurableItem.ModifyOperationShortName
                             );
@@ -826,7 +826,7 @@ namespace RSecurityBackend.Controllers
                     (
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                        User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                        User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
                         SecurableItem.UserEntityShortName,
                         SecurableItem.ViewAllOperationShortName
                         );

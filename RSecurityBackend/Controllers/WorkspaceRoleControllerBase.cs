@@ -29,7 +29,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public async Task<IActionResult> Get(Guid workspace)
         {
-            RServiceResult<RWSRole[]> rolesInfo = await _roleService.GetAllRoles(workspace, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<RWSRole[]> rolesInfo = await _roleService.GetAllRoles(workspace, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (rolesInfo.Result == null)
             {
                 return BadRequest(rolesInfo.ExceptionString);
@@ -50,7 +50,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Get(Guid workspace, string roleName)
         {
-            RServiceResult<RWSRole> roleInfo = await _roleService.GetRoleInformation(workspace, roleName, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<RWSRole> roleInfo = await _roleService.GetRoleInformation(workspace, roleName, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (roleInfo.Result == null)
             {
                 if (string.IsNullOrEmpty(roleInfo.ExceptionString))
@@ -75,7 +75,7 @@ namespace RSecurityBackend.Controllers
         {
             if (workspace != newGroupInfo.WorkspaceId)
                 return BadRequest("workspace != newGroupInfo.WorkspaceId");
-            RServiceResult<RWSRole> result = await _roleService.AddRole(newGroupInfo, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<RWSRole> result = await _roleService.AddRole(newGroupInfo, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (result.Result == null)
                 return BadRequest(result.ExceptionString);
             return Ok(result.Result);
@@ -97,7 +97,7 @@ namespace RSecurityBackend.Controllers
         {
             if (workspace != existingGroupInfo.WorkspaceId)
                 return BadRequest("workspace != existingGroupInfo.WorkspaceId");
-            RServiceResult<bool> res = await _roleService.ModifyRole(workspace, roleName, existingGroupInfo, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> res = await _roleService.ModifyRole(workspace, roleName, existingGroupInfo, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!res.Result)
                 return BadRequest(res.ExceptionString);
 
@@ -119,7 +119,7 @@ namespace RSecurityBackend.Controllers
         public async Task<IActionResult> Delete(Guid workspace, string roleName)
         {
 
-            RServiceResult<bool> res = await _roleService.DeleteRole(workspace, roleName, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> res = await _roleService.DeleteRole(workspace, roleName, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!res.Result)
             {
                 return BadRequest(res.ExceptionString);
@@ -138,7 +138,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public async Task<IActionResult> GetRoleSecurableItemsStatus(Guid workspace, string roleName)
         {
-            RServiceResult<SecurableItem[]> res = await _roleService.GetRoleSecurableItemsStatus(workspace, roleName, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<SecurableItem[]> res = await _roleService.GetRoleSecurableItemsStatus(workspace, roleName, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
 
             if (res.Result == null)
             {
@@ -161,7 +161,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public async Task<IActionResult> SetRoleSecurableItemsStatus(Guid workspace, string roleName, [FromBody] SecurableItem[] securableItems)
         {
-            RServiceResult<bool> res = await _roleService.SetRoleSecurableItemsStatus(workspace, roleName, securableItems, User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+            RServiceResult<bool> res = await _roleService.SetRoleSecurableItemsStatus(workspace, roleName, securableItems, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
 
             if (!res.Result)
             {

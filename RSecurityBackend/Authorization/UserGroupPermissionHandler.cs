@@ -52,7 +52,7 @@ namespace RSecurityBackend.Authorization
 
                 if(workspaceId != null)
                 {
-                    var res = await _workspaceService.IsUserWorkspaceMember((Guid)workspaceId, new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value), context.User.Claims.FirstOrDefault(c => c.Type == "Language").Value);
+                    var res = await _workspaceService.IsUserWorkspaceMember((Guid)workspaceId, new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value), context.User.Claims.Any(c => c.Type == "Language") ? context.User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
                     if(!res.Result)
                     {
                         context.Fail();
@@ -69,7 +69,7 @@ namespace RSecurityBackend.Authorization
                 (
                 new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "UserId").Value),
                 new Guid(context.User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
-                context.User.Claims.FirstOrDefault(c => c.Type == "Language").Value,
+                context.User.Claims.Any(c => c.Type == "Language") ?  context.User.Claims.First(c => c.Type == "Language").Value : "fa-IR",
                 requirement.SecurableItemShortName,
                 requirement.OperationShortName,
                 workspaceId
