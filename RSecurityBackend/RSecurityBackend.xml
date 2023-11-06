@@ -370,67 +370,67 @@
             Artifact Service
             </summary>
         </member>
-        <member name="T:RSecurityBackend.Controllers.NoificationControllerBase">
+        <member name="T:RSecurityBackend.Controllers.NotificationControllerBase">
             <summary>
             Notifications controller
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.GetUserNotifications">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUserNotifications">
             <summary>
             Get User Notifications
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel)">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel)">
             <summary>
             Get User Notifications (Paginated Version)
             </summary>
             <param name="paging"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.GetUnreadUserNotificationsCount">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUnreadUserNotificationsCount">
             <summary>
             Get unread user notifications count
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.SwitchNotificationStatus(System.Guid)">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.SwitchNotificationStatus(System.Guid)">
             <summary>
             Switch Notification Status
             </summary>
             <param name="notificationId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.SetAllNotificationsStatusRead">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.SetAllNotificationsStatusRead">
             <summary>
             Set All User Notifications Status Read
             </summary>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.SetAllNotificationsStatusUnread">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.SetAllNotificationsStatusUnread">
             <summary>
             Set All User Notifications Status Unread
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.DeleteNotification(System.Guid)">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.DeleteNotification(System.Guid)">
             <summary>
             Delete Notification
             </summary>
             <param name="notificationId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.DeleteAllReadNotification">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.DeleteAllReadNotification">
             <summary>
             Delete All Read Notifications
             </summary>
             <returns></returns>
         </member>
-        <member name="F:RSecurityBackend.Controllers.NoificationControllerBase._notificationService">
+        <member name="F:RSecurityBackend.Controllers.NotificationControllerBase._notificationService">
             <summary>
             Notification Service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NoificationControllerBase.#ctor(RSecurityBackend.Services.IRNotificationService)">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.#ctor(RSecurityBackend.Services.IRNotificationService)">
             <summary>
             constructor
             </summary>
@@ -3938,11 +3938,12 @@
             <param name="auditEvent"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.InsertEventAsync(Audit.Core.AuditEvent)">
+        <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.InsertEventAsync(Audit.Core.AuditEvent,System.Threading.CancellationToken)">
             <summary>
             Insert Async
             </summary>
             <param name="auditEvent"></param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.ReplaceEvent(System.Object,Audit.Core.AuditEvent)">
@@ -3952,12 +3953,13 @@
             <param name="eventId"></param>
             <param name="auditEvent"></param>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.ReplaceEventAsync(System.Object,Audit.Core.AuditEvent)">
+        <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.ReplaceEventAsync(System.Object,Audit.Core.AuditEvent,System.Threading.CancellationToken)">
             <summary>
             Update Async
             </summary>
             <param name="eventId"></param>
             <param name="auditEvent"></param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.GetEvent``1(System.Object)">
@@ -3968,12 +3970,13 @@
             <param name="eventId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.GetEventAsync``1(System.Object)">
+        <member name="M:RSecurityBackend.Services.Implementation.RAuditDataProvider.GetEventAsync``1(System.Object,System.Threading.CancellationToken)">
             <summary>
             Get Async
             </summary>
             <typeparam name="T"></typeparam>
             <param name="eventId"></param>
+            <param name="cancellationToken">s</param>
             <returns></returns>
         </member>
         <member name="F:RSecurityBackend.Services.Implementation.RAuditDataProvider._disposed">
