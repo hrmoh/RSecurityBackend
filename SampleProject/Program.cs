@@ -55,6 +55,7 @@ builder.Services.AddDbContextPool<RDbContext>(
                         );
 
 Audit.Core.Configuration.DataProvider = new RAuditDataProvider(builder.Configuration.GetConnectionString("DefaultConnection"));
+Audit.Core.Configuration.AuditDisabled = bool.Parse(builder.Configuration["AuditNetEnabled"] ?? false.ToString()) == false;
 
 builder.Services.AddIdentityCore<RAppUser>(
                 options =>

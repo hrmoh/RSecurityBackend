@@ -43,7 +43,11 @@ namespace RSecurityBackend.Services.Implementation
             if (_connection == null)
                 return null;
             AuditEventWebApi apiEvent = (AuditEventWebApi)auditEvent;
-            Guid Id = new Guid(apiEvent.Action.TraceId);
+            Guid Id;
+            if(!Guid.TryParse(apiEvent.Action.TraceId, out Id))
+            {
+                Id = Guid.NewGuid();
+            }
             string sql = $"INSERT INTO AuditLogs (Id, EventType, StartDate, EndDate, Duration, UserName, IpAddress, ResponseStatusCode, RequestUrl, JsonData) VALUES (@Id, @EventType, @StartDate, @EndDate, @Duration, @UserName, @IpAddress, @ResponseStatusCode, @RequestUrl, @JsonData);";
             await _connection.ExecuteAsync(sql, new { Id, apiEvent.EventType, apiEvent.StartDate, apiEvent.EndDate, apiEvent.Duration, apiEvent.Action.UserName, apiEvent.Action.IpAddress, apiEvent.Action.ResponseStatusCode, apiEvent.Action.RequestUrl, JsonData = apiEvent.ToJson() });
             return Id;
@@ -58,7 +62,11 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (_connection == null)
                 return;
-            Guid Id = new Guid(eventId.ToString());
+            Guid Id;
+            if (!Guid.TryParse(eventId.ToString(), out Id))
+            {
+                return;
+            }
             IDbConnection dapper = _connection;
             dapper.Execute($"UPDATE AuditLogs SET JsonData = @JsonData, EndDate = @EndDate WHERE Id = @Id", new { JsonData = auditEvent.ToJson(), auditEvent.EndDate, Id });
         }
@@ -74,7 +82,11 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (_connection == null)
                 return;
-            Guid Id = new Guid(eventId.ToString());
+            Guid Id;
+            if (!Guid.TryParse(eventId.ToString(), out Id))
+            {
+                return;
+            }
             IDbConnection dapper = _connection;
             await dapper.ExecuteAsync($"UPDATE AuditLogs SET JsonData = @JsonData, EndDate = @EndDate WHERE Id = @Id", new { JsonData = auditEvent.ToJson(), auditEvent.EndDate, Id });
         }
@@ -89,7 +101,11 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (_connection == null)
                 return null;
-            Guid id = new Guid(eventId.ToString());
+            Guid id;
+            if (!Guid.TryParse(eventId.ToString(), out id))
+            {
+                return null;
+            }
             IDbConnection dapper = _connection;
             return JsonConvert.DeserializeObject<T>(dapper.QueryFirstOrDefault<string>($"SELECT JsonData FROM AuditLogs WHERE Id = '{id}'"));
         }
@@ -109,7 +125,11 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (_connection == null)
                 return null;
-            Guid id = new Guid(eventId.ToString());
+            Guid id;
+            if (!Guid.TryParse(eventId.ToString(), out id))
+            {
+                return null;
+            }
             IDbConnection dapper = _connection;
             return JsonConvert.DeserializeObject<T>((await dapper.QueryFirstOrDefaultAsync<string>($"SELECT JsonData FROM AuditLogs WHERE Id = '{id}'")));
         }
