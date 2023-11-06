@@ -144,7 +144,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// Artifact Service
+        /// image file Service
         /// </summary>
         protected readonly IImageFileService _pictureFileService;
 
