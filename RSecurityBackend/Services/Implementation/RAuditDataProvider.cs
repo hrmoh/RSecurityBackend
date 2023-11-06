@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dapper;
 using System.Data;
 using Audit.WebApi;
+using System.Threading;
 
 namespace RSecurityBackend.Services.Implementation
 {
@@ -35,8 +36,9 @@ namespace RSecurityBackend.Services.Implementation
         /// Insert Async
         /// </summary>
         /// <param name="auditEvent"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<object> InsertEventAsync(AuditEvent auditEvent)
+        public override async Task<object> InsertEventAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_connection == null)
                 return null;
@@ -66,8 +68,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="eventId"></param>
         /// <param name="auditEvent"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task ReplaceEventAsync(object eventId, AuditEvent auditEvent)
+        public override async Task ReplaceEventAsync(object eventId, AuditEvent auditEvent, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_connection == null)
                 return;
@@ -100,8 +103,9 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="eventId"></param>
+        /// <param name="cancellationToken">s</param>
         /// <returns></returns>
-        public override async Task<T> GetEventAsync<T>(object eventId)
+        public override async Task<T> GetEventAsync<T>(object eventId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_connection == null)
                 return null;
