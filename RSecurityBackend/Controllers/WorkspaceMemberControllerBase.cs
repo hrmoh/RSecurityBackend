@@ -200,18 +200,17 @@ namespace RSecurityBackend.Controllers
         ///  add member  (does not send any email)
         /// </summary>
         /// <param name="workspace"></param>
-        /// <param name="email"></param>
-        /// <param name="notify">notify user</param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("invitation/{workspace}/{email}/{notify}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public virtual async Task<IActionResult> InviteMemberAsync(Guid workspace, string email, bool notify)
+        public virtual async Task<IActionResult> InviteMemberAsync(Guid workspace, [FromBody] InviteMemberViewModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspace, loggedOnUserId, email, notify, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
+            RServiceResult<bool> result = await _workspaceService.InviteMemberAsync(workspace, loggedOnUserId, model.UserEmail, model.Notify, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!string.IsNullOrEmpty(result.ExceptionString))
                 return BadRequest(result.ExceptionString);
             if (!result.Result)
