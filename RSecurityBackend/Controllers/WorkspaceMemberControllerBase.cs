@@ -202,7 +202,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="workspace"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost("invitation/{workspace}/{email}/{notify}")]
+        [HttpPost("invitation/{workspace}")]
         [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
