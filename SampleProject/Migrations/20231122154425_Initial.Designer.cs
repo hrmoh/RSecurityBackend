@@ -12,15 +12,15 @@ using SampleProject.DbContext;
 namespace SampleProject.Migrations
 {
     [DbContext(typeof(RDbContext))]
-    [Migration("20231006063101_TypoFix")]
-    partial class TypoFix
+    [Migration("20231122154425_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.0")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -519,10 +519,13 @@ namespace SampleProject.Migrations
                     b.Property<Guid?>("RAppUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("RWorkspaceId")
+                    b.Property<Guid?>("RWorkspaceId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkspaceOrder")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -577,9 +580,6 @@ namespace SampleProject.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("WorkspaceOrder")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -855,9 +855,7 @@ namespace SampleProject.Migrations
 
                     b.HasOne("RSecurityBackend.Models.Cloud.RWorkspace", null)
                         .WithMany("Members")
-                        .HasForeignKey("RWorkspaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RWorkspaceId");
 
                     b.Navigation("RAppUser");
                 });

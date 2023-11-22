@@ -104,7 +104,6 @@ namespace SampleProject.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    WokspaceOrder = table.Column<int>(type: "int", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -389,7 +388,8 @@ namespace SampleProject.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     InviteDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MemberFrom = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RWorkspaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    RWorkspaceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    WorkspaceOrder = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -403,8 +403,7 @@ namespace SampleProject.Migrations
                         name: "FK_RWSUsers_RWorkspaces_RWorkspaceId",
                         column: x => x.RWorkspaceId,
                         principalTable: "RWorkspaces",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
