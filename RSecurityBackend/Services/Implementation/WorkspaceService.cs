@@ -34,13 +34,23 @@ namespace RSecurityBackend.Services.Implementation
                 name = name.Trim();
                 if (string.IsNullOrEmpty(name))
                 {
-                    return new RServiceResult<WorkspaceViewModel>(null, "Name cannot be empty");
+                    return new RServiceResult<WorkspaceViewModel>(null,
+                        language.StartsWith("fa") ?
+                        "نام شرکت نمی‌تواند خالی باشد."
+                        :
+                        "Name cannot be empty.");
                 }
                 var alreadyUsedWorkspace = await _context.RWorkspaces.Include(w => w.Members).AsNoTracking().Where(w => w.Name == name && w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner)).FirstOrDefaultAsync();
                 if (alreadyUsedWorkspace != null)
                 {
-                    return new RServiceResult<WorkspaceViewModel>(null, $"The user aleady owns a workspace called {name} with code {alreadyUsedWorkspace.Id}");
+                    return new RServiceResult<WorkspaceViewModel>(null,
+                        language.StartsWith("fa") ?
+                        $"کاربر در حال حاضر مالک شرکتی با نام {name} و کد {alreadyUsedWorkspace.Id} می‌باشد و نمی‌تواند شرکتی با این نام تکراری ایجاد کند." :
+                        $"The user aleady owns a workspace called {name} with code {alreadyUsedWorkspace.Id} and can not create a workspace with this repeated name."
+                        );
                 }
+                int workspaceOrder = await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == userId).AnyAsync() ?
+                                                1 + await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == userId).MaxAsync(c => c.WorkspaceOrder) : 1;
                 var ws = new RWorkspace()
                 {
                     Name = name,
@@ -55,6 +65,7 @@ namespace RSecurityBackend.Services.Implementation
                             InviteDate = DateTime.Now,
                             MemberFrom = DateTime.Now,
                             Status = RWSUserMembershipStatus.Owner,
+                            WorkspaceOrder = workspaceOrder,
                         }
                     }
                 };
@@ -66,7 +77,7 @@ namespace RSecurityBackend.Services.Implementation
                     {
                         WorkspaceId = ws.Id,
                         Name = _rolesService.AdministratorRoleName,
-                        Description = "Admin Role (Owners + Moderators)",
+                        Description = language.StartsWith("fa") ? "نقش مدیریت (مالک و مدیران سیستم)" : "Admin Role (Owners + Moderators)",
                     }
                     ,
                     language
@@ -74,7 +85,7 @@ namespace RSecurityBackend.Services.Implementation
                 if (!string.IsNullOrEmpty(roleCreationResult.ExceptionString))
                     return new RServiceResult<WorkspaceViewModel>(null, roleCreationResult.ExceptionString);
 
-                var roleAssignmentResult =  await AddUserToRoleInWorkspaceAsync(ws.Id, userId, _rolesService.AdministratorRoleName, language);
+                var roleAssignmentResult = await AddUserToRoleInWorkspaceAsync(ws.Id, userId, _rolesService.AdministratorRoleName, language);
                 if (!string.IsNullOrEmpty(roleAssignmentResult.ExceptionString))
                     return new RServiceResult<WorkspaceViewModel>(null, roleAssignmentResult.ExceptionString);
                 return new RServiceResult<WorkspaceViewModel>
@@ -86,7 +97,8 @@ namespace RSecurityBackend.Services.Implementation
                         Description = ws.Description,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
-                        WorkspaceOrder = ws.WorkspaceOrder,
+                        WorkspaceOrder = workspaceOrder,
+                        Owned = true
                     }
                     );
             }
@@ -115,18 +127,22 @@ namespace RSecurityBackend.Services.Implementation
                 model.Name = model.Name.Trim();
                 if (string.IsNullOrEmpty(model.Name))
                 {
-                    return new RServiceResult<bool>(false, "Name cannot be empty");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ?
+                        "نام شرکت نمی‌تواند خالی باشد."
+                        :
+                        "Name cannot be empty.");
                 }
                 var alreadyUsedWorkspace = await _context.RWorkspaces.AsNoTracking().Where(w => w.Name == model.Name && w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner) && w.Id != ws.Id).FirstOrDefaultAsync();
                 if (alreadyUsedWorkspace != null)
                 {
-                    return new RServiceResult<bool>(false, $"The (new) owner user aleady owns a workspace called {model.Name} with code {alreadyUsedWorkspace.Id}");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ? $"کاربر در حال حاضر مالک شرکتی با نام {model.Name} و کد {alreadyUsedWorkspace.Id} می‌باشد و نمی‌تواند شرکتی با این نام تکراری ایجاد کند." :
+                        $"The (new) owner user aleady owns a workspace called {model.Name} with code {alreadyUsedWorkspace.Id}");
                 }
 
                 ws.Name = model.Name;
                 ws.Description = model.Description;
                 ws.Active = model.Active;
-                ws.WorkspaceOrder = model.WorkspaceOrder;
 
                 _context.Update(ws);
                 await _context.SaveChangesAsync();
@@ -155,12 +171,17 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     return new RServiceResult<bool>(false);//not found
                 }
+                var invitations = await _context.WorkspaceUserInvitations.Where(w => w.WorkspaceId == id).ToListAsync();
+                if (invitations.Any())
+                {
+                    _context.RemoveRange(invitations);
+                }
                 var userRoles = await _context.RWSUserRoles.Where(w => w.WorkspaceId == id).ToListAsync();
-                if(userRoles.Any())
+                if (userRoles.Any())
                 {
                     _context.RemoveRange(userRoles);
                 }
-                var roles = await _context.RWSRoles.Where(w => w.WorkspaceId == id).ToListAsync();
+                var roles = await _context.RWSRoles.Include(r => r.Permissions).Where(w => w.WorkspaceId == id).ToListAsync();
                 if (roles.Any())
                 {
                     _context.RemoveRange(roles);
@@ -196,38 +217,42 @@ namespace RSecurityBackend.Services.Implementation
 
                 var workspacesUnfiltered = await _context.RWorkspaces.AsNoTracking().Where(w => idArray.Contains(w.Id)).ToArrayAsync();
 
-                List<RWorkspace> workspaces = new List<RWorkspace>();
-                foreach (var workspace in workspacesUnfiltered)
+                List<WorkspaceViewModel> workspaces = new List<WorkspaceViewModel>();
+                foreach (var ws in workspacesUnfiltered)
                 {
-                    if(onlyActive)
+                    if (onlyActive)
                     {
-                        if (workspace.Active == false)
+                        if (ws.Active == false)
                             continue;
                     }
-                    if(onlyOwned)
+                    if (onlyOwned)
                     {
-                        if (!userWorkspaces.Any(u => u.RWorkspaceId == workspace.Id && u.Status == RWSUserMembershipStatus.Owner))
+                        if (!userWorkspaces.Any(u => u.RWorkspaceId == ws.Id && u.Status == RWSUserMembershipStatus.Owner))
                             continue;
                     }
-                    if(onlyMember)
+                    if (onlyMember)
                     {
-                        if (!userWorkspaces.Any(u => u.RWorkspaceId == workspace.Id && u.Status == RWSUserMembershipStatus.Member))
+                        if (!userWorkspaces.Any(u => u.RWorkspaceId == ws.Id && u.Status == RWSUserMembershipStatus.Member))
                             continue;
                     }
-                    workspaces.Add(workspace);
+                    workspaces.Add
+                        (
+                        new WorkspaceViewModel()
+                        {
+                            Id = ws.Id,
+                            Name = ws.Name,
+                            Description = ws.Description,
+                            CreateDate = ws.CreateDate,
+                            Active = ws.Active,
+                            WorkspaceOrder = userWorkspaces.Where(u => u.RWorkspaceId == ws.Id).Single().WorkspaceOrder,
+                            Owned = userWorkspaces.Any(u => u.RWorkspaceId == ws.Id && u.Status == RWSUserMembershipStatus.Owner),
+                        }
+                        );
                 }
 
-                
+
                 return new RServiceResult<WorkspaceViewModel[]>(
-                   workspaces.Select(ws => new WorkspaceViewModel()
-                   {
-                       Id = ws.Id,
-                       Name = ws.Name,
-                       Description = ws.Description,
-                       CreateDate = ws.CreateDate,
-                       Active = ws.Active,
-                       WorkspaceOrder = ws.WorkspaceOrder,
-                   }).ToArray()
+                        workspaces.OrderBy(w => w.WorkspaceOrder).ToArray()
                     );
             }
             catch (Exception exp)
@@ -236,36 +261,6 @@ namespace RSecurityBackend.Services.Implementation
             }
         }
 
-        /// <summary>
-        /// get workspace by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="language"></param>
-        /// <returns></returns>
-        public virtual async Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id, string language)
-        {
-            try
-            {
-                var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == id).SingleOrDefaultAsync();
-                return new RServiceResult<WorkspaceViewModel>
-                    (
-                    ws == null ? null :
-                    new WorkspaceViewModel()
-                    {
-                        Id = ws.Id,
-                        Name = ws.Name,
-                        Description = ws.Description,
-                        CreateDate = ws.CreateDate,
-                        Active = ws.Active,
-                        WorkspaceOrder = ws.WorkspaceOrder,
-                    }
-                    );
-            }
-            catch (Exception exp)
-            {
-                return new RServiceResult<WorkspaceViewModel>(null, exp.ToString());
-            }
-        }
 
         /// <summary>
         /// get user workspace information
@@ -287,7 +282,8 @@ namespace RSecurityBackend.Services.Implementation
                         Description = ws.Description,
                         CreateDate = ws.CreateDate,
                         Active = ws.Active,
-                        WorkspaceOrder = ws.WorkspaceOrder,
+                        WorkspaceOrder = ws.Members.Where(u => u.RAppUserId == userId).Single().WorkspaceOrder,
+                        Owned = ws.Members.Where(u => u.RAppUserId == userId && u.Status == RWSUserMembershipStatus.Owner).Any(),
                     });
             }
             catch (Exception exp)
@@ -384,27 +380,45 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<bool>(false);//not found
                 }
                 var user = await _userManager.FindByEmailAsync(email);
-                if(user == null)
+                if (user == null)
                 {
-                    return new RServiceResult<bool>(false, "User not found");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "کاربری با این ایمیل نام‌نویسی نکرده است. لطفاً اوّل از او بخواهید نام‌نویسی کند." :
+                        "No user with this email found! Please ask him or her to sign-up first!");
                 }
                 if (true == await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == user.Id && u.RWorkspaceId == workspaceId).AnyAsync())
                 {
-                    return new RServiceResult<bool>(false, "User is already a member.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "کاربر پیشتر به این فضای کاری پیوسته است."
+                        :
+                        "User is already a member of this workspace.");
+                }
+                if (true == await _context.WorkspaceUserInvitations.AsNoTracking().Where(u => u.UserId == user.Id && u.WorkspaceId == workspaceId).AnyAsync())
+                {
+                    return new RServiceResult<bool>(false,
+                       language.StartsWith("fa") ?
+                       "این کاربر پیشتر دعوتنامهٔ پردازش‌نشده‌ای برای پیوستن به این فضای کاری دریافت کرده است."
+                       :
+                       "User has already received an invitation to become member of this workspace.");
                 }
                 var rsOption = await _optionsService.GetValueAsync("AllowInvitingMeToWorkspaces", user.Id);
-                if(!string.IsNullOrEmpty(rsOption.ExceptionString))
+                if (!string.IsNullOrEmpty(rsOption.ExceptionString))
                 {
                     return new RServiceResult<bool>(false, rsOption.ExceptionString);
                 }
                 var optionValue = rsOption.Result;
-                if(string.IsNullOrEmpty(optionValue))
+                if (string.IsNullOrEmpty(optionValue))
                 {
                     optionValue = AllowInvitingUsersToWorkspacesByDefault.ToString();
                 }
-                if(!bool.Parse(optionValue))
+                if (!bool.Parse(optionValue))
                 {
-                    return new RServiceResult<bool>(false, "User does not allow adding him/her to workpsaces");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "کاربر اجازهٔ اضافه کردنش به فضاهای کاری را گرفته است. با خود او تماس بگیرید تا موقتاً این اجازه را به شما بدهد." :
+                        "User does not allow adding him/her to workspaces.");
                 }
 
                 _context.WorkspaceUserInvitations.Add
@@ -417,11 +431,19 @@ namespace RSecurityBackend.Services.Implementation
                     );
                 await _context.SaveChangesAsync();
 
-                if(notifyUser)
+                if (notifyUser)
                 {
-                    await _notificationService.PushNotification(user.Id, $"Invitation to {ws.Name}", $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).Email} ");
+                    await _notificationService.PushNotification(user.Id,
+                        language.StartsWith("fa") ?
+                        $"دعوت به پیوستن به فضای کاری{ws.Name}"
+                        :
+                        $"Invitation to {ws.Name}",
+                        language.StartsWith("fa") ?
+                        $"شما از سوی {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} برای پیوستن به فضای کاری {ws.Name} دعوت شده‌اید."
+                        :
+                        $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} ");
                 }
-                
+
 
                 return new RServiceResult<bool>(true);
             }
@@ -445,7 +467,10 @@ namespace RSecurityBackend.Services.Implementation
                 var invitation = await _context.WorkspaceUserInvitations.Where(i => i.UserId == userId && i.WorkspaceId == workspaceId).FirstOrDefaultAsync();
                 if (invitation == null)
                 {
-                    return new RServiceResult<bool>(false, "User got not invitation.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "این کاربر دعوتنامه‌ای دریافت نکرده است." :
+                        "User got no invitation.");
                 }
                 _context.Remove(invitation);
                 await _context.SaveChangesAsync();
@@ -470,8 +495,9 @@ namespace RSecurityBackend.Services.Implementation
                 var invitations = await _context.WorkspaceUserInvitations.AsNoTracking().Include(i => i.Workspace).Where(i => i.UserId == userId).ToListAsync();
                 List<WorkspaceUserInvitationViewModel> lst = new List<WorkspaceUserInvitationViewModel>();
 
-                foreach (var invitation in invitations)
+                for (var i = 0; i < invitations.Count; i++)
                 {
+                    var invitation = invitations[i];
                     lst.Add
                         (
                         new WorkspaceUserInvitationViewModel()
@@ -484,7 +510,8 @@ namespace RSecurityBackend.Services.Implementation
                                 Description = invitation.Workspace.Description,
                                 CreateDate = invitation.Workspace.CreateDate,
                                 Active = invitation.Workspace.Active,
-                                WorkspaceOrder = invitation.Workspace.WorkspaceOrder,
+                                WorkspaceOrder = i + 1,
+                                Owned = false,
                             }
                         }
                         );
@@ -507,7 +534,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             try
             {
-                var invitations = await _context.WorkspaceUserInvitations.AsNoTracking().Include(w => w.Workspace).Where(i => i.WorkspaceId == workspaceId).ToListAsync();
+                var invitations = await _context.WorkspaceUserInvitations.AsNoTracking().Include(w => w.User).Where(i => i.WorkspaceId == workspaceId).ToListAsync();
                 List<WorkspaceUserInvitationViewModel> lst = new List<WorkspaceUserInvitationViewModel>();
 
                 foreach (var invitation in invitations)
@@ -557,11 +584,18 @@ namespace RSecurityBackend.Services.Implementation
                 var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not a member.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "کاربر عضو این فضای کاری نیست." :
+                        "User is not a member.");
                 }
-                if(member.Status == RWSUserMembershipStatus.Owner)
+                if (member.Status == RWSUserMembershipStatus.Owner)
                 {
-                    return new RServiceResult<bool>(false, "Owner can not be removed.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "مالک فضای کاری نمی‌تواند حذف شود."
+                        :
+                        "Owner can not be removed.");
                 }
                 _context.Remove(member);
 
@@ -599,12 +633,20 @@ namespace RSecurityBackend.Services.Implementation
                 var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not a member.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "کاربر عضو این فضای کاری نیست."
+                        :
+                        "User is not a member.");
                 }
 
                 if (member.Status == RWSUserMembershipStatus.Owner)
                 {
-                    return new RServiceResult<bool>(false, "Owner can not be removed. You may try to delete the workspace instead");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "امکان حذف مالک از فضای کاری وجود ندارد. یا فضای کاری را حذف کنید یا مالکیت آن را منتقل کنید."
+                        :
+                        "Owner can not be removed. You may try to delete the workspace instead or transfer ownership to another user.");
                 }
 
                 _context.Remove(member);
@@ -645,35 +687,46 @@ namespace RSecurityBackend.Services.Implementation
                 var member = await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not a member.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "کاربر عضو این فضای کاری نیست." : "User is not a member.");
                 }
 
-                if(member.Status == status)
+                if (member.Status == status)
                 {
-                    return new RServiceResult<bool>(false, "New status is the same as original.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "وضعیت کاربر تغییری نکرده است." : "New status is the same as original.");
                 }
 
-                if(status == RWSUserMembershipStatus.Owner)
+                if (status == RWSUserMembershipStatus.Owner)
                 {
                     var alreadyUsedWorkspace = await _context.RWorkspaces.Include(w => w.Members).AsNoTracking().Where(w => w.Name == ws.Name && w.Members.Any(m => m.RAppUserId == userId && m.Status == RWSUserMembershipStatus.Owner)).FirstOrDefaultAsync();
                     if (alreadyUsedWorkspace != null)
                     {
-                        return new RServiceResult<bool>(false, $"The user aleady owns a workspace called {ws.Name} with code {alreadyUsedWorkspace.Id}");
+                        return new RServiceResult<bool>(false, language.StartsWith("fa") ?
+                            $"کاربر در حال حاضر مالک فضای کاری با نام تکراری {ws.Name} و کد {alreadyUsedWorkspace.Id} است. لازم است نام یکی از این دو فضای کاری تغییر کند." :
+                            $"The user aleady owns a workspace called {ws.Name} with code {alreadyUsedWorkspace.Id}"
+                            );
                     }
 
                     var admin = await _context.RWSUsers.AsNoTracking().Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == ownerOrModeratorId).SingleOrDefaultAsync();
 
                     if (admin.Status != RWSUserMembershipStatus.Owner)
                     {
-                        return new RServiceResult<bool>(false, "User has not enough privileges to perform this operation.");
+                        return new RServiceResult<bool>(false,
+                            language.StartsWith("fa") ?
+                            "کاربر فاقد دسترسی‌های لازم برای انجام این عملیات است."
+                            :
+                            "User has not enough privileges to perform this operation.");
                     }
                 }
 
-                if(member.Status == RWSUserMembershipStatus.Owner)
+                if (member.Status == RWSUserMembershipStatus.Owner)
                 {
-                    if(false == await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.Status == RWSUserMembershipStatus.Owner && u.RAppUserId != userId).AnyAsync())
+                    if (false == await _context.RWSUsers.Where(u => u.RWorkspaceId == workspaceId && u.Status == RWSUserMembershipStatus.Owner && u.RAppUserId != userId).AnyAsync())
                     {
-                        return new RServiceResult<bool>(false, "Workspace remains ownerless after this changes and it is not permitted.");
+                        return new RServiceResult<bool>(false,
+                            language.StartsWith("fa") ?
+                            "فضای کاری با تغییر وضعیت کاربر بدون مالک خواهد بود و انجام این عملیات امکان ندارد. لطفاً ابتدا مالک جدیدی برای آن تعیین کنید."
+                            :
+                            "Workspace remains ownerless after this changes and it is not permitted.");
                     }
                 }
 
@@ -683,7 +736,7 @@ namespace RSecurityBackend.Services.Implementation
                 _context.Update(member);
                 await _context.SaveChangesAsync();
 
-                if(
+                if (
                     oldStatus != RWSUserMembershipStatus.Owner
                     &&
                     status == RWSUserMembershipStatus.Owner
@@ -730,7 +783,11 @@ namespace RSecurityBackend.Services.Implementation
                 var invitation = await _context.WorkspaceUserInvitations.Where(i => i.UserId == userId && i.WorkspaceId == ws.Id).FirstOrDefaultAsync();
                 if (invitation == null)
                 {
-                    return new RServiceResult<bool>(false, "User got not invitation.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "دعوتنامه‌ای برای این کاربر در این فضای کاری یافت نشد."
+                        :
+                        "User got no invitation.");
                 }
                 _context.Remove(invitation);
                 if (!reject)
@@ -740,7 +797,9 @@ namespace RSecurityBackend.Services.Implementation
                         {
                             RWorkspaceId = workspaceId,
                             RAppUserId = userId,
-                            Status = RWSUserMembershipStatus.Member
+                            Status = RWSUserMembershipStatus.Member,
+                            WorkspaceOrder = await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == userId).AnyAsync() ?
+                                                1 + await _context.RWSUsers.AsNoTracking().Where(u => u.RAppUserId == userId).MaxAsync(c => c.WorkspaceOrder) : 1
                         });
 
                 }
@@ -770,23 +829,31 @@ namespace RSecurityBackend.Services.Implementation
                 var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
-                    return new RServiceResult<bool>(false, "Workspace not found.");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "فضای کاری وجود ندارد."
+                        :
+                        "Workspace not found.");
                 }
                 var member = await _context.RWSUsers.AsNoTracking().Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not a member.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "کاربر عضو این فضای کاری نیست." : "User is not a member.");
                 }
 
                 var role = await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).SingleOrDefaultAsync();
-                if(role == null)
+                if (role == null)
                 {
-                    return new RServiceResult<bool>(false, "Role not foune");
+                    return new RServiceResult<bool>(false,
+                        language.StartsWith("fa") ?
+                        "نقش یافت نشد."
+                        :
+                        "Role not found.");
                 }
 
-                if(_context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).Any())
+                if (_context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).Any())
                 {
-                    return new RServiceResult<bool>(false, "User already in role.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "کاربر پیشتر حائز این نقش شده است." : "User already in role.");
                 }
 
                 RWSUserRole userRole = new RWSUserRole()
@@ -822,30 +889,30 @@ namespace RSecurityBackend.Services.Implementation
                 var ws = await _context.RWorkspaces.AsNoTracking().Where(w => w.Id == workspaceId).SingleOrDefaultAsync();
                 if (ws == null)
                 {
-                    return new RServiceResult<bool>(false, "Workspace not found.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "فضای کاری یافت نشد." : "Workspace not found.");
                 }
-                
+
                 var member = await _context.RWSUsers.AsNoTracking().Where(u => u.RWorkspaceId == workspaceId && u.RAppUserId == userId).SingleOrDefaultAsync();
                 if (member == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not a member.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "کاربر عضو این فضای کاری نیست." : "User is not a member.");
                 }
 
                 var role = await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).SingleOrDefaultAsync();
                 if (role == null)
                 {
-                    return new RServiceResult<bool>(false, "Role not foune");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش یافت نشد." : "Role not found.");
                 }
 
-                var userRole = _context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).SingleOrDefaultAsync();
+                var userRole = await _context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).SingleOrDefaultAsync();
                 if (userRole == null)
                 {
-                    return new RServiceResult<bool>(false, "User is not in role.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "کاربر حائز این نقش نیست." : "User is not in role.");
                 }
 
-                if(member.Status == RWSUserMembershipStatus.Owner && role.Name == _rolesService.AdministratorRoleName)
+                if (member.Status == RWSUserMembershipStatus.Owner && role.Name == _rolesService.AdministratorRoleName)
                 {
-                    return new RServiceResult<bool>(false, "You cannot revoke administration role from owner.");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "امکان گرفتن نقش مدیریت سیستم از مالک فضای کاری وجود ندارد." : "You cannot revoke administration role from owner.");
                 }
 
                 _context.Remove(userRole);
@@ -875,7 +942,7 @@ namespace RSecurityBackend.Services.Implementation
                 var role = await _context.RWSRoles.AsNoTracking().Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).SingleOrDefaultAsync();
                 if (role == null)
                 {
-                    return new RServiceResult<bool>(false, "Role not foune");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش یافت نشد." : "Role not found");
                 }
 
                 return new RServiceResult<bool>(await _context.RWSUserRoles.Where(r => r.WorkspaceId == workspaceId && r.UserId == userId && r.RoleId == role.Id).AnyAsync());
@@ -949,7 +1016,48 @@ namespace RSecurityBackend.Services.Implementation
             {
                 return new RServiceResult<bool>(false, exp.ToString());
             }
-           
+
+        }
+
+        /// <summary>
+        /// set workspace order
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="nOrder"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> SetWorkspaceOrderForUserAsync(Guid workspaceId, Guid userId, int nOrder, string language)
+        {
+            try
+            {
+                var workspaces = await _context.RWSUsers.Where(u => u.RAppUserId == userId).OrderBy(u => u.WorkspaceOrder).ToArrayAsync();
+
+                for (var i = 0; i < workspaces.Length; i++)
+                {
+                    workspaces[i].WorkspaceOrder = i + 1;
+                }
+
+                var workspace = workspaces.Where(w => w.RWorkspaceId == workspaceId).Single();
+                workspace.WorkspaceOrder = nOrder;
+
+                var nextWorkspaces = workspaces.Where(w => w.WorkspaceOrder >= nOrder && w.RWorkspaceId != workspaceId).OrderBy(w => w.WorkspaceOrder).ToList();
+                int nNextOrder = nOrder + 1;
+                for (var i = 0; i < nextWorkspaces.Count; i++)
+                {
+                    nextWorkspaces[i].WorkspaceOrder = nNextOrder;
+                    nNextOrder++;
+                }
+
+                _context.UpdateRange(workspaces);
+                await _context.SaveChangesAsync();
+                return new RServiceResult<bool>(true);
+
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
         }
 
         /// <summary>
@@ -961,7 +1069,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <returns></returns>
         public virtual async Task<RServiceResult<bool>> IsAdmin(Guid workspaceId, Guid userId, string language)
         {
-            return  await IsInRoleAsync(workspaceId, userId, _rolesService.AdministratorRoleName, language);
+            return await IsInRoleAsync(workspaceId, userId, _rolesService.AdministratorRoleName, language);
         }
 
         /// <summary>
@@ -1013,8 +1121,8 @@ namespace RSecurityBackend.Services.Implementation
         /// allow inviting users to workspaces by default
         /// </summary>
         public virtual bool AllowInvitingUsersToWorkspacesByDefault
-        { 
-            get { return true; } 
+        {
+            get { return true; }
         }
 
         /// <summary>

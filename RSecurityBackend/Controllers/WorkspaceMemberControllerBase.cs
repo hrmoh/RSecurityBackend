@@ -28,7 +28,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpDelete("{userId}/from/{workspace}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.RemoveMembersOperationShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.RemoveMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -59,20 +59,21 @@ namespace RSecurityBackend.Controllers
                 Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
                 Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
                 RServiceResult<bool>
-                    canAdd =
+                    canView =
                         await _userPermissionChecker.Check
                             (
                                 loggedOnUserId,
                                 sessionId,
                                 User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
-                                SecurableItem.WorkpsaceEntityShortName,
-                                SecurableItem.QueryMembersListOperationShortName
+                                SecurableItem.WorkspaceEntityShortName,
+                                SecurableItem.QueryMembersListOperationShortName,
+                                workspace
                                 );
-                if (!string.IsNullOrEmpty(canAdd.ExceptionString))
+                if (!string.IsNullOrEmpty(canView.ExceptionString))
                 {
-                    return BadRequest(canAdd.ExceptionString);
+                    return BadRequest(canView.ExceptionString);
                 }
-                if (canAdd.Result == false)
+                if (canView.Result == false)
                 {
                     return StatusCode((int)HttpStatusCode.Forbidden);
                 }
@@ -92,7 +93,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="status"></param>
         /// <returns></returns>
         [HttpPut("{userId}/in/{workspace}/status/{status}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberStatusOperationShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.ChangeMemberStatusOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -117,7 +118,7 @@ namespace RSecurityBackend.Controllers
         /// <returns></returns>
 
         [HttpPost("{userId}/in/{workspace}/role/{role}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -139,7 +140,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="role"></param>
         /// <returns></returns>
         [HttpDelete("{userId}/from/{role}/in/{workspace}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.ChangeMemberRoleShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -154,7 +155,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// get user rols
+        /// get user roles
         /// </summary>
         /// <param name="workspace"></param>
         /// <param name="userId"></param>
@@ -177,7 +178,7 @@ namespace RSecurityBackend.Controllers
                         loggedOnUserId,
                         new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value),
                         User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
-                        SecurableItem.WorkpsaceEntityShortName,
+                        SecurableItem.WorkspaceEntityShortName,
                         SecurableItem.ChangeMemberRoleShortName,
                         workspace
                         );
@@ -203,7 +204,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("invitation/{workspace}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -226,7 +227,7 @@ namespace RSecurityBackend.Controllers
         /// <returns></returns>
 
         [HttpDelete("invitation/{workspace}/{userId}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -265,7 +266,7 @@ namespace RSecurityBackend.Controllers
         /// <returns></returns>
 
         [HttpGet("invitation/{workspace}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.InviteMembersOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(WorkspaceUserInvitationViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> GetWorkspaceInvitationsAsync(Guid workspace)
@@ -321,6 +322,29 @@ namespace RSecurityBackend.Controllers
             if (!result.Result)
                 return NotFound();
             return Ok(result.Result);
+        }
+
+        /// <summary>
+        /// set workspace order for user
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        [HttpPut("order/{workspace}/{order}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> SetWorkspaceOrderForUserAsync(Guid workspace, int order)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+
+            RServiceResult<bool> result = await _workspaceService.SetWorkspaceOrderForUserAsync(workspace, loggedOnUserId, order, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
+            if (!string.IsNullOrEmpty(result.ExceptionString))
+                return BadRequest(result.ExceptionString);
+            if (!result.Result)
+                return NotFound();
+            return Ok();
         }
 
         /// <summary>

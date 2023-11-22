@@ -52,13 +52,6 @@ namespace RSecurityBackend.Services
         /// <returns></returns>
         Task<RServiceResult<WorkspaceViewModel[]>> GetMemberWorkspacesAsync(Guid userId, string language, bool onlyActive, bool onlyOwned, bool onlyMember);
 
-        /// <summary>
-        /// get workspace by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="language"></param>
-        /// <returns></returns>
-        Task<RServiceResult<WorkspaceViewModel>> GetWorkspaceByIdAsync(Guid id, string language);
 
         /// <summary>
         /// get user workspace information
@@ -220,6 +213,16 @@ namespace RSecurityBackend.Services
         /// <param name="language"></param>
         /// <returns></returns>
         Task<RServiceResult<bool>> HasPermission(Guid workspaceId, Guid userId, string securableItemShortName, string operationShortName, string language);
+
+        /// <summary>
+        /// set workspace order
+        /// </summary>
+        /// <param name="workspaceId"></param>
+        /// <param name="userId"></param>
+        /// <param name="nOrder"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> SetWorkspaceOrderForUserAsync(Guid workspaceId, Guid userId, int nOrder, string language);
 
         /// <summary>
         /// Lists user permissions

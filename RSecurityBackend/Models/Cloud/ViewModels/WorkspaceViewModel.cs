@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace RSecurityBackend.Models.Cloud.ViewModels
 {
@@ -37,5 +36,10 @@ namespace RSecurityBackend.Models.Cloud.ViewModels
         /// active
         /// </summary>
         public bool Active { get; set; }
+
+        /// <summary>
+        /// am I the owner?
+        /// </summary>
+        public bool Owned { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace RSecurityBackend.Controllers
 
 
             // Paging Header
-            HttpContext.Response.Headers.Add("paging-headers", JsonConvert.SerializeObject(itemsInfo.Result.PagingMeta));
+            HttpContext.Response.Headers.Append("paging-headers", JsonConvert.SerializeObject(itemsInfo.Result.PagingMeta));
 
             return Ok(itemsInfo.Result.Items);
         }

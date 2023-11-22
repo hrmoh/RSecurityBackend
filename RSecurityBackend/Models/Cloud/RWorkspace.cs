@@ -1,5 +1,4 @@
-﻿using RSecurityBackend.Models.Auth.Db;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -25,11 +24,6 @@ namespace RSecurityBackend.Models.Cloud
         /// description
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// order
-        /// </summary>
-        public int WorkspaceOrder { get; set; }
 
         /// <summary>
         /// worspace create date

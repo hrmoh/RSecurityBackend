@@ -19,7 +19,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// Administrator role name
         /// </summary>
-        public string AdministratorRoleName { get { return "Administrator"; } }
+        public virtual string AdministratorRoleName { get { return "Administrator"; } }
 
         /// <summary>
         /// returns all user roles
@@ -86,7 +86,7 @@ namespace RSecurityBackend.Services.Implementation
             RWSRole existingInfo = await _context.RWSRoles.Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).FirstOrDefaultAsync();
             if (existingInfo == null)
             {
-                return new RServiceResult<bool>(false, "role not found");
+                return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش وجود ندارد." : "role not found");
             }
             if (existingInfo.Name != updateRoleInfo.Name)
             {
@@ -95,7 +95,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 if (anotherWithSameName != null)
                 {
-                    return new RServiceResult<bool>(false, "duplicated role name");
+                    return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نام نقش تکراری است." : "Duplicated role name.");
                 }
 
                 existingInfo.Name = updateRoleInfo.Name;
@@ -123,7 +123,7 @@ namespace RSecurityBackend.Services.Implementation
 
                 return new RServiceResult<bool>(true);
             }
-            return new RServiceResult<bool>(false, "role not found.");
+            return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش وجود ندارد." : "role not found.");
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace RSecurityBackend.Services.Implementation
             RWSRole existingRole = await FindByNameAsync((Guid)newRoleInfo.WorkspaceId, newRoleInfo.Name, language);
             if (existingRole != null)
             {
-                return new RServiceResult<RWSRole>(null, "Role name is in use");
+                return new RServiceResult<RWSRole>(null, language.StartsWith("fa") ? "نام نقش تکراری است." : "Role name is in use.");
             }
             _context.Add(newRoleInfo);
             await _context.SaveChangesAsync();
@@ -158,7 +158,7 @@ namespace RSecurityBackend.Services.Implementation
             RWSRole roleByName = await FindByNameAsync(workspaceId, roleName, language);
             if (roleByName == null)
             {
-                return new RServiceResult<bool>(false, "role not found");
+                return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش یافت نشد." : "role not found.");
             }
 
             RWSRole role = await _context.RWSRoles.AsNoTracking().Include(g => g.Permissions)
@@ -211,7 +211,7 @@ namespace RSecurityBackend.Services.Implementation
             RWSRole roleByName = await FindByNameAsync(workspaceId, roleName, language);
             if (roleByName == null)
             {
-                return new RServiceResult<SecurableItem[]>(null, "role not found");
+                return new RServiceResult<SecurableItem[]>(null, language.StartsWith("fa") ? "نقش یافت نشد." : "role not found.");
             }
             RWSRole role = await _context.RWSRoles.AsNoTracking().Include(g => g.Permissions).Where(g => g.Id == roleByName.Id).SingleOrDefaultAsync();
             List<SecurableItem> securableItems = new List<SecurableItem>();
@@ -254,7 +254,7 @@ namespace RSecurityBackend.Services.Implementation
             RWSRole roleByName = await FindByNameAsync(workspaceId, roleName, language);
             if (roleByName == null)
             {
-                return new RServiceResult<bool>(false, "role not found");
+                return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش یافت نشد." : "role not found.");
             }
             RWSRole role = await _context.RWSRoles.Include(g => g.Permissions).Where(g => g.Id == roleByName.Id).SingleOrDefaultAsync();
             role.Permissions.Clear();

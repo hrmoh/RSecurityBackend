@@ -206,7 +206,7 @@ namespace RSecurityBackend.Controllers
                     return BadRequest(usersInfo.ExceptionString);
                 }
                 // Paging Header
-                HttpContext.Response.Headers.Add("paging-headers", JsonConvert.SerializeObject(usersInfo.Result.PagingMeta));
+                HttpContext.Response.Headers.Append("paging-headers", JsonConvert.SerializeObject(usersInfo.Result.PagingMeta));
 
                 return Ok(usersInfo.Result.Items);
             }
@@ -219,7 +219,7 @@ namespace RSecurityBackend.Controllers
                         return NotFound();
                     return BadRequest(userInfo.ExceptionString);
                 }
-                HttpContext.Response.Headers.Add("paging-headers", JsonConvert.SerializeObject(new PaginationMetadata()
+                HttpContext.Response.Headers.Append("paging-headers", JsonConvert.SerializeObject(new PaginationMetadata()
                 {
                     currentPage = 1,
                     hasNextPage = false,

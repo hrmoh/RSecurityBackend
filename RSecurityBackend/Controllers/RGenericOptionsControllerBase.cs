@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Services;
 using System;
 using System.Linq;

@@ -41,7 +41,7 @@ namespace RSecurityBackend.Controllers
                                 loggedOnUserId,
                                 sessionId,
                                 User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR",
-                                SecurableItem.WorkpsaceEntityShortName,
+                                SecurableItem.WorkspaceEntityShortName,
                                 SecurableItem.AddOperationShortName
                                 );
                 if (!string.IsNullOrEmpty(canAdd.ExceptionString))
@@ -66,7 +66,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut("{workspace}")]
-        [Authorize(Policy = SecurableItem.WorkpsaceEntityShortName + ":" + SecurableItem.ModifyOperationShortName)]
+        [Authorize(Policy = SecurableItem.WorkspaceEntityShortName + ":" + SecurableItem.ModifyOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]

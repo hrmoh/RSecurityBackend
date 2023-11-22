@@ -42,5 +42,10 @@ namespace RSecurityBackend.Models.Cloud
         /// workspace id
         /// </summary>
         public Guid? RWorkspaceId { get; set; }
+
+        /// <summary>
+        /// workspace order for user
+        /// </summary>
+        public int WorkspaceOrder { get; set; }
     }
 }

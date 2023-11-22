@@ -28,7 +28,7 @@
         /// <summary>
         /// workspaces
         /// </summary>
-        public const string WorkpsaceEntityShortName = "workspace";
+        public const string WorkspaceEntityShortName = "workspace";
 
         /// <summary>
         /// worspace role
@@ -157,7 +157,7 @@
                     },
                     new SecurableItem()
                     {
-                        ShortName = WorkpsaceEntityShortName,
+                        ShortName = WorkspaceEntityShortName,
                         Description = "فضاهای کاری",
                         Operations = new SecurableItemOperation[]
                         {
@@ -179,7 +179,7 @@
                 {
                     new SecurableItem()
                     {
-                        ShortName = WorkpsaceEntityShortName,
+                        ShortName = WorkspaceEntityShortName,
                         Description = "فضاهای کاری",
                         Operations = new SecurableItemOperation[]
                         {

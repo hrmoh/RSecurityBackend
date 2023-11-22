@@ -11,7 +11,7 @@
         public string UserEmail { get; set; }
 
         /// <summary>
-        /// notify
+        /// notify user through internal notification service
         /// </summary>
         public bool Notify { get; set; }
     }
