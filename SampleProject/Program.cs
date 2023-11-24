@@ -217,7 +217,7 @@ builder.Services.AddTransient<ICaptchaService, CaptchaServiceEF>();
 builder.Services.AddTransient<IImageFileService, ImageFileServiceEF>();
 
 //app user services
-builder.Services.AddTransient<IAppUserService, AppUserService>();
+builder.Services.AddTransient<IAppUserService, SampleAppUserService>();
 
 //user groups services
 builder.Services.AddTransient<IUserRoleService, RoleService>();

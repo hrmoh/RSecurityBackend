@@ -20,6 +20,7 @@ using RSecurityBackend.Models.Image;
 using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Audit.Db;
 using Microsoft.Extensions.Configuration;
+using RSecurityBackend.Models.Cloud;
 
 namespace RSecurityBackend.Services.Implementation
 {
@@ -926,6 +927,23 @@ namespace RSecurityBackend.Services.Implementation
 
             var options = await _context.Options.Where(o => o.RAppUserId == userId).ToListAsync();
             _context.RemoveRange(options);
+
+            var invitations = await _context.WorkspaceUserInvitations.Where(w => w.UserId == userId).ToListAsync();
+            if (invitations.Any())
+            {
+                _context.RemoveRange(invitations);
+            }
+            var userRoles = await _context.RWSUserRoles.Where(w => w.UserId == userId).ToListAsync();
+            if (userRoles.Any())
+            {
+                _context.RemoveRange(userRoles);
+            }
+
+            var memberships = await _context.RWSUsers.Where(m => m.RAppUserId == userId).ToListAsync();
+            if(memberships.Any())
+            {
+                _context.RemoveRange(memberships);//warning: this may result in some workspaces becoming ownerless
+            }
 
             await _context.SaveChangesAsync();
             return new RServiceResult<bool>(true);
