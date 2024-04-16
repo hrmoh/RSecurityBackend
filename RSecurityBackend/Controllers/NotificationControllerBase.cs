@@ -23,15 +23,16 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// Get User Notifications
         /// </summary>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
         [HttpGet]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RUserNotificationViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetUserNotifications()
+        public async Task<IActionResult> GetUserNotifications(NotificationType notificationType = NotificationType.All)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            RServiceResult<RUserNotificationViewModel[]> res = await _notificationService.GetUserNotifications(loggedOnUserId);
+            RServiceResult<RUserNotificationViewModel[]> res = await _notificationService.GetUserNotifications(loggedOnUserId, notificationType);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok(res.Result);
@@ -41,16 +42,17 @@ namespace RSecurityBackend.Controllers
         /// Get User Notifications (Paginated Version)
         /// </summary>
         /// <param name="paging"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("paginated")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RUserNotificationViewModel[]))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetUserNotificationsPaginated([FromQuery] PagingParameterModel paging)
+        public async Task<IActionResult> GetUserNotificationsPaginated([FromQuery] PagingParameterModel paging, NotificationType notificationType = NotificationType.All)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            var res = await _notificationService.GetUserNotificationsPaginated(paging, loggedOnUserId);
+            var res = await _notificationService.GetUserNotificationsPaginated(paging, loggedOnUserId, notificationType);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             // Paging Header
@@ -61,16 +63,17 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// Get unread user notifications count
         /// </summary>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("unread/count")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(int))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetUnreadUserNotificationsCount()
+        public async Task<IActionResult> GetUnreadUserNotificationsCount(NotificationType notificationType = NotificationType.All)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            RServiceResult<int> res = await _notificationService.GetUnreadUserNotificationsCount(loggedOnUserId);
+            RServiceResult<int> res = await _notificationService.GetUnreadUserNotificationsCount(loggedOnUserId, notificationType);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok(res.Result);

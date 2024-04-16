@@ -31,5 +31,10 @@ namespace RSecurityBackend.Models.Notification.ViewModels
         /// Text
         /// </summary>
         public string HtmlText { get; set; }
+
+        /// <summary>
+        /// Notification Type
+        /// </summary>
+        public NotificationType NotificationType { get; set; }
     }
 }

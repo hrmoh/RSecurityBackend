@@ -7,6 +7,7 @@ using RSecurityBackend.Models.Auth.ViewModels;
 using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Cloud.ViewModels;
 using RSecurityBackend.Models.Generic;
+using RSecurityBackend.Models.Notification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -441,7 +442,9 @@ namespace RSecurityBackend.Services.Implementation
                         language.StartsWith("fa") ?
                         $"شما از سوی {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} برای پیوستن به فضای کاری {ws.Name} دعوت شده‌اید."
                         :
-                        $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} ");
+                        $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} ",
+                        NotificationType.ActionRequired
+                        );
                 }
 
 

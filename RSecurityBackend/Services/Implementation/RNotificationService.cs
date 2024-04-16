@@ -22,8 +22,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="subject"></param>
         /// <param name="htmlText"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RUserNotificationViewModel>> PushNotification(Guid userId, string subject, string htmlText)
+        public async Task<RServiceResult<RUserNotificationViewModel>> PushNotification(Guid userId, string subject, string htmlText, NotificationType notificationType)
         {
             RUserNotification notification =
                         new RUserNotification()
@@ -32,7 +33,8 @@ namespace RSecurityBackend.Services.Implementation
                             DateTime = DateTime.Now,
                             Status = NotificationStatus.Unread,
                             Subject = subject,
-                            HtmlText = htmlText
+                            HtmlText = htmlText,
+                            NotificationType = notificationType,
                         };
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
@@ -44,7 +46,8 @@ namespace RSecurityBackend.Services.Implementation
                     DateTime = notification.DateTime,
                     Status = notification.Status,
                     Subject = notification.Subject,
-                    HtmlText = notification.HtmlText
+                    HtmlText = notification.HtmlText,
+                    NotificationType = notification.NotificationType,
                 }
                 );
         }
@@ -70,7 +73,8 @@ namespace RSecurityBackend.Services.Implementation
                      DateTime = notification.DateTime,
                      Status = notification.Status,
                      Subject = notification.Subject,
-                     HtmlText = notification.HtmlText
+                     HtmlText = notification.HtmlText,
+                     NotificationType= notification.NotificationType,
                  }
 
                 );
@@ -124,13 +128,14 @@ namespace RSecurityBackend.Services.Implementation
         /// Get User Notifications
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RUserNotificationViewModel[]>> GetUserNotifications(Guid userId)
+        public async Task<RServiceResult<RUserNotificationViewModel[]>> GetUserNotifications(Guid userId, NotificationType notificationType)
         {
             return new RServiceResult<RUserNotificationViewModel[]>
                 (
                 await _context.Notifications
-                .Where(notification => notification.UserId == userId)
+                .Where(notification => notification.UserId == userId && (notificationType == NotificationType.All || notification.NotificationType == notificationType))
                 .OrderByDescending(notification => notification.DateTime)
                 .Select(notification =>
                  new RUserNotificationViewModel()
@@ -139,7 +144,8 @@ namespace RSecurityBackend.Services.Implementation
                      DateTime = notification.DateTime,
                      Status = notification.Status,
                      Subject = notification.Subject,
-                     HtmlText = notification.HtmlText
+                     HtmlText = notification.HtmlText,
+                     NotificationType = notification.NotificationType,
                  }
                 )
                 .ToArrayAsync()
@@ -151,11 +157,12 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="paging"></param>
         /// <param name="userId"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<(PaginationMetadata PagingMeta, RUserNotificationViewModel[] Items)>> GetUserNotificationsPaginated(PagingParameterModel paging, Guid userId)
+        public async Task<RServiceResult<(PaginationMetadata PagingMeta, RUserNotificationViewModel[] Items)>> GetUserNotificationsPaginated(PagingParameterModel paging, Guid userId, NotificationType notificationType)
         {
             var source = _context.Notifications
-                .Where(notification => notification.UserId == userId)
+                .Where(notification => notification.UserId == userId && (notificationType == NotificationType.All || notification.NotificationType == notificationType))
                 .OrderByDescending(notification => notification.DateTime)
                 .Select(notification =>
                  new RUserNotificationViewModel()
@@ -164,7 +171,8 @@ namespace RSecurityBackend.Services.Implementation
                      DateTime = notification.DateTime,
                      Status = notification.Status,
                      Subject = notification.Subject,
-                     HtmlText = notification.HtmlText
+                     HtmlText = notification.HtmlText,
+                     NotificationType = notification.NotificationType,
                  });
 
             (PaginationMetadata PagingMeta, RUserNotificationViewModel[] Items) paginatedResult =
@@ -180,13 +188,14 @@ namespace RSecurityBackend.Services.Implementation
         /// Get Unread User Notifications Count
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<int>> GetUnreadUserNotificationsCount(Guid userId)
+        public async Task<RServiceResult<int>> GetUnreadUserNotificationsCount(Guid userId, NotificationType notificationType)
         {
             return new RServiceResult<int>
                 (
                 await _context.Notifications
-                .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
+                .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread && (notificationType == NotificationType.All || n.NotificationType == notificationType))
                 .CountAsync()
                 );
         }

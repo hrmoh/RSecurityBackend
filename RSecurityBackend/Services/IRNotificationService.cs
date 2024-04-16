@@ -17,30 +17,34 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <param name="subject"></param>
         /// <param name="htmlText"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        Task<RServiceResult<RUserNotificationViewModel>> PushNotification(Guid userId, string subject, string htmlText);
+        Task<RServiceResult<RUserNotificationViewModel>> PushNotification(Guid userId, string subject, string htmlText, NotificationType notificationType = NotificationType.NoActionRequired);
 
         /// <summary>
         /// Get User Notifications
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        Task<RServiceResult<RUserNotificationViewModel[]>> GetUserNotifications(Guid userId);
+        Task<RServiceResult<RUserNotificationViewModel[]>> GetUserNotifications(Guid userId, NotificationType notificationType = NotificationType.All);
 
         /// <summary>
         /// Get User Notifications (paginated version)
         /// </summary>
         /// <param name="paging"></param>
         /// <param name="userId"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        Task<RServiceResult<(PaginationMetadata PagingMeta, RUserNotificationViewModel[] Items)>> GetUserNotificationsPaginated(PagingParameterModel paging, Guid userId);
+        Task<RServiceResult<(PaginationMetadata PagingMeta, RUserNotificationViewModel[] Items)>> GetUserNotificationsPaginated(PagingParameterModel paging, Guid userId, NotificationType notificationType = NotificationType.All);
 
         /// <summary>
         /// Get Unread User Notifications Count
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="notificationType"></param>
         /// <returns></returns>
-        Task<RServiceResult<int>> GetUnreadUserNotificationsCount(Guid userId);
+        Task<RServiceResult<int>> GetUnreadUserNotificationsCount(Guid userId, NotificationType notificationType = NotificationType.All);
 
         /// <summary>
         /// Switch Notification Status
