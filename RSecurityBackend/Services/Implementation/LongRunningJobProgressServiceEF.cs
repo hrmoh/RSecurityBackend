@@ -84,6 +84,7 @@ namespace RSecurityBackend.Services.Implementation
             job.Progress = progress;
             job.Succeeded = succeeded;
             job.Exception = exception;
+            job.LastUpdate = DateTime.Now;
 
             _context.Update(job);
 

@@ -45,5 +45,10 @@ namespace RSecurityBackend.Models.Generic.Db
         /// finished
         /// </summary>
         public bool Succeeded { get; set; }
+
+        /// <summary>
+        /// Last Update Time
+        /// </summary>
+        public DateTime LastUpdate { get; set; }
     }
 }
