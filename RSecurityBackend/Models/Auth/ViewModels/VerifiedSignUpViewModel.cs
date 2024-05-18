@@ -38,11 +38,11 @@
         public string FirstName { get; set; }
 
         /// <summary>
-        /// Sure Name
+        /// SurName
         /// </summary>
         /// <example>
         /// Mohammadi
         /// </example>        
-        public string SureName { get; set; }
+        public string SurName { get; set; }
     }
 }

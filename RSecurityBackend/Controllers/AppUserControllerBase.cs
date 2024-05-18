@@ -1043,7 +1043,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public virtual async Task<IActionResult> FinalizeSignUp([AuditIgnore][FromBody] VerifiedSignUpViewModel newUserInfo)
         {
-            RServiceResult<bool> result = await _appUserService.FinalizeSignUp(newUserInfo.Email, newUserInfo.Secret, newUserInfo.Password, newUserInfo.FirstName, newUserInfo.SureName);
+            RServiceResult<bool> result = await _appUserService.FinalizeSignUp(newUserInfo.Email, newUserInfo.Secret, newUserInfo.Password, newUserInfo.FirstName, newUserInfo.SurName);
             if (!result.Result)
                 return BadRequest(result.ExceptionString);
             return Ok(true);
