@@ -142,7 +142,7 @@ namespace RSecurityBackend.Services.Implementation
                         Username = appUser.UserName,
                         Email = appUser.Email,
                         FirstName = appUser.FirstName,
-                        SurName = appUser.SureName,
+                        SureName = appUser.SureName,
                         PhoneNumber = appUser.PhoneNumber,
                         RImageId = appUser.RImageId,
                         Status = appUser.Status,
@@ -219,7 +219,7 @@ namespace RSecurityBackend.Services.Implementation
                         Username = appUser.UserName,
                         Email = appUser.Email,
                         FirstName = appUser.FirstName,
-                        SurName = appUser.SureName,
+                        SureName = appUser.SureName,
                         PhoneNumber = appUser.PhoneNumber,
                         RImageId = appUser.RImageId,
                         Status = appUser.Status,
@@ -329,7 +329,7 @@ namespace RSecurityBackend.Services.Implementation
                     Username = appUser.UserName,
                     Email = appUser.Email,
                     FirstName = appUser.FirstName,
-                    SurName = appUser.SureName,
+                    SureName = appUser.SureName,
                     PhoneNumber = appUser.PhoneNumber,
                     RImageId = appUser.RImageId,
                     Status = appUser.Status,
@@ -367,7 +367,7 @@ namespace RSecurityBackend.Services.Implementation
                     Username = appUser.UserName,
                     Email = appUser.Email,
                     FirstName = appUser.FirstName,
-                    SurName = appUser.SureName,
+                    SureName = appUser.SureName,
                     PhoneNumber = appUser.PhoneNumber,
                     RImageId = appUser.RImageId,
                     Status = appUser.Status,
@@ -411,7 +411,7 @@ namespace RSecurityBackend.Services.Implementation
                             Username = rUserSession.RAppUser.UserName,
                             Email = rUserSession.RAppUser.Email,
                             FirstName = rUserSession.RAppUser.FirstName,
-                            SurName = rUserSession.RAppUser.SureName,
+                            SureName = rUserSession.RAppUser.SureName,
                             PhoneNumber = rUserSession.RAppUser.PhoneNumber,
                             RImageId = rUserSession.RAppUser.RImageId,
                             Status = rUserSession.RAppUser.Status,
@@ -458,7 +458,7 @@ namespace RSecurityBackend.Services.Implementation
                             Username = rUserSession.RAppUser.UserName,
                             Email = rUserSession.RAppUser.Email,
                             FirstName = rUserSession.RAppUser.FirstName,
-                            SurName = rUserSession.RAppUser.SureName,
+                            SureName = rUserSession.RAppUser.SureName,
                             PhoneNumber = rUserSession.RAppUser.PhoneNumber,
                             RImageId = rUserSession.RAppUser.RImageId,
                             Status = rUserSession.RAppUser.Status,
@@ -680,7 +680,7 @@ namespace RSecurityBackend.Services.Implementation
                                 Username = appUser.UserName,
                                 Email = appUser.Email,
                                 FirstName = appUser.FirstName,
-                                SurName = appUser.SureName,
+                                SureName = appUser.SureName,
                                 PhoneNumber = appUser.PhoneNumber,
                                 RImageId = appUser.RImageId,
                                 Status = appUser.Status,
@@ -729,7 +729,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     UserName = newUserInfo.Username,
                     FirstName = newUserInfo.FirstName,
-                    SureName = newUserInfo.SurName,
+                    SureName = newUserInfo.SureName,
                     NickName = newUserInfo.NickName,
                     Email = newUserInfo.Email,
                     PhoneNumber = newUserInfo.PhoneNumber,
@@ -835,10 +835,10 @@ namespace RSecurityBackend.Services.Implementation
             }
 
             updateUserInfo.FirstName = string.IsNullOrEmpty(updateUserInfo.FirstName) ? updateUserInfo.FirstName : updateUserInfo.FirstName.Trim();
-            updateUserInfo.SurName = string.IsNullOrEmpty(updateUserInfo.SurName) ? updateUserInfo.SurName : updateUserInfo.SurName.Trim();
+            updateUserInfo.SureName = string.IsNullOrEmpty(updateUserInfo.SureName) ? updateUserInfo.SureName : updateUserInfo.SureName.Trim();
             updateUserInfo.NickName = string.IsNullOrEmpty(updateUserInfo.NickName) ? updateUserInfo.NickName : updateUserInfo.NickName.Trim();
 
-            if (string.IsNullOrEmpty(updateUserInfo.NickName) && string.IsNullOrEmpty(updateUserInfo.FirstName) && string.IsNullOrEmpty(updateUserInfo.SurName))
+            if (string.IsNullOrEmpty(updateUserInfo.NickName) && string.IsNullOrEmpty(updateUserInfo.FirstName) && string.IsNullOrEmpty(updateUserInfo.SureName))
             {
                 return new RServiceResult<bool>(false, "نام، نام خانوادگی و نام مستعار نمی‌توانند همگی خالی باشند.");
             }
@@ -848,7 +848,7 @@ namespace RSecurityBackend.Services.Implementation
 
 
             existingInfo.FirstName = updateUserInfo.FirstName;
-            existingInfo.SureName = updateUserInfo.SurName;
+            existingInfo.SureName = updateUserInfo.SureName;
             existingInfo.Email = updateUserInfo.Email;
             existingInfo.PhoneNumber = updateUserInfo.PhoneNumber;
             existingInfo.Status = updateUserInfo.Status;
@@ -1205,10 +1205,10 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
-        /// <param name="surName"></param>
+        /// <param name="sureName"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber)
+        public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string sureName, string phoneNumber)
         {
             RAppUser existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
@@ -1234,9 +1234,9 @@ namespace RSecurityBackend.Services.Implementation
             secret = secret.Trim();
 
             firstName = firstName.Trim();
-            surName = surName.Trim();
+            sureName = sureName.Trim();
 
-            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(surName))
+            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(sureName))
             {
                 return new RServiceResult<bool>(false, "لطفاً حداقل یکی از اطلاعات نام یا نام خانوادگی را وارد کنید.");
             }
@@ -1249,8 +1249,8 @@ namespace RSecurityBackend.Services.Implementation
                 Status = RAppUserStatus.Active,
                 IsAdmin = false,
                 FirstName = firstName,
-                SurName = surName,
-                NickName = $"{firstName} {surName}".Trim(),
+                SureName = sureName,
+                NickName = $"{firstName} {sureName}".Trim(),
                 PhoneNumber = string.IsNullOrEmpty(phoneNumber) ? null: phoneNumber,
             };
 
@@ -1422,7 +1422,7 @@ namespace RSecurityBackend.Services.Implementation
                     Username = appUser.UserName,
                     Email = appUser.Email,
                     FirstName = appUser.FirstName,
-                    SurName = appUser.SureName,
+                    SureName = appUser.SureName,
                     PhoneNumber = appUser.PhoneNumber,
                     RImageId = appUser.RImageId,
                     Status = appUser.Status,
