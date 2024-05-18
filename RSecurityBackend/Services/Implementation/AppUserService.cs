@@ -1205,9 +1205,10 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
-        /// <param name="sureName"></param>
+        /// <param name="surName"></param>
+        /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string sureName)
+        public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber)
         {
             RAppUser existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
@@ -1233,9 +1234,9 @@ namespace RSecurityBackend.Services.Implementation
             secret = secret.Trim();
 
             firstName = firstName.Trim();
-            sureName = sureName.Trim();
+            surName = surName.Trim();
 
-            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(sureName))
+            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(surName))
             {
                 return new RServiceResult<bool>(false, "لطفاً حداقل یکی از اطلاعات نام یا نام خانوادگی را وارد کنید.");
             }
@@ -1248,8 +1249,9 @@ namespace RSecurityBackend.Services.Implementation
                 Status = RAppUserStatus.Active,
                 IsAdmin = false,
                 FirstName = firstName,
-                SurName = sureName,
-                NickName = $"{firstName} {sureName}".Trim()
+                SurName = surName,
+                NickName = $"{firstName} {surName}".Trim(),
+                PhoneNumber = string.IsNullOrEmpty(phoneNumber) ? null: phoneNumber,
             };
 
             RServiceResult<RAppUser> userAddResult = await AddUser(newUserInfo);

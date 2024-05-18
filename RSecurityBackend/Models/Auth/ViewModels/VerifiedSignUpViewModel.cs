@@ -1,4 +1,6 @@
-﻿namespace RSecurityBackend.Models.Auth.ViewModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RSecurityBackend.Models.Auth.ViewModels
 {
     /// <summary>
     /// verified sign up view model
@@ -44,5 +46,14 @@
         /// Mohammadi
         /// </example>        
         public string SurName { get; set; }
+        
+        /// <summary>
+        /// User Mobile Phone Number
+        /// </summary>
+        /// <example>
+        /// +989121234567
+        /// </example>
+        [Phone]
+        public string PhoneNumber { get; set; }
     }
 }
