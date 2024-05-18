@@ -306,7 +306,7 @@ namespace RSecurityBackend.Controllers
                 Email = result.Result.Email,
                 Status = result.Result.Status,
                 FirstName = result.Result.FirstName,
-                SureName = result.Result.SureName,
+                SurName = result.Result.SureName,
                 Id = result.Result.Id,
                 IsAdmin = newUserInfo.IsAdmin,
                 PhoneNumber = newUserInfo.PhoneNumber,
