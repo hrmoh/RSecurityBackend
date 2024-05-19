@@ -922,31 +922,43 @@ namespace RSecurityBackend.Services.Implementation
         /// <returns></returns>
         public virtual async Task<RServiceResult<bool>> RemoveUserData(Guid userId)
         {
-            var notications = await _context.Notifications.Where(n => n.UserId == userId).ToArrayAsync();
-            _context.RemoveRange(notications);
-
-            var options = await _context.Options.Where(o => o.RAppUserId == userId).ToListAsync();
-            _context.RemoveRange(options);
-
-            var invitations = await _context.WorkspaceUserInvitations.Where(w => w.UserId == userId).ToListAsync();
-            if (invitations.Any())
+            try
             {
-                _context.RemoveRange(invitations);
-            }
-            var userRoles = await _context.RWSUserRoles.Where(w => w.UserId == userId).ToListAsync();
-            if (userRoles.Any())
-            {
-                _context.RemoveRange(userRoles);
-            }
+                var memberships = await _context.RWSUsers.Where(m => m.RAppUserId == userId).ToListAsync();
+                if (memberships.Any())
+                {
+                    if(memberships.Where(m => m.Status == RWSUserMembershipStatus.Owner).Any())
+                    {
+                        return new RServiceResult<bool>(false, $"شما مالک شرکت {memberships.Where(m => m.Status == RWSUserMembershipStatus.Owner).Count()} شرکت هستید. قبل از حذف حساب کاربری لازم است این شرکت‌ها را حذف کنید یا مالکیت آنها را به کاربر دیگری واگذار کنید.");     
+                    }
+                    _context.RemoveRange(memberships);
+                }
 
-            var memberships = await _context.RWSUsers.Where(m => m.RAppUserId == userId).ToListAsync();
-            if(memberships.Any())
-            {
-                _context.RemoveRange(memberships);//warning: this may result in some workspaces becoming ownerless
-            }
+                var notications = await _context.Notifications.Where(n => n.UserId == userId).ToArrayAsync();
+                _context.RemoveRange(notications);
 
-            await _context.SaveChangesAsync();
-            return new RServiceResult<bool>(true);
+                var options = await _context.Options.Where(o => o.RAppUserId == userId).ToListAsync();
+                _context.RemoveRange(options);
+
+                var invitations = await _context.WorkspaceUserInvitations.Where(w => w.UserId == userId).ToListAsync();
+                if (invitations.Any())
+                {
+                    _context.RemoveRange(invitations);
+                }
+                var userRoles = await _context.RWSUserRoles.Where(w => w.UserId == userId).ToListAsync();
+                if (userRoles.Any())
+                {
+                    _context.RemoveRange(userRoles);
+                }
+
+                await _context.SaveChangesAsync();
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+           
         }
 
         /// <summary>

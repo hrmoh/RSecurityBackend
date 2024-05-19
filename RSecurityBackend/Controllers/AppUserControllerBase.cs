@@ -565,7 +565,7 @@ namespace RSecurityBackend.Controllers
                 return BadRequest("امکان حذف کاربر مدیر سیستم توسط خودش وجود ندارد. لطفاً ابتدا کاربر خود را از گروه مدیران سیستم خارج کنید.");
             }
 
-            //override _appUserService.RemoveUserData to remove userdata
+            //override _appUserService.RemoveUserData to remove userdata (it has been called in DeleteUser)
 
             RServiceResult<bool> resDelete = await _appUserService.DeleteUser(loggedOnUserId);
             if (!resDelete.Result)
