@@ -25,7 +25,7 @@ namespace RSecurityBackend.Controllers
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetValue(string name)
+        public virtual async Task<IActionResult> GetValue(string name)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -45,7 +45,7 @@ namespace RSecurityBackend.Controllers
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> SetValue(string name, [FromBody] string value)
+        public virtual async Task<IActionResult> SetValue(string name, [FromBody] string value)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             var res = await _optionsService.SetAsync(name, value, loggedOnUserId);
@@ -55,7 +55,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// get global option value, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them
+        /// get global option value, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them  or you can override this behaviour in your derived class
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -64,7 +64,7 @@ namespace RSecurityBackend.Controllers
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> GetGlobalOptionValue(string name)
+        public virtual async Task<IActionResult> GetGlobalOptionValue(string name)
         {
             var res = await _optionsService.GetValueAsync(name, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
@@ -74,7 +74,7 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
-        /// set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them
+        /// set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them or you can override this behaviour in your derived class
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
@@ -83,7 +83,7 @@ namespace RSecurityBackend.Controllers
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public async Task<IActionResult> SetGlobalOptionValue(string name, [FromBody] string value)
+        public virtual async Task<IActionResult> SetGlobalOptionValue(string name, [FromBody] string value)
         {
             var res = await _optionsService.SetAsync(name, value, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
