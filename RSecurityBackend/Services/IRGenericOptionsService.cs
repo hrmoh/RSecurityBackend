@@ -1,4 +1,6 @@
-﻿using RSecurityBackend.Models.Generic;
+﻿using RSecurityBackend.DbContext;
+using RSecurityBackend.Models.Auth.Db;
+using RSecurityBackend.Models.Generic;
 using RSecurityBackend.Models.Generic.Db;
 using System;
 using System.Threading.Tasks;
@@ -26,5 +28,14 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<RServiceResult<string>> GetValueAsync(string optionName, Guid? userId);
+
+        /// <summary>
+        /// get option value using context
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="optionName"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<string>> GetValueAsync(RSecurityDbContext<RAppUser, RAppRole, Guid> context, string optionName, Guid? userId);
     }
 }

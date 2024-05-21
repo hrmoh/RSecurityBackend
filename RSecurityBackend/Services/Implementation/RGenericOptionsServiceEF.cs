@@ -61,6 +61,21 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// get option value using context
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="optionName"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<string>> GetValueAsync(RSecurityDbContext<RAppUser, RAppRole, Guid> context, string optionName, Guid? userId)
+        {
+            var option = await context.Options.AsNoTracking().Where(o => o.Name == optionName && o.RAppUserId == userId).SingleOrDefaultAsync();
+            if (option == null)
+                return new RServiceResult<string>(""); //empty value
+            return new RServiceResult<string>(option.Value);
+        }
+
+        /// <summary>
         /// Database Contetxt
         /// </summary>
         protected readonly RSecurityDbContext<RAppUser, RAppRole, Guid> _context;
