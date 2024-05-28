@@ -434,15 +434,22 @@ namespace RSecurityBackend.Services.Implementation
 
                 if (notifyUser)
                 {
+                    var name = (await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName;
+                    if(string.IsNullOrEmpty(name))
+                    {
+                        var u = await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync();
+                        name = (u.FirstName + " " + u.SureName).Trim();
+
+                    }
                     await _notificationService.PushNotification(user.Id,
                         language.StartsWith("fa") ?
-                        $"دعوت به پیوستن به فضای کاری{ws.Name}"
+                        $"دعوت به پیوستن به فضای کاری {ws.Name}"
                         :
                         $"Invitation to {ws.Name}",
                         language.StartsWith("fa") ?
-                        $"شما از سوی {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} برای پیوستن به فضای کاری {ws.Name} دعوت شده‌اید."
+                        $"شما از سوی {name} برای پیوستن به فضای کاری {ws.Name} دعوت شده‌اید."
                         :
-                        $"You have been invited to join workspace {ws.Name} by {(await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync()).NickName} ",
+                        $"You have been invited to join workspace {ws.Name} by {name} ",
                         NotificationType.ActionRequired
                         );
                 }
