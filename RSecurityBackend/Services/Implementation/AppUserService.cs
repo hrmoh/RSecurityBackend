@@ -934,6 +934,9 @@ namespace RSecurityBackend.Services.Implementation
                     _context.RemoveRange(memberships);
                 }
 
+                var rwsUsers = await _context.RWSUsers.Where(c => c.RAppUserId == userId).ToListAsync();
+                _context.RemoveRange(rwsUsers);
+
                 var notications = await _context.Notifications.Where(n => n.UserId == userId).ToArrayAsync();
                 _context.RemoveRange(notications);
 
