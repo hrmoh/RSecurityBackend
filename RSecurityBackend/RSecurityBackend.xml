@@ -375,23 +375,26 @@
             Notifications controller
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUserNotifications">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUserNotifications(RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get User Notifications
             </summary>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel)">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get User Notifications (Paginated Version)
             </summary>
             <param name="paging"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUnreadUserNotificationsCount">
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.GetUnreadUserNotificationsCount(RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get unread user notifications count
             </summary>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.SwitchNotificationStatus(System.Guid)">
@@ -458,14 +461,14 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.GetGlobalOptionValue(System.String)">
             <summary>
-            get global option value, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them
+            get global option value, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them  or you can override this behaviour in your derived class
             </summary>
             <param name="name"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetGlobalOptionValue(System.String,System.String)">
             <summary>
-            set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them
+            set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them or you can override this behaviour in your derived class
             </summary>
             <param name="name"></param>
             <param name="value"></param>
@@ -1756,7 +1759,7 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.SureName">
             <summary>
-            Sure Name
+            SureName
             </summary>
             <example>
             Mohammadi
@@ -2022,11 +2025,19 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.SureName">
             <summary>
-            Sure Name
+            SureName
             </summary>
             <example>
             Mohammadi
             </example>        
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.PhoneNumber">
+            <summary>
+            User Mobile Phone Number
+            </summary>
+            <example>
+            +989121234567
+            </example>
         </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWorkspace">
             <summary>
@@ -2451,6 +2462,11 @@
             finished
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Models.Generic.Db.RLongRunningJobStatus.LastUpdate">
+            <summary>
+            Last Update Time
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Generic.PaginationMetadata">
             <summary>
             pagination metadat
@@ -2676,6 +2692,36 @@
             Deleted
             </summary>
         </member>
+        <member name="T:RSecurityBackend.Models.Notification.NotificationType">
+            <summary>
+            notifiction type
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Notification.NotificationType.NoActionRequired">
+            <summary>
+            No action required
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Notification.NotificationType.ActionRequired">
+            <summary>
+            Action Required
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Notification.NotificationType.Warning">
+            <summary>
+            warning
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Notification.NotificationType.Error">
+            <summary>
+            Error
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Notification.NotificationType.All">
+            <summary>
+            all
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Notification.RUserNotification">
             <summary>
             User Notification
@@ -2716,6 +2762,11 @@
             Text
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Models.Notification.RUserNotification.NotificationType">
+            <summary>
+            Notifiation Type
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Notification.ViewModels.RUserNotificationViewModel">
             <summary>
             User Notification
@@ -2744,6 +2795,11 @@
         <member name="P:RSecurityBackend.Models.Notification.ViewModels.RUserNotificationViewModel.HtmlText">
             <summary>
             Text
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.RUserNotificationViewModel.NotificationType">
+            <summary>
+            Notification Type
             </summary>
         </member>
         <member name="T:RSecurityBackend.Services.IAppUserService">
@@ -2960,7 +3016,7 @@
             <param name="secret"></param>
             <returns>associated email</returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IAppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IAppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             finalize signup process using email
             </summary>
@@ -2969,6 +3025,7 @@
             <param name="password"></param>
             <param name="firstName"></param>
             <param name="sureName"></param>
+            <param name="phoneNumber"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.ForgotPassword(System.String,System.String,System.String,System.String)">
@@ -2995,6 +3052,14 @@
             <summary>
             delete tenant
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.GetPrincipalFromToken(System.String,System.Boolean)">
+            <summary>
+            get principal for token
+            </summary>
+            <param name="token"></param>
+            <param name="expired"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.FindUserByEmail(System.String)">
@@ -3452,7 +3517,7 @@
             <param name="secret"></param>
             <returns>associated email</returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             finalize signup process using email
             </summary>
@@ -3461,6 +3526,7 @@
             <param name="password"></param>
             <param name="firstName"></param>
             <param name="sureName"></param>
+            <param name="phoneNumber"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ForgotPassword(System.String,System.String,System.String,System.String)">
@@ -3531,11 +3597,12 @@
             <param name="userId"></param>
             <param name="sessionId"></param>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.GetPrincipalFromExpiredToken(System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.GetPrincipalFromToken(System.String,System.Boolean)">
             <summary>
-            
+            get principal for token
             </summary>
             <param name="token"></param>
+            <param name="expired"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ErrorsToString(System.Collections.Generic.IEnumerable{Microsoft.AspNetCore.Identity.IdentityError})">
@@ -4055,6 +4122,15 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid})">
+            <summary>
+            get option value using context
+            </summary>
+            <param name="context"></param>
+            <param name="optionName"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
         <member name="F:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF._context">
             <summary>
             Database Contetxt
@@ -4071,13 +4147,14 @@
             Internal messaging system implementation
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.PushNotification(System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.PushNotification(System.Guid,System.String,System.String,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Add Notification
             </summary>
             <param name="userId"></param>
             <param name="subject"></param>
             <param name="htmlText"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.SwitchNotificationStatus(System.Guid,System.Guid)">
@@ -4104,26 +4181,29 @@
             <param name="userId"></param>    
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.GetUserNotifications(System.Guid)">
+        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.GetUserNotifications(System.Guid,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get User Notifications
             </summary>
             <param name="userId"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel,System.Guid)">
+        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel,System.Guid,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get User Notifications (paginated version)
             </summary>
             <param name="paging"></param>
             <param name="userId"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.GetUnreadUserNotificationsCount(System.Guid)">
+        <member name="M:RSecurityBackend.Services.Implementation.RNotificationService.GetUnreadUserNotificationsCount(System.Guid,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get Unread User Notifications Count
             </summary>
             <param name="userId"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
         <member name="F:RSecurityBackend.Services.Implementation.RNotificationService._context">
@@ -4692,40 +4772,53 @@
             <param name="userId"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid})">
+            <summary>
+            get option value using context
+            </summary>
+            <param name="context"></param>
+            <param name="optionName"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
         <member name="T:RSecurityBackend.Services.IRNotificationService">
             <summary>
             Internal messaging system interface
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IRNotificationService.PushNotification(System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IRNotificationService.PushNotification(System.Guid,System.String,System.String,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Add Notification
             </summary>
             <param name="userId"></param>
             <param name="subject"></param>
             <param name="htmlText"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRNotificationService.GetUserNotifications(System.Guid)">
+        <member name="M:RSecurityBackend.Services.IRNotificationService.GetUserNotifications(System.Guid,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get User Notifications
             </summary>
             <param name="userId"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRNotificationService.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel,System.Guid)">
+        <member name="M:RSecurityBackend.Services.IRNotificationService.GetUserNotificationsPaginated(RSecurityBackend.Models.Generic.PagingParameterModel,System.Guid,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get User Notifications (paginated version)
             </summary>
             <param name="paging"></param>
             <param name="userId"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRNotificationService.GetUnreadUserNotificationsCount(System.Guid)">
+        <member name="M:RSecurityBackend.Services.IRNotificationService.GetUnreadUserNotificationsCount(System.Guid,RSecurityBackend.Models.Notification.NotificationType)">
             <summary>
             Get Unread User Notifications Count
             </summary>
             <param name="userId"></param>
+            <param name="notificationType"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IRNotificationService.SwitchNotificationStatus(System.Guid,System.Guid)">

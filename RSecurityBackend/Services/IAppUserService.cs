@@ -6,6 +6,7 @@ using RSecurityBackend.Models.Generic;
 using RSecurityBackend.Models.Image;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RSecurityBackend.Services
@@ -267,6 +268,14 @@ namespace RSecurityBackend.Services
         /// </summary>
         /// <returns></returns>
         RServiceResult<bool> DeleteTenant();
+
+        /// <summary>
+        /// get principal for token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="expired"></param>
+        /// <returns></returns>
+        ClaimsPrincipal GetPrincipalFromToken(string token, bool expired);
 
         /// <summary>
         /// Find User By Email

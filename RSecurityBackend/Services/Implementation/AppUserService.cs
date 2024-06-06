@@ -1593,18 +1593,19 @@ namespace RSecurityBackend.Services.Implementation
         public void ExtractTokenInfo(string token, out string username, out Guid userId, out Guid sessionId)
         {
 
-            var principal = GetPrincipalFromExpiredToken(token);
+            var principal = GetPrincipalFromToken(token, true);
             username = principal.Identity.Name;
             userId = new Guid(principal.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             sessionId = new Guid(principal.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
         }
 
         /// <summary>
-        /// 
+        /// get principal for token
         /// </summary>
         /// <param name="token"></param>
+        /// <param name="expired"></param>
         /// <returns></returns>
-        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        public ClaimsPrincipal GetPrincipalFromToken(string token, bool expired)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -1616,7 +1617,7 @@ namespace RSecurityBackend.Services.Implementation
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenSecret)),
 
-                ValidateLifetime = false, //important
+                ValidateLifetime = !expired, //important
 
                 ClockSkew = TimeSpan.Zero
             };
