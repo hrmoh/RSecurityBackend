@@ -318,7 +318,7 @@ namespace RSecurityBackend.Services.Implementation
                                 Username = item.RAppUser.UserName,
                                 Email = item.RAppUser.Email,
                                 FirstName = item.RAppUser.FirstName,
-                                SureName = item.RAppUser.SureName,
+                                SurName = item.RAppUser.SurName,
                                 PhoneNumber = item.RAppUser.PhoneNumber,
                                 RImageId = item.RAppUser.RImageId,
                                 Status = item.RAppUser.Status,
@@ -438,7 +438,7 @@ namespace RSecurityBackend.Services.Implementation
                     if(string.IsNullOrEmpty(name))
                     {
                         var u = await _userManager.Users.AsNoTracking().Where(u => u.Id == inviterId).SingleAsync();
-                        name = (u.FirstName + " " + u.SureName).Trim();
+                        name = (u.FirstName + " " + u.SurName).Trim();
 
                     }
                     await _notificationService.PushNotification(user.Id,
@@ -560,7 +560,7 @@ namespace RSecurityBackend.Services.Implementation
                                 Username = invitation.User.UserName,
                                 Email = invitation.User.Email,
                                 FirstName = invitation.User.FirstName,
-                                SureName = invitation.User.SureName,
+                                SurName = invitation.User.SurName,
                                 PhoneNumber = invitation.User.PhoneNumber,
                                 RImageId = invitation.User.RImageId,
                                 Status = invitation.User.Status,

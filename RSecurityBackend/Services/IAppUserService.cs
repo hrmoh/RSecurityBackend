@@ -238,10 +238,10 @@ namespace RSecurityBackend.Services
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
-        /// <param name="sureName"></param>
+        /// <param name="surName"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string sureName, string phoneNumber);
+        Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber);
 
         /// <summary>
         /// Start forgot password process using email

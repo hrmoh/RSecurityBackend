@@ -40,12 +40,12 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         public string FirstName { get; set; }
 
         /// <summary>
-        /// SureName
+        /// SurName
         /// </summary>
         /// <example>
         /// Mohammadi
         /// </example>        
-        public string SureName { get; set; }
+        public string SurName { get; set; }
         
         /// <summary>
         /// User Mobile Phone Number

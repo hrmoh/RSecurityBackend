@@ -90,7 +90,8 @@ namespace SampleProject.Migrations
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Step = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Succeeded = table.Column<bool>(type: "bit", nullable: false)
+                    Succeeded = table.Column<bool>(type: "bit", nullable: false),
+                    LastUpdate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -177,7 +178,7 @@ namespace SampleProject.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SureName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SurName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     RImageId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -346,7 +347,8 @@ namespace SampleProject.Migrations
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Subject = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    HtmlText = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    HtmlText = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NotificationType = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

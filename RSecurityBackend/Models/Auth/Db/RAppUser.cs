@@ -17,10 +17,10 @@ namespace RSecurityBackend.Models.Auth.Db
         public string FirstName { get; set; }
 
         /// <summary>
-        /// Sure Name
+        /// Sur Name
         /// </summary>
         [MinLength(1)]
-        public string SureName { get; set; }
+        public string SurName { get; set; }
 
         /// <summary>
         /// User Creation Date

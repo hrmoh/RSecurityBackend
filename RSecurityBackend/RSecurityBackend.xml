@@ -1133,9 +1133,9 @@
             First Name
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.RAppUser.SureName">
+        <member name="P:RSecurityBackend.Models.Auth.Db.RAppUser.SurName">
             <summary>
-            Sure Name
+            Sur Name
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RAppUser.CreateDate">
@@ -1757,9 +1757,9 @@
             Hamid Reza
             </example>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.SureName">
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.SurName">
             <summary>
-            SureName
+            SurName
             </summary>
             <example>
             Mohammadi
@@ -2023,9 +2023,9 @@
             Hamid Reza
             </example>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.SureName">
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.SurName">
             <summary>
-            SureName
+            SurName
             </summary>
             <example>
             Mohammadi
@@ -3024,7 +3024,7 @@
             <param name="secret"></param>
             <param name="password"></param>
             <param name="firstName"></param>
-            <param name="sureName"></param>
+            <param name="surName"></param>
             <param name="phoneNumber"></param>
             <returns></returns>
         </member>
@@ -3525,7 +3525,7 @@
             <param name="secret"></param>
             <param name="password"></param>
             <param name="firstName"></param>
-            <param name="sureName"></param>
+            <param name="surName"></param>
             <param name="phoneNumber"></param>
             <returns></returns>
         </member>

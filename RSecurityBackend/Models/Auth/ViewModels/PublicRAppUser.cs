@@ -57,13 +57,13 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         public string FirstName { get; set; }
 
         /// <summary>
-        /// SureName
+        /// SurName
         /// </summary>
         /// <example>
         /// Mohammadi
         /// </example>
         [MinLength(1)]
-        public string SureName { get; set; }
+        public string SurName { get; set; }
 
         /// <summary>
         /// user status

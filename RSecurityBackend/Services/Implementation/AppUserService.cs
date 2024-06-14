@@ -142,7 +142,7 @@ namespace RSecurityBackend.Services.Implementation
                         Username = appUser.UserName,
                         Email = appUser.Email,
                         FirstName = appUser.FirstName,
-                        SureName = appUser.SureName,
+                        SurName = appUser.SurName,
                         PhoneNumber = appUser.PhoneNumber,
                         RImageId = appUser.RImageId,
                         Status = appUser.Status,
@@ -219,7 +219,7 @@ namespace RSecurityBackend.Services.Implementation
                         Username = appUser.UserName,
                         Email = appUser.Email,
                         FirstName = appUser.FirstName,
-                        SureName = appUser.SureName,
+                        SurName = appUser.SurName,
                         PhoneNumber = appUser.PhoneNumber,
                         RImageId = appUser.RImageId,
                         Status = appUser.Status,
@@ -329,7 +329,7 @@ namespace RSecurityBackend.Services.Implementation
                     Username = appUser.UserName,
                     Email = appUser.Email,
                     FirstName = appUser.FirstName,
-                    SureName = appUser.SureName,
+                    SurName = appUser.SurName,
                     PhoneNumber = appUser.PhoneNumber,
                     RImageId = appUser.RImageId,
                     Status = appUser.Status,
@@ -367,7 +367,7 @@ namespace RSecurityBackend.Services.Implementation
                     Username = appUser.UserName,
                     Email = appUser.Email,
                     FirstName = appUser.FirstName,
-                    SureName = appUser.SureName,
+                    SurName = appUser.SurName,
                     PhoneNumber = appUser.PhoneNumber,
                     RImageId = appUser.RImageId,
                     Status = appUser.Status,
@@ -411,7 +411,7 @@ namespace RSecurityBackend.Services.Implementation
                             Username = rUserSession.RAppUser.UserName,
                             Email = rUserSession.RAppUser.Email,
                             FirstName = rUserSession.RAppUser.FirstName,
-                            SureName = rUserSession.RAppUser.SureName,
+                            SurName = rUserSession.RAppUser.SurName,
                             PhoneNumber = rUserSession.RAppUser.PhoneNumber,
                             RImageId = rUserSession.RAppUser.RImageId,
                             Status = rUserSession.RAppUser.Status,
@@ -458,7 +458,7 @@ namespace RSecurityBackend.Services.Implementation
                             Username = rUserSession.RAppUser.UserName,
                             Email = rUserSession.RAppUser.Email,
                             FirstName = rUserSession.RAppUser.FirstName,
-                            SureName = rUserSession.RAppUser.SureName,
+                            SurName = rUserSession.RAppUser.SurName,
                             PhoneNumber = rUserSession.RAppUser.PhoneNumber,
                             RImageId = rUserSession.RAppUser.RImageId,
                             Status = rUserSession.RAppUser.Status,
@@ -680,7 +680,7 @@ namespace RSecurityBackend.Services.Implementation
                                 Username = appUser.UserName,
                                 Email = appUser.Email,
                                 FirstName = appUser.FirstName,
-                                SureName = appUser.SureName,
+                                SurName = appUser.SurName,
                                 PhoneNumber = appUser.PhoneNumber,
                                 RImageId = appUser.RImageId,
                                 Status = appUser.Status,
@@ -729,7 +729,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     UserName = newUserInfo.Username,
                     FirstName = newUserInfo.FirstName,
-                    SureName = newUserInfo.SureName,
+                    SurName = newUserInfo.SurName,
                     NickName = newUserInfo.NickName,
                     Email = newUserInfo.Email,
                     PhoneNumber = newUserInfo.PhoneNumber,
@@ -835,10 +835,10 @@ namespace RSecurityBackend.Services.Implementation
             }
 
             updateUserInfo.FirstName = string.IsNullOrEmpty(updateUserInfo.FirstName) ? updateUserInfo.FirstName : updateUserInfo.FirstName.Trim();
-            updateUserInfo.SureName = string.IsNullOrEmpty(updateUserInfo.SureName) ? updateUserInfo.SureName : updateUserInfo.SureName.Trim();
+            updateUserInfo.SurName = string.IsNullOrEmpty(updateUserInfo.SurName) ? updateUserInfo.SurName : updateUserInfo.SurName.Trim();
             updateUserInfo.NickName = string.IsNullOrEmpty(updateUserInfo.NickName) ? updateUserInfo.NickName : updateUserInfo.NickName.Trim();
 
-            if (string.IsNullOrEmpty(updateUserInfo.NickName) && string.IsNullOrEmpty(updateUserInfo.FirstName) && string.IsNullOrEmpty(updateUserInfo.SureName))
+            if (string.IsNullOrEmpty(updateUserInfo.NickName) && string.IsNullOrEmpty(updateUserInfo.FirstName) && string.IsNullOrEmpty(updateUserInfo.SurName))
             {
                 return new RServiceResult<bool>(false, "نام، نام خانوادگی و نام مستعار نمی‌توانند همگی خالی باشند.");
             }
@@ -848,7 +848,7 @@ namespace RSecurityBackend.Services.Implementation
 
 
             existingInfo.FirstName = updateUserInfo.FirstName;
-            existingInfo.SureName = updateUserInfo.SureName;
+            existingInfo.SurName = updateUserInfo.SurName;
             existingInfo.Email = updateUserInfo.Email;
             existingInfo.PhoneNumber = updateUserInfo.PhoneNumber;
             existingInfo.Status = updateUserInfo.Status;
@@ -1220,10 +1220,10 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
-        /// <param name="sureName"></param>
+        /// <param name="surName"></param>
         /// <param name="phoneNumber"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string sureName, string phoneNumber)
+        public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber)
         {
             RAppUser existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
@@ -1249,9 +1249,9 @@ namespace RSecurityBackend.Services.Implementation
             secret = secret.Trim();
 
             firstName = firstName.Trim();
-            sureName = sureName.Trim();
+            surName = surName.Trim();
 
-            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(sureName))
+            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(surName))
             {
                 return new RServiceResult<bool>(false, "لطفاً حداقل یکی از اطلاعات نام یا نام خانوادگی را وارد کنید.");
             }
@@ -1264,8 +1264,8 @@ namespace RSecurityBackend.Services.Implementation
                 Status = RAppUserStatus.Active,
                 IsAdmin = false,
                 FirstName = firstName,
-                SureName = sureName,
-                NickName = $"{firstName} {sureName}".Trim(),
+                SurName = surName,
+                NickName = $"{firstName} {surName}".Trim(),
                 PhoneNumber = string.IsNullOrEmpty(phoneNumber) ? null: phoneNumber,
             };
 
@@ -1437,7 +1437,7 @@ namespace RSecurityBackend.Services.Implementation
                     Username = appUser.UserName,
                     Email = appUser.Email,
                     FirstName = appUser.FirstName,
-                    SureName = appUser.SureName,
+                    SurName = appUser.SurName,
                     PhoneNumber = appUser.PhoneNumber,
                     RImageId = appUser.RImageId,
                     Status = appUser.Status,
@@ -1475,7 +1475,7 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     UserName = $"{Configuration.GetSection("RSecurityBackend")["FirstUserEmail"]}",
                     FirstName = "راهبر",
-                    SureName = "سیستم",
+                    SurName = "سیستم",
                     Email = $"{Configuration.GetSection("RSecurityBackend")["FirstUserEmail"]}",
                     PhoneNumber = "00989123456789",
                     CreateDate = DateTime.Now,
