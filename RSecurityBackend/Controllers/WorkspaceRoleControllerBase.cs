@@ -111,7 +111,7 @@ namespace RSecurityBackend.Controllers
         /// <param name="workspace"></param>
         /// <param name="roleId">role id</param>
         /// <returns>true if succeeds</returns>
-        [HttpDelete("{workspace}/{roleName}")]
+        [HttpDelete("{workspace}/{roleId}")]
         [Authorize(Policy = SecurableItem.WorkspaceRoleEntityShortName + ":" + SecurableItem.DeleteOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
