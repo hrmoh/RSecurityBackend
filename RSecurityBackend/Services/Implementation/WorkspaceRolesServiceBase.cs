@@ -110,20 +110,31 @@ namespace RSecurityBackend.Services.Implementation
         /// delete user role
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="roleName"></param>
+        /// <param name="roleId"></param>
         /// <param name="language"></param>
         /// <returns>true if succeeds</returns>
-        public async Task<RServiceResult<bool>> DeleteRole(Guid workspaceId, string roleName, string language)
+        public async Task<RServiceResult<bool>> DeleteRole(Guid workspaceId, Guid roleId, string language)
         {
-            RWSRole existingInfo = await _context.RWSRoles.Where(r => r.WorkspaceId == workspaceId && r.Name == roleName).FirstOrDefaultAsync();
-            if (existingInfo != null)
+            try
             {
-                _context.Remove(existingInfo);
-                await _context.SaveChangesAsync();
+                RWSRole existingInfo = await _context.RWSRoles.Include(r => r.Permissions).Where(r => r.WorkspaceId == workspaceId && r.Id == roleId).FirstOrDefaultAsync();
+                if (existingInfo != null)
+                {
+                    var userRoles = await _context.RWSUserRoles.Where(r => r.RoleId == roleId && r.WorkspaceId == workspaceId).ToListAsync();
+                    _context.RemoveRange(userRoles);
+                    await _context.SaveChangesAsync();
+                    _context.Remove(existingInfo);
+                    await _context.SaveChangesAsync();
 
-                return new RServiceResult<bool>(true);
+                    return new RServiceResult<bool>(true);
+                }
+                return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش وجود ندارد." : "role not found.");
+
             }
-            return new RServiceResult<bool>(false, language.StartsWith("fa") ? "نقش وجود ندارد." : "role not found.");
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
         }
 
         /// <summary>

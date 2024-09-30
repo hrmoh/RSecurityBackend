@@ -57,10 +57,10 @@ namespace RSecurityBackend.Services
         /// delete user role
         /// </summary>
         /// <param name="workspaceId"></param>
-        /// <param name="roleName"></param>
+        /// <param name="roleId"></param>
         /// <param name="language"></param>
         /// <returns>true if succeeds</returns>
-        Task<RServiceResult<bool>> DeleteRole(Guid workspaceId, string roleName, string language);
+        Task<RServiceResult<bool>> DeleteRole(Guid workspaceId, Guid roleId, string language);
 
         /// <summary>
         /// adds a new user role

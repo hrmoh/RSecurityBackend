@@ -109,17 +109,17 @@ namespace RSecurityBackend.Controllers
         /// delete role
         /// </summary>
         /// <param name="workspace"></param>
-        /// <param name="roleName">role name</param>
+        /// <param name="roleId">role id</param>
         /// <returns>true if succeeds</returns>
         [HttpDelete("{workspace}/{roleName}")]
         [Authorize(Policy = SecurableItem.WorkspaceRoleEntityShortName + ":" + SecurableItem.DeleteOperationShortName)]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> Delete(Guid workspace, string roleName)
+        public async Task<IActionResult> Delete(Guid workspace, Guid roleId)
         {
 
-            RServiceResult<bool> res = await _roleService.DeleteRole(workspace, roleName, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
+            RServiceResult<bool> res = await _roleService.DeleteRole(workspace, roleId, User.Claims.Any(c => c.Type == "Language") ? User.Claims.FirstOrDefault(c => c.Type == "Language").Value : "fa-IR");
             if (!res.Result)
             {
                 return BadRequest(res.ExceptionString);
