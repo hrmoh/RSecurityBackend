@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -52,6 +53,8 @@ builder.Services.AddDbContextPool<RDbContext>(
                                 providerOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                             }
                             )
+                        .ConfigureWarnings(warnings =>
+                           warnings.Ignore(RelationalEventId.PendingModelChangesWarning))
                         );
 
 Audit.Core.Configuration.DataProvider = new RAuditDataProvider(builder.Configuration.GetConnectionString("DefaultConnection"));

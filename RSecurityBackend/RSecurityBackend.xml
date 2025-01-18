@@ -453,7 +453,7 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetValue(System.String,System.String)">
             <summary>
-            get user level option, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them
+            get user level option
             </summary>
             <param name="name"></param>
             <param name="value"></param>
@@ -470,6 +470,40 @@
             <summary>
             set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them or you can override this behaviour in your derived class
             </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.GetWorkspaceOptionValue(System.Guid,System.String)">
+            <summary>
+            get user level option in a workspace, if option value is not found it returns empty string
+            </summary>
+            <param name="workspace"></param>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetWorkspaceOptionValue(System.Guid,System.String,System.String)">
+            <summary>
+            get user level option in a workspace
+            </summary>
+            <param name="name"></param>
+            <param name="workspace"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.GetGlobalWorkspaceOptionValue(System.Guid,System.String)">
+            <summary>
+            get workspace global option value, Security Warning: every authenticated user in a workspace could see value of global options, so do not store sensitive data into them  or you can override this behaviour in your derived class
+            </summary>
+            <param name="workspace"></param>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetGlobalWorkspaceOptionValue(System.Guid,System.String,System.String)">
+            <summary>
+            set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them or you can override this behaviour in your derived class
+            </summary>
+            <param name="workspace"></param>
             <param name="name"></param>
             <param name="value"></param>
             <returns></returns>
@@ -870,12 +904,12 @@
             <param name="existingGroupInfo">existingGroupInfo.id could be passed empty and it is ignored completely</param>
             <returns>true if succeeds</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.Guid,System.String)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.Guid,System.Guid)">
             <summary>
             delete role
             </summary>
             <param name="workspace"></param>
-            <param name="roleName">role name</param>
+            <param name="roleId">role id</param>
             <returns>true if succeeds</returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.GetRoleSecurableItemsStatus(System.Guid,System.String)">
@@ -2415,6 +2449,16 @@
         <member name="P:RSecurityBackend.Models.Generic.Db.RGenericOption.RAppUser">
             <summary>
             user
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Generic.Db.RGenericOption.WorkspaceId">
+            <summary>
+            workspace id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Generic.Db.RGenericOption.Workspace">
+            <summary>
+            workspace
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Generic.Db.RLongRunningJobStatus">
@@ -4105,30 +4149,33 @@
             generic options service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.SetAsync(System.String,System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.SetAsync(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             modify an option or add a new one if an option with the requested name does not exist
             </summary>
             <param name="optionName"></param>
             <param name="optionValue"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value
             </summary>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value using context
             </summary>
             <param name="context"></param>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="F:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF._context">
@@ -4402,12 +4449,12 @@
             <param name="language"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.Guid,System.Guid,System.String)">
             <summary>
             delete user role
             </summary>
             <param name="workspaceId"></param>
-            <param name="roleName"></param>
+            <param name="roleId"></param>
             <param name="language"></param>
             <returns>true if succeeds</returns>
         </member>
@@ -4755,30 +4802,33 @@
             generic options service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.SetAsync(System.String,System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.SetAsync(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             modify an option or add a new one if an option with the requested name does not exist
             </summary>
             <param name="optionName"></param>
             <param name="optionValue"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value, if option value is not found it returns empty string
             </summary>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value using context
             </summary>
             <param name="context"></param>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="T:RSecurityBackend.Services.IRNotificationService">
@@ -5002,12 +5052,12 @@
             <param name="language"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.DeleteRole(System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.DeleteRole(System.Guid,System.Guid,System.String)">
             <summary>
             delete user role
             </summary>
             <param name="workspaceId"></param>
-            <param name="roleName"></param>
+            <param name="roleId"></param>
             <param name="language"></param>
             <returns>true if succeeds</returns>
         </member>
