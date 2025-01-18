@@ -1,4 +1,5 @@
 ﻿using RSecurityBackend.Models.Auth.Db;
+using RSecurityBackend.Models.Cloud;
 using System;
 
 namespace RSecurityBackend.Models.Generic.Db
@@ -32,5 +33,15 @@ namespace RSecurityBackend.Models.Generic.Db
         /// user
         /// </summary>
         public virtual RAppUser RAppUser { get; set; }
+
+        /// <summary>
+        /// workspace id
+        /// </summary>
+        public Guid? WorkspaceId { get; set; }
+
+        /// <summary>
+        /// workspace
+        /// </summary>
+        public virtual RWorkspace Workspace { get; set; }
     }
 }

@@ -29,7 +29,7 @@ namespace RSecurityBackend.Controllers
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
-            var res = await _optionsService.GetValueAsync(name, loggedOnUserId);
+            var res = await _optionsService.GetValueAsync(name, loggedOnUserId, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok(res.Result);
@@ -48,7 +48,7 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> SetValue(string name, [FromBody] string value)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            var res = await _optionsService.SetAsync(name, value, loggedOnUserId);
+            var res = await _optionsService.SetAsync(name, value, loggedOnUserId, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok(res.Result);
@@ -66,7 +66,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> GetGlobalOptionValue(string name)
         {
-            var res = await _optionsService.GetValueAsync(name, null);
+            var res = await _optionsService.GetValueAsync(name, null, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok(res.Result);
@@ -85,7 +85,7 @@ namespace RSecurityBackend.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> SetGlobalOptionValue(string name, [FromBody] string value)
         {
-            var res = await _optionsService.SetAsync(name, value, null);
+            var res = await _optionsService.SetAsync(name, value, null, null);
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok(res.Result);

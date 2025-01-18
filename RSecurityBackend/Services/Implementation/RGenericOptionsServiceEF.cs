@@ -20,10 +20,11 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="optionName"></param>
         /// <param name="optionValue"></param>
         /// <param name="userId"></param>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<RGenericOption>> SetAsync(string optionName, string optionValue, Guid? userId)
+        public async Task<RServiceResult<RGenericOption>> SetAsync(string optionName, string optionValue, Guid? userId, Guid? workspaceId)
         {
-            var existing = await _context.Options.Where(o => o.Name == optionName && o.RAppUserId == userId).SingleOrDefaultAsync();
+            var existing = await _context.Options.Where(o => o.Name == optionName && o.RAppUserId == userId && o.WorkspaceId == workspaceId).SingleOrDefaultAsync();
             if (existing != null)
             {
                 existing.Value = optionValue;
@@ -37,7 +38,8 @@ namespace RSecurityBackend.Services.Implementation
             {
                 Name = optionName,
                 Value = optionValue,
-                RAppUserId = userId
+                RAppUserId = userId,
+                WorkspaceId = workspaceId,
             };
 
             _context.Options.Add(option);
@@ -51,10 +53,11 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="optionName"></param>
         /// <param name="userId"></param>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<string>> GetValueAsync(string optionName, Guid? userId)
+        public async Task<RServiceResult<string>> GetValueAsync(string optionName, Guid? userId, Guid? workspaceId)
         {
-            var option = await _context.Options.AsNoTracking().Where(o => o.Name == optionName && o.RAppUserId == userId).SingleOrDefaultAsync();
+            var option = await _context.Options.AsNoTracking().Where(o => o.Name == optionName && o.RAppUserId == userId && o.WorkspaceId == workspaceId).SingleOrDefaultAsync();
             if (option == null)
                 return new RServiceResult<string>(""); //empty value
             return new RServiceResult<string>(option.Value);
@@ -66,10 +69,11 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="context"></param>
         /// <param name="optionName"></param>
         /// <param name="userId"></param>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        public async Task<RServiceResult<string>> GetValueAsync(RSecurityDbContext<RAppUser, RAppRole, Guid> context, string optionName, Guid? userId)
+        public async Task<RServiceResult<string>> GetValueAsync(RSecurityDbContext<RAppUser, RAppRole, Guid> context, string optionName, Guid? userId, Guid? workspaceId)
         {
-            var option = await context.Options.AsNoTracking().Where(o => o.Name == optionName && o.RAppUserId == userId).SingleOrDefaultAsync();
+            var option = await context.Options.AsNoTracking().Where(o => o.Name == optionName && o.RAppUserId == userId && o.WorkspaceId == workspaceId).SingleOrDefaultAsync();
             if (option == null)
                 return new RServiceResult<string>(""); //empty value
             return new RServiceResult<string>(option.Value);

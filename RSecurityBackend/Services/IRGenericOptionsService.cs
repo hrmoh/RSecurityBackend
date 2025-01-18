@@ -18,16 +18,18 @@ namespace RSecurityBackend.Services
         /// <param name="optionName"></param>
         /// <param name="optionValue"></param>
         /// <param name="userId"></param>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        Task<RServiceResult<RGenericOption>> SetAsync(string optionName, string optionValue, Guid? userId);
+        Task<RServiceResult<RGenericOption>> SetAsync(string optionName, string optionValue, Guid? userId, Guid? workspaceId);
 
         /// <summary>
         /// get option value, if option value is not found it returns empty string
         /// </summary>
         /// <param name="optionName"></param>
         /// <param name="userId"></param>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        Task<RServiceResult<string>> GetValueAsync(string optionName, Guid? userId);
+        Task<RServiceResult<string>> GetValueAsync(string optionName, Guid? userId, Guid? workspaceId);
 
         /// <summary>
         /// get option value using context
@@ -35,7 +37,8 @@ namespace RSecurityBackend.Services
         /// <param name="context"></param>
         /// <param name="optionName"></param>
         /// <param name="userId"></param>
+        /// <param name="workspaceId"></param>
         /// <returns></returns>
-        Task<RServiceResult<string>> GetValueAsync(RSecurityDbContext<RAppUser, RAppRole, Guid> context, string optionName, Guid? userId);
+        Task<RServiceResult<string>> GetValueAsync(RSecurityDbContext<RAppUser, RAppRole, Guid> context, string optionName, Guid? userId, Guid? workspaceId);
     }
 }

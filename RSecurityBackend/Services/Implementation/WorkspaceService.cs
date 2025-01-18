@@ -404,7 +404,7 @@ namespace RSecurityBackend.Services.Implementation
                        :
                        "User has already received an invitation to become member of this workspace.");
                 }
-                var rsOption = await _optionsService.GetValueAsync("AllowInvitingMeToWorkspaces", user.Id);
+                var rsOption = await _optionsService.GetValueAsync("AllowInvitingMeToWorkspaces", user.Id, null);
                 if (!string.IsNullOrEmpty(rsOption.ExceptionString))
                 {
                     return new RServiceResult<bool>(false, rsOption.ExceptionString);
