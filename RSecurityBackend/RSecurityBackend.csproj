@@ -4,13 +4,13 @@
     <TargetFramework>net9.0-windows7.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>Basic security backend including user management and some general utilities for ASP.NET Core applications</Description>
-    <Copyright>Hamid Reza Mohammadi @2024</Copyright>
+    <Copyright>Hamid Reza Mohammadi @2025</Copyright>
     <RepositoryUrl>https://github.com/hrmoh/RSecurityBackend</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AssemblyVersion>1.5.6.0</AssemblyVersion>
-    <FileVersion>1.5.6</FileVersion>
-    <Version>1.5.6</Version>
+    <AssemblyVersion>1.5.7.0</AssemblyVersion>
+    <FileVersion>1.5.7</FileVersion>
+    <Version>1.5.7</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 

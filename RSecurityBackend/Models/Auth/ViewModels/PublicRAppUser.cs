@@ -99,6 +99,11 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         /// </summary>
         public bool EmailConfirmed { get; set; }
 
+        /// <summary>
+        /// create date
+        /// </summary>
+        public DateTime CreateDate { get; set; }
+
 
     }
 }

@@ -325,7 +325,8 @@ namespace RSecurityBackend.Services.Implementation
                                 NickName = item.RAppUser.NickName,
                                 Website = item.RAppUser.Website,
                                 Bio = item.RAppUser.Bio,
-                                EmailConfirmed = item.RAppUser.EmailConfirmed
+                                EmailConfirmed = item.RAppUser.EmailConfirmed,
+                                CreateDate = item.RAppUser.CreateDate,
                             },
                             InviteDate = item.InviteDate,
                             Status = item.Status,
@@ -567,7 +568,8 @@ namespace RSecurityBackend.Services.Implementation
                                 NickName = invitation.User.NickName,
                                 Website = invitation.User.Website,
                                 Bio = invitation.User.Bio,
-                                EmailConfirmed = invitation.User.EmailConfirmed
+                                EmailConfirmed = invitation.User.EmailConfirmed,
+                                CreateDate = invitation.User.CreateDate,
                             },
                         }
                         );

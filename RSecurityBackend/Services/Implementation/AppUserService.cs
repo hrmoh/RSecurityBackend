@@ -149,7 +149,8 @@ namespace RSecurityBackend.Services.Implementation
                         NickName = appUser.NickName,
                         Website = appUser.Website,
                         Bio = appUser.Bio,
-                        EmailConfirmed = appUser.EmailConfirmed
+                        EmailConfirmed = appUser.EmailConfirmed,
+                        CreateDate = appUser.CreateDate,
                     },
                     Token = userToken.Result,
                     SecurableItem = securableItems.Result
@@ -226,7 +227,8 @@ namespace RSecurityBackend.Services.Implementation
                         NickName = appUser.NickName,
                         Website = appUser.Website,
                         Bio = appUser.Bio,
-                        EmailConfirmed = appUser.EmailConfirmed
+                        EmailConfirmed = appUser.EmailConfirmed,
+                        CreateDate = appUser.CreateDate,
                     },
                     Token = userToken.Result,
                     SecurableItem = securableItems.Result
@@ -336,7 +338,8 @@ namespace RSecurityBackend.Services.Implementation
                     NickName = appUser.NickName,
                     Website = appUser.Website,
                     Bio = appUser.Bio,
-                    EmailConfirmed = appUser.EmailConfirmed
+                    EmailConfirmed = appUser.EmailConfirmed,
+                    CreateDate = appUser.CreateDate,
                 });
         }
 
@@ -374,7 +377,8 @@ namespace RSecurityBackend.Services.Implementation
                     NickName = appUser.NickName,
                     Website = appUser.Website,
                     Bio = appUser.Bio,
-                    EmailConfirmed = appUser.EmailConfirmed
+                    EmailConfirmed = appUser.EmailConfirmed,
+                    CreateDate = appUser.CreateDate,
                 });
 
             return new RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>(
@@ -418,7 +422,8 @@ namespace RSecurityBackend.Services.Implementation
                             NickName = rUserSession.RAppUser.NickName,
                             Website = rUserSession.RAppUser.Website,
                             Bio = rUserSession.RAppUser.Bio,
-                            EmailConfirmed = rUserSession.RAppUser.EmailConfirmed
+                            EmailConfirmed = rUserSession.RAppUser.EmailConfirmed,
+                            CreateDate = rUserSession.RAppUser.CreateDate,
                         },
                         ClientAppName = rUserSession.ClientAppName,
                         ClientIPAddress = rUserSession.ClientIPAddress,
@@ -465,7 +470,8 @@ namespace RSecurityBackend.Services.Implementation
                             NickName = rUserSession.RAppUser.NickName,
                             Website = rUserSession.RAppUser.Website,
                             Bio = rUserSession.RAppUser.Bio,
-                            EmailConfirmed = rUserSession.RAppUser.EmailConfirmed
+                            EmailConfirmed = rUserSession.RAppUser.EmailConfirmed,
+                            CreateDate = rUserSession.RAppUser.CreateDate,
                         },
                         ClientAppName = rUserSession.ClientAppName,
                         ClientIPAddress = rUserSession.ClientIPAddress,
@@ -687,7 +693,8 @@ namespace RSecurityBackend.Services.Implementation
                                 NickName = appUser.NickName,
                                 Website = appUser.Website,
                                 Bio = appUser.Bio,
-                                EmailConfirmed = appUser.EmailConfirmed
+                                EmailConfirmed = appUser.EmailConfirmed,
+                                CreateDate = appUser.CreateDate,
                             });
                     }
                 }
@@ -1444,7 +1451,8 @@ namespace RSecurityBackend.Services.Implementation
                     NickName = appUser.NickName,
                     Website = appUser.Website,
                     Bio = appUser.Bio,
-                    EmailConfirmed = appUser.EmailConfirmed
+                    EmailConfirmed = appUser.EmailConfirmed,
+                    CreateDate = appUser.CreateDate,
                 });
 
         }
