@@ -97,74 +97,72 @@
         {
             get
             {
-                return new SecurableItem[]
-                {
+                return
+                [
                     new SecurableItem()
                     {
                         ShortName = UserEntityShortName,
                         Description = "کاربران",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(ViewOperationShortName, "مشاهده", false, null ),                           
                             new SecurableItemOperation(AddOperationShortName, "ایجاد", false,
-                            new SecurableItemOperationPrerequisite[]
-                            {
+                            [
                                 new SecurableItemOperationPrerequisite(  RoleEntityShortName, ViewOperationShortName)
-                            }
+                            ]
                            ),
                             new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false,
-                            new SecurableItemOperationPrerequisite[]
-                            {
+                            [
                                 new SecurableItemOperationPrerequisite(  RoleEntityShortName, ViewOperationShortName)
-                            }                            
+                            ]                            
                             ),
                             new SecurableItemOperation(DeleteOperationShortName, "حذف", false),
                             new SecurableItemOperation(SessionsOperationShortName, "مشاهده جلسات همه کاربران", false, null),
                             new SecurableItemOperation(DelOtherUserSessionOperationShortName, "حذف جلسه سایر کاربران", false),
                             new SecurableItemOperation(ViewAllOperationShortName, "مشاهده اطلاعات کاربران دیگر", false, null ),
                             new SecurableItemOperation(Administer, "مدیریت کاربران", false, null ),
-                        }
+                        ]
                     },
                     new SecurableItem()
                     {
                         ShortName = RoleEntityShortName,
                         Description = "نقش‌ها",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(ViewOperationShortName, "مشاهده", false),
                             new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
                             new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false),
                             new SecurableItemOperation(DeleteOperationShortName, "حذف", false),
-                        }
+                        ]
                     },
                     new SecurableItem()
                     {
                         ShortName = AuditLogEntityShortName,
                         Description = "رویدادها",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(ViewOperationShortName, "مشاهده", false),
-                        }
+                        ]
                     },
                     new SecurableItem()
                     {
                         ShortName = GlobalOptionsEntityShortName,
                         Description = "تنظیمات عمومی",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false),
-                        }
+                        ]
                     },
                     new SecurableItem()
                     {
                         ShortName = WorkspaceEntityShortName,
                         Description = "فضاهای کاری",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
-                        }
+                        ]
                     }
-                };
+                ];
             }
         }
 
@@ -175,14 +173,14 @@
         {
             get
             {
-                return new SecurableItem[] 
-                {
+                return
+                [
                     new SecurableItem()
                     {
                         ShortName = WorkspaceEntityShortName,
                         Description = "فضاهای کاری",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(ModifyOperationShortName, "ویرایش", false),
                             new SecurableItemOperation(InviteMembersOperationShortName, "دعوت عضو جدید", false),
                             new SecurableItemOperation(RemoveMembersOperationShortName, "حذف عضو", false),
@@ -190,21 +188,21 @@
                             new SecurableItemOperation(ChangeMemberRoleShortName, "تغییر نقش عضو", false),
                             new SecurableItemOperation(QueryMembersListOperationShortName, "مشاهدهٔ فهرست اعضا", false),
                             
-                        }
+                        ]
                     },
                      new SecurableItem()
                     {
                         ShortName = WorkspaceRoleEntityShortName,
                         Description = "نقش‌های فضای کاری",
-                        Operations = new SecurableItemOperation[]
-                        {
+                        Operations =
+                        [
                             new SecurableItemOperation(ViewOperationShortName, "مشاهده", false),
                             new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
                             new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false),
                             new SecurableItemOperation(DeleteOperationShortName, "حذف", false),
-                        }
+                        ]
                     },
-                };
+                ];
             }
         }
 

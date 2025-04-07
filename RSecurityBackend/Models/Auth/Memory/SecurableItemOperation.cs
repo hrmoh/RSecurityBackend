@@ -27,7 +27,7 @@
             Status = status;
             if(prerequisites == null)
             {
-                Prerequisites = new SecurableItemOperationPrerequisite[] { };
+                Prerequisites = [];
             }
             else
             {
