@@ -26,17 +26,13 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         /// <summary>
         /// Client Application Name
         /// </summary>
-        /// <example>
-        /// App Angular Client
-        /// </example>
+        /// <example>App Angular Client</example>
         public string ClientAppName { get; set; }
 
         /// <summary>
         /// Client Language
         /// </summary>
-        /// <example>
-        /// fa-IR
-        /// </example>
+        /// <example>fa-IR</example>
         public string Language { get; set; }
 
         /// <summary>

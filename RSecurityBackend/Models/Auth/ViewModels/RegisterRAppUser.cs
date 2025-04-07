@@ -10,18 +10,14 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         /// <summary>
         /// desired password, if sent empty system generates one
         /// </summary>
-        /// <example>
-        /// Test!123
-        /// </example>
+        /// <example>Test!123</example>
         [MinLength(6)]        
         public string Password { get; set; }
 
         /// <summary>
         /// is admin
         /// </summary>
-        /// <example>
-        /// false
-        /// </example>
+        /// <example>false</example>
         public bool IsAdmin { get; set; }
     }
 }
