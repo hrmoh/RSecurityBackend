@@ -16,17 +16,13 @@ namespace RSecurityBackend.Models.Cloud
         /// <summary>
         /// SecurableItem short name
         /// </summary>
-        /// <example>
-        /// job
-        /// </example>
+        /// <example>job</example>
         public string SecurableItemShortName { get; set; }
 
         /// <summary>
         /// Operation short name
         /// </summary>
-        /// <example>
-        /// view
-        /// </example>
+        /// <example>view</example>
         public string OperationShortName { get; set; }
     }
 }

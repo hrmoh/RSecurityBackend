@@ -40,17 +40,13 @@ namespace RSecurityBackend.Models.Image
         /// <summary>
         /// پوشه محل ذخیره تصویر
         /// </summary>
-        /// <example>
-        /// 2017-08
-        /// </example>
+        /// <example>2017-08</example>
         public string FolderName { get; set; }
 
         /// <summary>
         /// نام فایل ذخیره شده با بالاترین کیفیت
         /// </summary>
-        /// <example>
-        /// 85007253-09f2-4434-8b7e-1a23db2cd9c9.png
-        /// </example>
+        /// <example>85007253-09f2-4434-8b7e-1a23db2cd9c9.png</example>
         public string StoredFileName { get; set; }
 
         /// <summary>
