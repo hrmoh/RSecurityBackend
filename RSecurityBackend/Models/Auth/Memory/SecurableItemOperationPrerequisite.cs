@@ -19,17 +19,13 @@ namespace RSecurityBackend.Models.Auth.Memory
         /// <summary>
         /// Prerequisite SecureItem ShortName
         /// </summary>
-        /// <example>
-        /// job
-        /// </example>
+        /// <example>job</example>
         public string SecureItemShortName { get; set; }
 
         /// <summary>
         /// Prerequisite Operation ShortName
         /// </summary>
-        /// <example>
-        /// view
-        /// </example>
+        /// <example>view</example>
         public string OperationShortName { get; set; }
     }
 }

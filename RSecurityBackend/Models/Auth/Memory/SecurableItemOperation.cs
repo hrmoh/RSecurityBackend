@@ -38,17 +38,13 @@
         /// <summary>
         /// Short Name
         /// </summary>
-        /// <example>
-        /// view
-        /// </example>
+        /// <example>view</example>
         public string ShortName { get; set; }
 
         /// <summary>
         /// Descripttion
         /// </summary>
-        /// <example>
-        /// مشاهده
-        /// </example>
+        /// <example>مشاهده</example>
         public string Description { get; set; }
 
         /// <summary>

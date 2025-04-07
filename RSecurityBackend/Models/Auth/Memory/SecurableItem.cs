@@ -211,28 +211,22 @@
         /// <summary>
         /// Short Name
         /// </summary>
-        /// <example>
-        /// user
-        /// </example>
+        /// <example>user</example>
         public string ShortName { get; set; }
 
         /// <summary>
         /// Descripttion
         /// </summary>
-        /// <example>
-        /// کاربران
-        /// </example>
+        /// <example>کاربران</example>
         public string Description { get; set; }
 
         /// <summary>
         /// Operations (short name + description + has permission)
         /// </summary>
-        /// <example>
-        /// [
+        /// <example>[
         ///     [view, مشاهده, true],
         ///     [add, ایجاد, false]
-        /// ]
-        /// </example>
+        /// ]</example>
         public SecurableItemOperation[] Operations { get; set; }
 
 

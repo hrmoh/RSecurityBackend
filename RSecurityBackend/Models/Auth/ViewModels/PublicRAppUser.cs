@@ -16,61 +16,47 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         /// Id
         /// </summary>
         /// 
-        /// <example>
-        /// </example>
         public Guid? Id { get; set; }
 
         /// <summary>
         /// User Name
         /// </summary>
-        /// <example>
-        /// test
-        /// </example>
+        /// <example>test</example>
         [MinLength(4)]
         public string Username { get; set; }
 
         /// <summary>
         /// User Email
         /// </summary>
-        /// <example>
-        /// email@domain.com
-        /// </example>
+        /// <example>email@domain.com</example>
         [EmailAddress]
         public string Email { get; set; }
 
         /// <summary>
         /// User Mobile Phone Number
         /// </summary>
-        /// <example>
-        /// +989121234567
-        /// </example>
+        /// <example>+989121234567</example>
         [Phone]
         public string PhoneNumber { get; set; }
 
         /// <summary>
         /// First Name
         /// </summary>
-        /// <example>
-        /// Hamid Reza
-        /// </example>
+        /// <example>Hamid Reza</example>
         [MinLength(1)]
         public string FirstName { get; set; }
 
         /// <summary>
         /// SurName
         /// </summary>
-        /// <example>
-        /// Mohammadi
-        /// </example>
+        /// <example>Mohammadi</example>
         [MinLength(1)]
         public string SurName { get; set; }
 
         /// <summary>
         /// user status
         /// </summary>
-        /// <example>
-        /// 1
-        /// </example>
+        /// <example>1</example>
         [Required]
         public RAppUserStatus Status { get; set; }
 
