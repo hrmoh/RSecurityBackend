@@ -8,9 +8,7 @@
         /// <summary>
         /// user password
         /// </summary>
-        /// <example>
-        /// Test!123
-        /// </example>     
+        /// <example>Test!123</example>
         public string Password { get; set; }
 
         /// <summary>
