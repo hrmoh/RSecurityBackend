@@ -33,17 +33,13 @@ namespace RSecurityBackend.Models.Auth.Db
         /// <summary>
         /// Client Application Name
         /// </summary>
-        /// <example>
-        /// My Angular Client
-        /// </example>
+        /// <example>My Angular Client</example>
         public string ClientAppName { get; set; }
 
         /// <summary>
         /// Client Language
         /// </summary>
-        /// <example>
-        /// fa-IR
-        /// </example>
+        /// <example>fa-IR</example>
         public string Language { get; set; }
 
         /// <summary>

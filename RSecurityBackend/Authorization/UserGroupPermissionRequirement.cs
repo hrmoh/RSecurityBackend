@@ -11,18 +11,14 @@ namespace RSecurityBackend.Authorization
         ///
         /// </summary>
         /// <see cref="RSecurityBackend.Models.Auth.Memory.SecurableItem.ShortName"/>
-        /// <example>
-        /// job
-        /// </example>
+        /// <example>job</example>
         public string SecurableItemShortName { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <see cref="RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.ShortName"/>
-        /// <example>
-        /// view
-        /// </example>
+        /// <example>view</example>
         public string OperationShortName { get; set; }
 
         /// <summary>

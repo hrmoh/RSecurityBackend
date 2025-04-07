@@ -50,9 +50,7 @@ namespace RSecurityBackend.Models.Auth.Db
         /// <summary>
         /// Client Language
         /// </summary>
-        /// <example>
-        /// fa-IR
-        /// </example>
+        /// <example>fa-IR</example>
         public string Language { get; set; }
     }
 }
