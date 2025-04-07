@@ -50,18 +50,14 @@
             
              </summary>
              <see cref="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.ShortName"/>
-             <example>
-             job
-             </example>
+             <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Authorization.UserGroupPermissionRequirement.OperationShortName">
             <summary>
             
             </summary>
             <see cref="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.ShortName"/>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="M:RSecurityBackend.Authorization.UserGroupPermissionRequirement.#ctor(System.String,System.String)">
             <summary>
@@ -1277,17 +1273,13 @@
             <summary>
             SecurableItem short name
             </summary>
-            <example>
-            job
-            </example>
+            <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RPermission.OperationShortName">
             <summary>
             Operation short name
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Db.RTemporaryUserSession">
             <summary>
@@ -1321,17 +1313,13 @@
             <summary>
             Client Application Name
             </summary>
-            <example>
-            My Angular Client
-            </example>
+            <example>My Angular Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RTemporaryUserSession.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RTemporaryUserSession.LoginTime">
             <summary>
@@ -1432,9 +1420,7 @@
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Db.RVerifyQueueType">
             <summary>
@@ -1575,28 +1561,22 @@
             <summary>
             Short Name
             </summary>
-            <example>
-            user
-            </example>
+            <example>user</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Description">
             <summary>
             Descripttion
             </summary>
-            <example>
-            کاربران
-            </example>
+            <example>کاربران</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Operations">
             <summary>
             Operations (short name + description + has permission)
             </summary>
-            <example>
-            [
+            <example>[
                 [view, مشاهده, true],
                 [add, ایجاد, false]
-            ]
-            </example>
+            ]</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation">
             <summary>
@@ -1621,17 +1601,13 @@
             <summary>
             Short Name
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.Description">
             <summary>
             Descripttion
             </summary>
-            <example>
-            مشاهده
-            </example>
+            <example>مشاهده</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.Prerequisites">
             <summary>
@@ -1659,17 +1635,13 @@
             <summary>
             Prerequisite SecureItem ShortName
             </summary>
-            <example>
-            job
-            </example>
+            <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperationPrerequisite.OperationShortName">
             <summary>
             Prerequisite Operation ShortName
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.BillingUserSignup">
             <summary>
@@ -1715,33 +1687,25 @@
             <summary>
             username
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.Password">
             <summary>
             password
             </summary>
-            <example>
-            Test!123
-            </example>     
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.ClientAppName">
             <summary>
             Client App Name
             </summary>
-            <example>
-            Swashbuckle UI Client
-            </example>
+            <example>Swashbuckle UI Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser">
             <summary>
@@ -1756,56 +1720,42 @@
             Id
             </summary>
             
-            <example>
-            </example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.Username">
             <summary>
             User Name
             </summary>
-            <example>
-            test
-            </example>
+            <example>test</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.Email">
             <summary>
             User Email
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.PhoneNumber">
             <summary>
             User Mobile Phone Number
             </summary>
-            <example>
-            +989121234567
-            </example>
+            <example>+989121234567</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.FirstName">
             <summary>
             First Name
             </summary>
-            <example>
-            Hamid Reza
-            </example>
+            <example>Hamid Reza</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.SurName">
             <summary>
             SurName
             </summary>
-            <example>
-            Mohammadi
-            </example>
+            <example>Mohammadi</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.Status">
             <summary>
             user status
             </summary>
-            <example>
-            1
-            </example>
+            <example>1</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.RImageId">
             <summary>
@@ -1832,6 +1782,11 @@
             email verified
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.CreateDate">
+            <summary>
+            create date
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.PublicRUserSession">
             <summary>
             a safe subset of RUserSession
@@ -1856,17 +1811,13 @@
             <summary>
             Client Application Name
             </summary>
-            <example>
-            App Angular Client
-            </example>
+            <example>App Angular Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRUserSession.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRUserSession.LoginTime">
             <summary>
@@ -1887,17 +1838,13 @@
             <summary>
             desired password, if sent empty system generates one
             </summary>
-            <example>
-            Test!123
-            </example>
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.RegisterRAppUser.IsAdmin">
             <summary>
             is admin
             </summary>
-            <example>
-            false
-            </example>
+            <example>false</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.ResetPasswordViewModel">
             <summary>
@@ -1908,25 +1855,19 @@
             <summary>
             Email
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.ResetPasswordViewModel.Secret">
             <summary>
             Secret
             </summary>
-            <example>
-            4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=
-            </example>
+            <example>4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.ResetPasswordViewModel.Password">
             <summary>
             password
             </summary>
-            <example>
-            Test!123
-            </example>
+            <example>Test!123</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.SelfDeleteViewModel">
             <summary>
@@ -1937,9 +1878,7 @@
             <summary>
             user password
             </summary>
-            <example>
-            Test!123
-            </example>     
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.SelfDeleteViewModel.CallbackUrl">
              <summary>
@@ -1970,25 +1909,19 @@
             <summary>
             Email
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.ClientAppName">
             <summary>
             Client App Name
             </summary>
-            <example>
-            Swashbuckle UI Client
-            </example>
+            <example>Swashbuckle UI Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.CaptchaImageId">
             <summary>
@@ -2029,49 +1962,37 @@
             <summary>
             Email
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.Secret">
             <summary>
             Secret
             </summary>
-            <example>
-            4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=
-            </example>
+            <example>4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.Password">
             <summary>
             password
             </summary>
-            <example>
-            Test!123
-            </example>
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.FirstName">
             <summary>
             First Name
             </summary>
-            <example>
-            Hamid Reza
-            </example>
+            <example>Hamid Reza</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.SurName">
             <summary>
             SurName
             </summary>
-            <example>
-            Mohammadi
-            </example>        
+            <example>Mohammadi</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.PhoneNumber">
             <summary>
             User Mobile Phone Number
             </summary>
-            <example>
-            +989121234567
-            </example>
+            <example>+989121234567</example>
         </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWorkspace">
             <summary>
@@ -2123,17 +2044,13 @@
             <summary>
             SecurableItem short name
             </summary>
-            <example>
-            job
-            </example>
+            <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Models.Cloud.RWSPermission.OperationShortName">
             <summary>
             Operation short name
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWSRole">
             <summary>
@@ -2642,17 +2559,13 @@
             <summary>
             پوشه محل ذخیره تصویر
             </summary>
-            <example>
-            2017-08
-            </example>
+            <example>2017-08</example>
         </member>
         <member name="P:RSecurityBackend.Models.Image.RImage.StoredFileName">
             <summary>
             نام فایل ذخیره شده با بالاترین کیفیت
             </summary>
-            <example>
-            85007253-09f2-4434-8b7e-1a23db2cd9c9.png
-            </example>
+            <example>85007253-09f2-4434-8b7e-1a23db2cd9c9.png</example>
         </member>
         <member name="P:RSecurityBackend.Models.Image.RImage.DataTime">
             <summary>
