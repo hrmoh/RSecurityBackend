@@ -8,25 +8,19 @@
         /// <summary>
         /// Email
         /// </summary>
-        /// <example>
-        /// email@domain.com
-        /// </example>
+        /// <example>email@domain.com</example>
         public string Email { get; set; }
 
         /// <summary>
         /// Secret
         /// </summary>
-        /// <example>
-        /// 4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=
-        /// </example>
+        /// <example>4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=</example>
         public string Secret { get; set; }
 
         /// <summary>
         /// password
         /// </summary>
-        /// <example>
-        /// Test!123
-        /// </example>
+        /// <example>Test!123</example>
         public string Password { get; set; }
   
     }
