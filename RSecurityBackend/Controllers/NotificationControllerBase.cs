@@ -190,17 +190,42 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// notfy all users
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("all/{email}")]
+        [Authorize(Policy = SecurableItem.NotificationEntityShortName + ":" + SecurableItem.BulkOpertaionShortName)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public async Task<IActionResult> NotifyAllUsersAsync(bool email, [FromBody] NewNotificationViewModel model)
+        {
+            RServiceResult<bool> res = await _appUserService.NotifyAllUsersAsync(model.Subject, model.HtmlText, model.NotificationType, email);
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+                return BadRequest(res.ExceptionString);
+            return Ok();
+        }
+
+
+        /// <summary>
         /// Notification Service
         /// </summary>
         protected readonly IRNotificationService _notificationService;
 
         /// <summary>
+        /// user service
+        /// </summary>
+        protected readonly IAppUserService _appUserService;
+
+        /// <summary>
         /// constructor
         /// </summary>
         /// <param name="notificationService"></param>
-        public NotificationControllerBase(IRNotificationService notificationService)
+        public NotificationControllerBase(IRNotificationService notificationService, IAppUserService appUserService)
         {
             _notificationService = notificationService;
+            _appUserService = appUserService;
         }
     }
 }

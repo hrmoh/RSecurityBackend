@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using RSecurityBackend.DbContext;
 using RSecurityBackend.Models.Auth.Db;
 using RSecurityBackend.Models.Generic;
@@ -10,7 +11,7 @@ namespace SampleProject.Services.Implementation
 {
     public class SampleAppUserService : AppUserService
     {
-        public SampleAppUserService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager, SignInManager<RAppUser> signInManager, RoleManager<RAppRole> roleManager, ISecretGenerator secretGenerator, IImageFileService imageFileService, IUserRoleService userRoleService, IConfiguration configuration) : base(context, userManager, signInManager, roleManager, secretGenerator, imageFileService, userRoleService, configuration)
+        public SampleAppUserService(RSecurityDbContext<RAppUser, RAppRole, Guid> context, UserManager<RAppUser> userManager, SignInManager<RAppUser> signInManager, RoleManager<RAppRole> roleManager, ISecretGenerator secretGenerator, IImageFileService imageFileService, IUserRoleService userRoleService, IConfiguration configuration, IEmailSender emailSender) : base(context, userManager, signInManager, roleManager, secretGenerator, imageFileService, userRoleService, configuration, emailSender)
         {
         }
 
