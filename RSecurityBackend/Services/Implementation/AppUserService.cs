@@ -21,6 +21,8 @@ using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Audit.Db;
 using Microsoft.Extensions.Configuration;
 using RSecurityBackend.Models.Cloud;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using RSecurityBackend.Models.Notification;
 
 namespace RSecurityBackend.Services.Implementation
 {
@@ -355,10 +357,10 @@ namespace RSecurityBackend.Services.Implementation
             GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName)
         {
             var source = _userManager.Users
-                .Where(appUser => 
-                
+                .Where(appUser =>
+
                 (string.IsNullOrEmpty(filterByEmail) || (!string.IsNullOrEmpty(filterByEmail) && appUser.Email.Contains(filterByEmail)))
-                
+
                 &&
 
                 (string.IsNullOrEmpty(filterByNickName) || (!string.IsNullOrEmpty(filterByNickName) && appUser.NickName.Contains(filterByNickName)))
@@ -934,9 +936,9 @@ namespace RSecurityBackend.Services.Implementation
                 var memberships = await _context.RWSUsers.Where(m => m.RAppUserId == userId).ToListAsync();
                 if (memberships.Any())
                 {
-                    if(memberships.Where(m => m.Status == RWSUserMembershipStatus.Owner).Any())
+                    if (memberships.Where(m => m.Status == RWSUserMembershipStatus.Owner).Any())
                     {
-                        return new RServiceResult<bool>(false, $"شما مالک شرکت {memberships.Where(m => m.Status == RWSUserMembershipStatus.Owner).Count()} شرکت هستید. قبل از حذف حساب کاربری لازم است این شرکت‌ها را حذف کنید یا مالکیت آنها را به کاربر دیگری واگذار کنید.");     
+                        return new RServiceResult<bool>(false, $"شما مالک شرکت {memberships.Where(m => m.Status == RWSUserMembershipStatus.Owner).Count()} شرکت هستید. قبل از حذف حساب کاربری لازم است این شرکت‌ها را حذف کنید یا مالکیت آنها را به کاربر دیگری واگذار کنید.");
                     }
                     _context.RemoveRange(memberships);
                 }
@@ -968,7 +970,7 @@ namespace RSecurityBackend.Services.Implementation
             {
                 return new RServiceResult<bool>(false, exp.ToString());
             }
-           
+
         }
 
         /// <summary>
@@ -1273,7 +1275,7 @@ namespace RSecurityBackend.Services.Implementation
                 FirstName = firstName,
                 SurName = surName,
                 NickName = $"{firstName} {surName}".Trim(),
-                PhoneNumber = string.IsNullOrEmpty(phoneNumber) ? null: phoneNumber,
+                PhoneNumber = string.IsNullOrEmpty(phoneNumber) ? null : phoneNumber,
             };
 
             RServiceResult<RAppUser> userAddResult = await AddUser(newUserInfo);
@@ -1810,6 +1812,54 @@ namespace RSecurityBackend.Services.Implementation
         #endregion
 
         /// <summary>
+        /// notify all users
+        /// </summary>
+        /// <param name="subject"></param>
+        /// <param name="htmlText"></param>
+        /// <param name="notificationType"></param>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<bool>> NotifyAllUsersAsync(string subject, string htmlText, NotificationType notificationType = NotificationType.NoActionRequired, bool email = false)
+        {
+            try
+            {
+                var users = _userManager.Users;
+                foreach (var user in users)
+                {
+                    RUserNotification notification =
+                    new RUserNotification()
+                    {
+                        UserId = user.Id,
+                        DateTime = DateTime.Now,
+                        Status = NotificationStatus.Unread,
+                        Subject = subject,
+                        HtmlText = htmlText,
+                        NotificationType = notificationType,
+                    };
+                    _context.Notifications.Add(notification);
+                }
+                await _context.SaveChangesAsync();
+                if (email)
+                {
+                    foreach (var user in users)
+                    {
+                        if (!string.IsNullOrEmpty(user.Email))
+                        {
+                            //await is not called by purpose
+                            _ = _emailSender.SendEmailAsync(user.Email, subject, htmlText);
+                        }
+                    }
+                }
+                return new RServiceResult<bool>(true);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<bool>(false, exp.ToString());
+            }
+        }
+
+
+        /// <summary>
         /// Main Database context
         /// </summary>
         protected readonly RSecurityDbContext<RAppUser, RAppRole, Guid> _context;
@@ -1841,6 +1891,12 @@ namespace RSecurityBackend.Services.Implementation
         protected readonly ISecretGenerator _secretGenerator;
 
         /// <summary>
+        /// Email sender
+        /// </summary>
+        protected readonly IEmailSender _emailSender;
+
+
+        /// <summary>
         /// Configuration
         /// </summary>
         protected IConfiguration Configuration { get; }
@@ -1858,6 +1914,7 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="imageFileService"></param>
         /// <param name="userRoleService"></param>
         /// <param name="configuration"></param>
+        /// <param name="emailSender"></param>
         public AppUserService(
             RSecurityDbContext<RAppUser, RAppRole, Guid> context,
             UserManager<RAppUser> userManager,
@@ -1866,7 +1923,8 @@ namespace RSecurityBackend.Services.Implementation
             ISecretGenerator secretGenerator,
             IImageFileService imageFileService,
             IUserRoleService userRoleService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
@@ -1876,6 +1934,7 @@ namespace RSecurityBackend.Services.Implementation
             _imageFileService = imageFileService;
             _userRoleService = userRoleService;
             Configuration = configuration;
+            _emailSender = emailSender;
         }
     }
 }

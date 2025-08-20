@@ -4,6 +4,7 @@ using RSecurityBackend.Models.Auth.Memory;
 using RSecurityBackend.Models.Auth.ViewModels;
 using RSecurityBackend.Models.Generic;
 using RSecurityBackend.Models.Image;
+using RSecurityBackend.Models.Notification;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -351,5 +352,16 @@ namespace RSecurityBackend.Services
         /// <param name="email"></param>
         /// <returns></returns>
         Task<RServiceResult<BannedEmail>> GetBannedEmailInformationAsync(string email);
+
+        /// <summary>
+        /// notify all users
+        /// </summary>
+        /// <param name="subject"></param>
+        /// <param name="htmlText"></param>
+        /// <param name="notificationType"></param>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> NotifyAllUsersAsync(string subject, string htmlText, NotificationType notificationType = NotificationType.NoActionRequired, bool email = false);
+
     }
 }
