@@ -31,14 +31,19 @@
         public const string WorkspaceEntityShortName = "workspace";
 
         /// <summary>
-        /// worspace role
+        /// workspace role
         /// </summary>
         public const string WorkspaceRoleEntityShortName = "wsrole";
 
         /// <summary>
+        /// notifications
+        /// </summary>
+        public const string NotificationEntityShortName = "notif";
+
+        /// <summary>
         /// view
         /// </summary>
-        public const string ViewOperationShortName = "view";       
+        public const string ViewOperationShortName = "view";
         /// <summary>
         /// add
         /// </summary>
@@ -88,6 +93,11 @@
         /// </summary>
         public const string QueryMembersListOperationShortName = "vumembers";
 
+        /// <summary>
+        /// bulk operation
+        /// </summary>
+        public const string BulkOpertaionShortName = "bulk";
+
 
 
         /// <summary>
@@ -105,7 +115,7 @@
                         Description = "کاربران",
                         Operations =
                         [
-                            new SecurableItemOperation(ViewOperationShortName, "مشاهده", false, null ),                           
+                            new SecurableItemOperation(ViewOperationShortName, "مشاهده", false, null ),
                             new SecurableItemOperation(AddOperationShortName, "ایجاد", false,
                             [
                                 new SecurableItemOperationPrerequisite(  RoleEntityShortName, ViewOperationShortName)
@@ -114,7 +124,7 @@
                             new SecurableItemOperation(ModifyOperationShortName, "اصلاح", false,
                             [
                                 new SecurableItemOperationPrerequisite(  RoleEntityShortName, ViewOperationShortName)
-                            ]                            
+                            ]
                             ),
                             new SecurableItemOperation(DeleteOperationShortName, "حذف", false),
                             new SecurableItemOperation(SessionsOperationShortName, "مشاهده جلسات همه کاربران", false, null),
@@ -161,7 +171,18 @@
                         [
                             new SecurableItemOperation(AddOperationShortName, "ایجاد", false),
                         ]
+                    },
+                    new SecurableItem()
+                    {
+                        ShortName = NotificationEntityShortName,
+                        Description = "اعلان‌ها",
+                        Operations =
+                        [
+                            new SecurableItemOperation(AddOperationShortName, "ارسال اعلان برای کاربر خاص", false),
+                            new SecurableItemOperation(BulkOpertaionShortName, "ارسال اعلان برای همهٔ کاربران", false),
+                        ]
                     }
+
                 ];
             }
         }
@@ -187,7 +208,7 @@
                             new SecurableItemOperation(ChangeMemberStatusOperationShortName, "تغییر وضعیت عضو", false),
                             new SecurableItemOperation(ChangeMemberRoleShortName, "تغییر نقش عضو", false),
                             new SecurableItemOperation(QueryMembersListOperationShortName, "مشاهدهٔ فهرست اعضا", false),
-                            
+
                         ]
                     },
                      new SecurableItem()

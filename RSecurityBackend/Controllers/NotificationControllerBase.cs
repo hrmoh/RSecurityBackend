@@ -10,6 +10,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using RSecurityBackend.Models.Auth.ViewModels;
+using RSecurityBackend.Models.Auth.Memory;
 
 namespace RSecurityBackend.Controllers
 {
@@ -167,6 +169,24 @@ namespace RSecurityBackend.Controllers
             if (!string.IsNullOrEmpty(res.ExceptionString))
                 return BadRequest(res.ExceptionString);
             return Ok();
+        }
+
+        /// <summary>
+        /// notify a sepcific user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("{userId}")]
+        [Authorize(Policy = SecurableItem.NotificationEntityShortName + ":" + SecurableItem.AddOperationShortName)]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(RUserNotificationViewModel))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public async Task<IActionResult> NotifyUserAsync(Guid userId, [FromBody] NewNotificationViewModel model)
+        {
+            RServiceResult<RUserNotificationViewModel> res = await _notificationService.PushNotification(userId, model.Subject, model.HtmlText, model.NotificationType);
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+                return BadRequest(res.ExceptionString);
+            return Ok(res.Result);
         }
 
         /// <summary>
