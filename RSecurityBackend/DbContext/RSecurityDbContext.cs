@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using RSecurityBackend.Models.Audit.Db;
 using RSecurityBackend.Models.Auth.Db;
+using RSecurityBackend.Models.ChangeTracking;
 using RSecurityBackend.Models.Cloud;
 using RSecurityBackend.Models.Generic.Db;
 using RSecurityBackend.Models.Image;
@@ -155,6 +156,12 @@ namespace RSecurityBackend.DbContext
         /// workspace user invitation
         /// </summary>
         public DbSet<WorkspaceUserInvitation> WorkspaceUserInvitations { get; set; }
+
+
+        /// <summary>
+        /// change logs
+        /// </summary>
+        public DbSet<RChangeLog> RChangeLogs { get; set; }
 
 
     }

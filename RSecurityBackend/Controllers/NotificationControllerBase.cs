@@ -222,6 +222,7 @@ namespace RSecurityBackend.Controllers
         /// constructor
         /// </summary>
         /// <param name="notificationService"></param>
+        /// <param name="appUserService"></param>
         public NotificationControllerBase(IRNotificationService notificationService, IAppUserService appUserService)
         {
             _notificationService = notificationService;

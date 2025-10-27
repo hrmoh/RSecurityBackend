@@ -463,6 +463,7 @@
             constructor
             </summary>
             <param name="notificationService"></param>
+            <param name="appUserService"></param>
         </member>
         <member name="T:RSecurityBackend.Controllers.RGenericOptionsControllerBase">
             <summary>
@@ -1079,6 +1080,11 @@
         <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.WorkspaceUserInvitations">
             <summary>
             workspace user invitation
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.RChangeLogs">
+            <summary>
+            change logs
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Audit.Db.REvent">
