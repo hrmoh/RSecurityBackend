@@ -2041,6 +2041,71 @@
             </summary>
             <example>+989121234567</example>
         </member>
+        <member name="T:RSecurityBackend.Models.ChangeTracking.RChangeLog">
+            <summary>
+            change log model
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.WorkspaceId">
+            <summary>
+            Workspace Id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Workspace">
+            <summary>
+            Workspace
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityName">
+            <summary>
+            Entity
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Operation">
+            <summary>
+            Operation
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.DateTime">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.RAppUserId">
+            <summary>
+            user id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.RAppUser">
+            <summary>
+            user
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Description">
+            <summary>
+            Description
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityJson">
+            <summary>
+            Entity Json
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityUId">
+            <summary>
+            entity guiid
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityId">
+            <summary>
+            entity id
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWorkspace">
             <summary>
             Workspace (a reference for a set of records separated from each other, users may have access to different workspaces and have different roles in each of them)
