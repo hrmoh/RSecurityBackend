@@ -44,6 +44,21 @@
             <summary>
             UserGroupPermissionRequirement
             </summary>
+            <remarks>
+            constructor
+            </remarks>
+            <param name="securableItemShortName"></param>
+            <param name="operationShortName"></param>
+        </member>
+        <member name="M:RSecurityBackend.Authorization.UserGroupPermissionRequirement.#ctor(System.String,System.String)">
+            <summary>
+            UserGroupPermissionRequirement
+            </summary>
+            <remarks>
+            constructor
+            </remarks>
+            <param name="securableItemShortName"></param>
+            <param name="operationShortName"></param>
         </member>
         <member name="P:RSecurityBackend.Authorization.UserGroupPermissionRequirement.SecurableItemShortName">
              <summary>
@@ -58,13 +73,6 @@
             </summary>
             <see cref="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.ShortName"/>
             <example>view</example>
-        </member>
-        <member name="M:RSecurityBackend.Authorization.UserGroupPermissionRequirement.#ctor(System.String,System.String)">
-            <summary>
-            constructor
-            </summary>
-            <param name="securableItemShortName"></param>
-            <param name="operationShortName"></param>
         </member>
         <member name="T:RSecurityBackend.Controllers.AppUserControllerBase">
             <summary>
@@ -424,12 +432,33 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.NotifyUserAsync(System.Guid,RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel)">
+            <summary>
+            notify a sepcific user
+            </summary>
+            <param name="userId"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.NotifyAllUsersAsync(System.Boolean,RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel)">
+            <summary>
+            notfy all users
+            </summary>
+            <param name="email"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="F:RSecurityBackend.Controllers.NotificationControllerBase._notificationService">
             <summary>
             Notification Service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.#ctor(RSecurityBackend.Services.IRNotificationService)">
+        <member name="F:RSecurityBackend.Controllers.NotificationControllerBase._appUserService">
+            <summary>
+            user service
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.#ctor(RSecurityBackend.Services.IRNotificationService,RSecurityBackend.Services.IAppUserService)">
             <summary>
             constructor
             </summary>
@@ -1479,7 +1508,12 @@
         </member>
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.WorkspaceRoleEntityShortName">
             <summary>
-            worspace role
+            workspace role
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.NotificationEntityShortName">
+            <summary>
+            notifications
             </summary>
         </member>
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ViewOperationShortName">
@@ -1545,6 +1579,11 @@
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.QueryMembersListOperationShortName">
             <summary>
             view members
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.BulkOpertaionShortName">
+            <summary>
+            bulk operation
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Items">
@@ -1623,11 +1662,19 @@
             <summary>
             SecurableItemOperation Prerequisite
             </summary>
+            <remarks>
+            
+            </remarks>
+            <param name="secureItemShortName"></param>
+            <param name="operationShortName"></param>
         </member>
         <member name="M:RSecurityBackend.Models.Auth.Memory.SecurableItemOperationPrerequisite.#ctor(System.String,System.String)">
             <summary>
-            
+            SecurableItemOperation Prerequisite
             </summary>
+            <remarks>
+            
+            </remarks>
             <param name="secureItemShortName"></param>
             <param name="operationShortName"></param>
         </member>
@@ -2724,6 +2771,26 @@
             Notifiation Type
             </summary>
         </member>
+        <member name="T:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel">
+            <summary>
+            new notification view model
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel.Subject">
+            <summary>
+            Subject
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel.HtmlText">
+            <summary>
+            Text
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel.NotificationType">
+            <summary>
+            Notification Type
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Notification.ViewModels.RUserNotificationViewModel">
             <summary>
             User Notification
@@ -3091,6 +3158,16 @@
             <summary>
             get banned email information
             </summary>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.NotifyAllUsersAsync(System.String,System.String,RSecurityBackend.Models.Notification.NotificationType,System.Boolean)">
+            <summary>
+            notify all users
+            </summary>
+            <param name="subject"></param>
+            <param name="htmlText"></param>
+            <param name="notificationType"></param>
             <param name="email"></param>
             <returns></returns>
         </member>
@@ -3627,6 +3704,16 @@
             <param name="email"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.NotifyAllUsersAsync(System.String,System.String,RSecurityBackend.Models.Notification.NotificationType,System.Boolean)">
+            <summary>
+            notify all users
+            </summary>
+            <param name="subject"></param>
+            <param name="htmlText"></param>
+            <param name="notificationType"></param>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
         <member name="F:RSecurityBackend.Services.Implementation.AppUserService._context">
             <summary>
             Main Database context
@@ -3662,12 +3749,17 @@
             secret generator
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Services.Implementation.AppUserService._emailSender">
+            <summary>
+            Email sender
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.Services.Implementation.AppUserService.Configuration">
             <summary>
             Configuration
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.#ctor(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},Microsoft.AspNetCore.Identity.UserManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.SignInManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.RoleManager{RSecurityBackend.Models.Auth.Db.RAppRole},RSecurityBackend.Services.ISecretGenerator,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.IUserRoleService,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.#ctor(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},Microsoft.AspNetCore.Identity.UserManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.SignInManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.RoleManager{RSecurityBackend.Models.Auth.Db.RAppRole},RSecurityBackend.Services.ISecretGenerator,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.IUserRoleService,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
             constructor
             </summary>
@@ -3679,6 +3771,7 @@
             <param name="imageFileService"></param>
             <param name="userRoleService"></param>
             <param name="configuration"></param>
+            <param name="emailSender"></param>
         </member>
         <member name="T:RSecurityBackend.Services.Implementation.AuditLogServiceEF">
             <summary>
