@@ -187,6 +187,11 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     _context.RemoveRange(roles);
                 }
+                var changelogs = await _context.RChangeLogs.Where(w => w.WorkspaceId == id).ToListAsync();
+                if (changelogs.Any())
+                {
+                    _context.RemoveRange(changelogs);
+                }
                 _context.Remove(ws);
                 await _context.SaveChangesAsync();
                 return new RServiceResult<bool>(true);
