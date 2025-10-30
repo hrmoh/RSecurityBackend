@@ -50,17 +50,12 @@ namespace RSecurityBackend.Models.ChangeTracking
         public virtual RAppUser RAppUser { get; set; }
 
         /// <summary>
-        /// Description
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
         /// Entity Json
         /// </summary>
         public string EntityJson { get; set; }
 
         /// <summary>
-        /// entity guiid
+        /// entity guid
         /// </summary>
         public Guid? EntityUId { get; set; }
 

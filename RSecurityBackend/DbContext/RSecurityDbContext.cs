@@ -11,6 +11,7 @@ using RSecurityBackend.Models.Image;
 using RSecurityBackend.Models.Notification;
 using System;
 using System.IO;
+using System.Numerics;
 
 namespace RSecurityBackend.DbContext
 {
@@ -68,8 +69,18 @@ namespace RSecurityBackend.DbContext
             builder.Entity<RGenericOption>()
                 .HasIndex(o => new { o.RAppUserId, o.Name })
                 .IsUnique();
-                
-        }        
+
+            builder.Entity<RChangeLog>()
+                .Property(e => e.EntityName)
+                .HasMaxLength(16);
+
+            builder.Entity<RChangeLog>()
+                .Property(e => e.Operation)
+                .HasMaxLength(24);
+
+
+
+        }
 
         /// <summary>
         /// Permissions
