@@ -78,6 +78,9 @@ namespace RSecurityBackend.DbContext
                 .Property(e => e.Operation)
                 .HasMaxLength(24);
 
+            builder.Entity<RChangeLog>()
+                .Property(e => e.Description)
+                .HasMaxLength(128);
 
 
         }

@@ -460,6 +460,10 @@ namespace SampleProject.Migrations
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
                     b.Property<int?>("EntityId")
                         .HasColumnType("int");
 

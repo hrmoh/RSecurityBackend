@@ -12,15 +12,15 @@ using SampleProject.DbContext;
 namespace SampleProject.Migrations
 {
     [DbContext(typeof(RDbContext))]
-    [Migration("20251028055930_ChangeLogs")]
-    partial class ChangeLogs
+    [Migration("20251101053237_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -464,7 +464,8 @@ namespace SampleProject.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int?>("EntityId")
                         .HasColumnType("int");
@@ -473,13 +474,15 @@ namespace SampleProject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EntityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<Guid?>("EntityUId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Operation")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
 
                     b.Property<Guid?>("RAppUserId")
                         .HasColumnType("uniqueidentifier");

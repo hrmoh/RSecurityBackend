@@ -2092,6 +2092,11 @@
             user
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Description">
+            <summary>
+            Description
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityJson">
             <summary>
             Entity Json
