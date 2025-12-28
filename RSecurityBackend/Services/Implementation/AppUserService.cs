@@ -1435,6 +1435,139 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// request change email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newEmail"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <param name="clientAppName"></param>
+        /// <param name="langauge"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string langauge)
+        {
+            if (string.IsNullOrEmpty(clientIPAddress))
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, "client ip address is empty");
+            }
+
+            if (string.IsNullOrEmpty(clientAppName))
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, "client app name is empty");
+            }
+
+            RAppUser rAppUser = await _userManager.FindByEmailAsync(newEmail);
+            if (rAppUser == null)
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+            }
+
+            var oldSecrets = await _context.VerifyQueueItems.Where(i => i.DateTime < DateTime.Now.AddDays(-1)).ToListAsync();
+            if (oldSecrets.Count > 0)
+            {
+                _context.VerifyQueueItems.RemoveRange(oldSecrets);
+                await _context.SaveChangesAsync();
+            }
+
+            //checking this queue for previous signup attempts is unnecessary and is not done intentionally
+            RVerifyQueueItem item = new RVerifyQueueItem()
+            {
+                QueueType = RVerifyQueueType.ChangeEmail,
+                Email = newEmail,
+                DateTime = DateTime.Now,
+                ClientIPAddress = clientIPAddress,
+                ClientAppName = clientAppName,
+                Secret = $"{(new Random(DateTime.Now.Millisecond)).Next(0, 99999)}".PadLeft(6, '0'),
+                Language = langauge
+            };
+
+            var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();
+            if (existingSecrets.Count > 0)
+            {
+                _context.VerifyQueueItems.RemoveRange(existingSecrets);
+                await _context.SaveChangesAsync();
+            }
+
+            await _context.VerifyQueueItems.AddAsync
+                (
+                item
+                );
+            await _context.SaveChangesAsync();
+            return new RServiceResult<RVerifyQueueItem>(item);
+        }
+
+        /// <summary>
+        /// change email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newEmail"></param>
+        /// <param name="secret"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<bool>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress)
+        {
+            var resUser = await GetUserInformation(userId);
+            if(!string.IsNullOrEmpty(resUser.ExceptionString))
+            {
+                return new RServiceResult<bool>(false, resUser.ExceptionString);
+            }
+            var user = resUser.Result;
+            if(user == null)
+            {
+                return new RServiceResult<bool>(false, "user == null");
+            }
+            if (bool.Parse(Configuration["AuditNetEnabled"]))
+            {
+                //we ignore input model in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
+                REvent log = new REvent()
+                {
+                    EventType = $"Change Email (POST)(Manual) to {newEmail}",
+                    StartDate = DateTime.UtcNow,
+                    UserName = user.Username,
+                    IpAddress = clientIPAddress
+                };
+                _context.AuditLogs.Add(log);
+                await _context.SaveChangesAsync();
+            }
+
+            RAppUser existingUser = await _userManager.FindByEmailAsync(newEmail);
+            if (existingUser != null)
+            {
+                return new RServiceResult<bool>(false, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+            }
+
+
+            if (
+                newEmail
+                !=
+                (await RetrieveEmailFromQueueSecret(RVerifyQueueType.ChangeEmail, secret)).Result
+             )
+            {
+                return new RServiceResult<bool>(false, "کلمه عبور اشتباه وارد شده است");
+            }
+
+            
+            if(existingUser.UserName == existingUser.Email)
+            {
+                existingUser.UserName = newEmail;
+            }
+            existingUser.Email = newEmail;
+
+            await _userManager.UpdateAsync(existingUser);
+
+            RVerifyQueueItem[] failedQueue = await _context.VerifyQueueItems.Where(i => i.Email == newEmail && i.QueueType == RVerifyQueueType.ChangeEmail).ToArrayAsync();
+            if (failedQueue.Length != 0)
+            {
+                _context.VerifyQueueItems.RemoveRange(failedQueue);
+            }
+
+
+            await _context.SaveChangesAsync();
+
+            return new RServiceResult<bool>(true);
+
+        }
+
+        /// <summary>
         /// Find User By Email
         /// </summary>
         /// <param name="email"></param>

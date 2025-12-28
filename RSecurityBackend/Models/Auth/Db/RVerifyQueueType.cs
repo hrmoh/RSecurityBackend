@@ -20,6 +20,10 @@
         /// <summary>
         /// kick out user
         /// </summary>
-        KickOutUser = 3
+        KickOutUser = 3,
+        /// <summary>
+        /// change email
+        /// </summary>
+        ChangeEmail = 4,
     }
 }
