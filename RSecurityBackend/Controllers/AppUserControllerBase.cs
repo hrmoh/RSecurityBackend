@@ -1099,25 +1099,39 @@ namespace RSecurityBackend.Controllers
         /// <summary>
         /// request change email
         /// </summary>
-        /// <param name="newmail"></param>
-        /// <param name="callbackUrl"></param>
+        /// <param name="viewModel"></param>
         /// <returns></returns>
         [HttpPost("email/request/change/{newmail}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public virtual async Task<IActionResult> RequestChangeEmail(string newmail, string callbackUrl)
+        public virtual async Task<IActionResult> RequestChangeEmail([FromBody]ChangeEmailViewModel viewModel)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
             Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
             string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
             var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
 
+            var user = (await _appUserService.GetUserInformation(loggedOnUserId)).Result;
+            var loginResult = await _appUserService.Login(new LoginViewModel()
+            {
+                Username = user.Email,
+                Password = viewModel.Password,
+                ClientAppName = session == null ? "Unknonw Session" : session.Result.ClientAppName,
+                Language = session == null ? "Unknown Session" : session.Result.Language
+            },
+            clientIPAddress
+            );
+
+            if (loginResult.Result == null)
+            {
+                return BadRequest(loginResult.ExceptionString);
+            }
 
             RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeEmail(
                 loggedOnUserId,
-                newmail,
+                viewModel.NewEmail,
                 clientIPAddress,
                 session == null ? "Unknonw Session" : session.Result.ClientAppName,
                 session == null ? "Unknown Session" : session.Result.Language
@@ -1131,9 +1145,9 @@ namespace RSecurityBackend.Controllers
             {
                 await _emailSender.SendEmailAsync
                     (
-                    newmail,
+                    viewModel.NewEmail,
                     _appUserService.GetEmailSubject(RVerifyQueueType.ChangeEmail, res.Result.Secret),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.ChangeEmail, res.Result.Secret, callbackUrl)
+                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.ChangeEmail, res.Result.Secret, viewModel.CallbackUrl)
                     );
             }
             catch (Exception exp)
