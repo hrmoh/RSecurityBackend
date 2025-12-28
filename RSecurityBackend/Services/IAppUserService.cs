@@ -363,5 +363,28 @@ namespace RSecurityBackend.Services
         /// <returns></returns>
         Task<RServiceResult<bool>> NotifyAllUsersAsync(string subject, string htmlText, NotificationType notificationType = NotificationType.NoActionRequired, bool email = false);
 
+
+        /// <summary>
+        /// request change email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newEmail"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <param name="clientAppName"></param>
+        /// <param name="langauge"></param>
+        /// <returns></returns>
+        Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string langauge);
+
+        /// <summary>
+        /// change email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newEmail"></param>
+        /// <param name="secret"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress);
+
+
     }
 }
