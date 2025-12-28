@@ -1379,7 +1379,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
-                //we ignore input model in automatic auditing to prevent loginng password data, so we would add a manual auditing to have enough data on login intrusion and ...
+                //we ignore input model in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
                 REvent log = new REvent()
                 {
                     EventType = "AppUser/ResetPassword (POST)(Manual)",
