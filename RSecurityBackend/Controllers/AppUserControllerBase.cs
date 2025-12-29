@@ -1177,7 +1177,7 @@ namespace RSecurityBackend.Controllers
             var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
 
 
-            RServiceResult<bool> res = await _appUserService.ChangeEmail(
+            RServiceResult<string> res = await _appUserService.ChangeEmail(
                 loggedOnUserId,
                 newmail,
                 secret,
@@ -1187,6 +1187,12 @@ namespace RSecurityBackend.Controllers
             {
                 return BadRequest(res.ExceptionString);
             }
+
+            _ = _emailSender.SendEmailAsync(res.Result,
+                    _appUserService.GetEmailSubject(RVerifyQueueType.EmailChaned, ""),
+                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChaned, "", "")
+
+                );
 
             return Ok();
         }

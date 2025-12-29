@@ -25,5 +25,9 @@
         /// change email
         /// </summary>
         ChangeEmail = 4,
+        /// <summary>
+        /// email changed
+        /// </summary>
+        EmailChaned = 5,
     }
 }

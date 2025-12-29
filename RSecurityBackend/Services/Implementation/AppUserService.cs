@@ -1502,18 +1502,18 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="newEmail"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
-        /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress)
+        /// <returns>old email</returns>
+        public virtual async Task<RServiceResult<string>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress)
         {
             var resUser = await GetUserInformation(userId);
             if(!string.IsNullOrEmpty(resUser.ExceptionString))
             {
-                return new RServiceResult<bool>(false, resUser.ExceptionString);
+                return new RServiceResult<string>("", resUser.ExceptionString);
             }
             var user = resUser.Result;
             if(user == null)
             {
-                return new RServiceResult<bool>(false, "user == null");
+                return new RServiceResult<string>("", "user == null");
             }
             if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
@@ -1532,7 +1532,7 @@ namespace RSecurityBackend.Services.Implementation
             RAppUser existingUser = await _userManager.FindByEmailAsync(newEmail);
             if (existingUser != null)
             {
-                return new RServiceResult<bool>(false, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+                return new RServiceResult<string>("", $"کاربری با این ایمیل وجود دارد. - {newEmail}");
             }
 
 
@@ -1542,11 +1542,11 @@ namespace RSecurityBackend.Services.Implementation
                 (await RetrieveEmailFromQueueSecret(RVerifyQueueType.ChangeEmail, secret)).Result
              )
             {
-                return new RServiceResult<bool>(false, "کلمه عبور اشتباه وارد شده است");
+                return new RServiceResult<string>("", "کلمه عبور اشتباه وارد شده است");
             }
 
-            
-            if(existingUser.UserName == existingUser.Email)
+            string oldEmail = existingUser.Email;
+            if (existingUser.UserName == existingUser.Email)
             {
                 existingUser.UserName = newEmail;
             }
@@ -1563,7 +1563,7 @@ namespace RSecurityBackend.Services.Implementation
 
             await _context.SaveChangesAsync();
 
-            return new RServiceResult<bool>(true);
+            return new RServiceResult<string>(oldEmail);
 
         }
 
