@@ -1190,7 +1190,7 @@ namespace RSecurityBackend.Controllers
 
             _ = _emailSender.SendEmailAsync(res.Result,
                     _appUserService.GetEmailSubject(RVerifyQueueType.EmailChaned, ""),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChaned, "", "")
+                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChaned, newmail, "")
 
                 );
 

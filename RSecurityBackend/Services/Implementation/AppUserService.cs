@@ -1810,8 +1810,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secretCode"></param>
         public virtual string GetEmailSubject(RVerifyQueueType op, string secretCode)
         {
-            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeEmail ? "Change Email" : "Self Delete User";
-            return $"Application {opString} Code:{secretCode}";
+            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeEmail ? "Change Email" : op == RVerifyQueueType.EmailChaned ? "Email changed" : "Self Delete User";
+            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.EmailChaned ? "New Email" : "Code")}:{secretCode}";
+
         }
 
         /// <summary>
