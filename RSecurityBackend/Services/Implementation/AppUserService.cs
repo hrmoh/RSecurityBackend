@@ -1545,14 +1545,27 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<string>("", "کلمه عبور اشتباه وارد شده است");
             }
 
+            _context.UserOldEmails.Add
+                (
+                new UserOldEmail()
+                {
+                    Email = existingUser.Email,
+                    NormalizedEmail = existingUser.NormalizedEmail,
+                    ChangeDate = DateTime.Now,
+                }
+                );
+
             string oldEmail = existingUser.Email;
             if (existingUser.UserName == existingUser.Email)
             {
                 existingUser.UserName = newEmail;
             }
             existingUser.Email = newEmail;
+            existingUser.NormalizedEmail = _userManager.NormalizeEmail(newEmail);
 
             await _userManager.UpdateAsync(existingUser);
+
+            
 
             RVerifyQueueItem[] failedQueue = await _context.VerifyQueueItems.Where(i => i.Email == newEmail && i.QueueType == RVerifyQueueType.ChangeEmail).ToArrayAsync();
             if (failedQueue.Length != 0)

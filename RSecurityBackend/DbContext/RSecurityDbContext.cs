@@ -11,7 +11,6 @@ using RSecurityBackend.Models.Image;
 using RSecurityBackend.Models.Notification;
 using System;
 using System.IO;
-using System.Numerics;
 
 namespace RSecurityBackend.DbContext
 {
@@ -176,6 +175,11 @@ namespace RSecurityBackend.DbContext
         /// change logs
         /// </summary>
         public DbSet<RChangeLog> RChangeLogs { get; set; }
+
+        /// <summary>
+        /// user old emails
+        /// </summary>
+        public DbSet<UserOldEmail> UserOldEmails { get; set; }
 
 
     }
