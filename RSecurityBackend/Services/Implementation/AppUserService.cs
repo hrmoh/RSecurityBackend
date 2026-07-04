@@ -1149,9 +1149,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="email">email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
-        /// <param name="langauge"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<RVerifyQueueItem>> SignUp(string email, string clientIPAddress, string clientAppName, string langauge)
+        public virtual async Task<RServiceResult<RVerifyQueueItem>> SignUp(string email, string clientIPAddress, string clientAppName, string language)
         {
 
             if (string.IsNullOrEmpty(clientIPAddress))
@@ -1220,7 +1220,7 @@ namespace RSecurityBackend.Services.Implementation
                 ClientIPAddress = clientIPAddress,
                 ClientAppName = clientAppName,
                 Secret = $"{(new Random(DateTime.Now.Millisecond)).Next(0, 99999)}".PadLeft(6, '0'),
-                Language = langauge
+                Language = language
             };
 
             var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();
@@ -1366,9 +1366,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="email"></param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
-        /// <param name="langauge"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<RVerifyQueueItem>> ForgotPassword(string email, string clientIPAddress, string clientAppName, string langauge)
+        public virtual async Task<RServiceResult<RVerifyQueueItem>> ForgotPassword(string email, string clientIPAddress, string clientAppName, string language)
         {
             if (string.IsNullOrEmpty(clientIPAddress))
             {
@@ -1402,7 +1402,7 @@ namespace RSecurityBackend.Services.Implementation
                 ClientIPAddress = clientIPAddress,
                 ClientAppName = clientAppName,
                 Secret = $"{(new Random(DateTime.Now.Millisecond)).Next(0, 99999)}".PadLeft(6, '0'),
-                Language = langauge
+                Language = language
             };
 
             var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();
@@ -1496,9 +1496,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="newEmail"></param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
-        /// <param name="langauge"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string langauge)
+        public virtual async Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string language)
         {
             if (string.IsNullOrEmpty(clientIPAddress))
             {
@@ -1532,7 +1532,7 @@ namespace RSecurityBackend.Services.Implementation
                 ClientIPAddress = clientIPAddress,
                 ClientAppName = clientAppName,
                 Secret = $"{(new Random(DateTime.Now.Millisecond)).Next(0, 99999)}".PadLeft(6, '0'),
-                Language = langauge
+                Language = language
             };
 
             var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();

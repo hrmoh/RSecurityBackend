@@ -222,9 +222,9 @@ namespace RSecurityBackend.Services
         /// <param name="email">email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
-        /// <param name="langauge"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        Task<RServiceResult<RVerifyQueueItem>> SignUp(string email, string clientIPAddress, string clientAppName, string langauge);
+        Task<RServiceResult<RVerifyQueueItem>> SignUp(string email, string clientIPAddress, string clientAppName, string language);
 
         /// <summary>
         /// verify signup / forgot password
@@ -254,9 +254,9 @@ namespace RSecurityBackend.Services
         /// <param name="email"></param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
-        /// <param name="langauge"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        Task<RServiceResult<RVerifyQueueItem>> ForgotPassword(string email, string clientIPAddress, string clientAppName, string langauge);
+        Task<RServiceResult<RVerifyQueueItem>> ForgotPassword(string email, string clientIPAddress, string clientAppName, string language);
 
         /// <summary>
         /// reset password using email
@@ -388,9 +388,9 @@ namespace RSecurityBackend.Services
         /// <param name="newEmail"></param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
-        /// <param name="langauge"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string langauge);
+        Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string language);
 
         /// <summary>
         /// change email
