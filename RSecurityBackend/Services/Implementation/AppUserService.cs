@@ -1140,9 +1140,13 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// Start signup process using email
+        /// Start signup process using email or phone number (sms otp).
+        /// If <paramref name="email"/> contains an "@" it is treated as an email address
+        /// (verification code sent by email via IEmailSender at the controller level),
+        /// otherwise it is treated as a phone number (verification code sent by sms via
+        /// ISmsSender at the controller level).
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
         /// <param name="langauge"></param>
@@ -1160,7 +1164,19 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<RVerifyQueueItem>(null, "client app name is empty");
             }
 
-            RAppUser existingUser = await _userManager.FindByEmailAsync(email);
+            if (string.IsNullOrEmpty(email))
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, "email/phone number is empty");
+            }
+
+            bool isEmail = email.Contains('@');
+
+            RAppUser existingUser =
+                isEmail
+                ?
+                await _userManager.FindByEmailAsync(email)
+                :
+                await _userManager.Users.Where(u => u.PhoneNumber == email).SingleOrDefaultAsync();
             if (existingUser != null)
             {
                 return new RServiceResult<RVerifyQueueItem>(null, "شما قبلا ثبت نام کرده‌اید.");
@@ -1172,6 +1188,21 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<RVerifyQueueItem>(null, "این نام کاربری قبلا استفاده شده است");
             }
 
+            if (!isEmail)
+            {
+                //sms costs money (unlike email), so we enforce a resend cooldown for the phone case
+                RVerifyQueueItem lastAttempt =
+                    await _context.VerifyQueueItems
+                    .Where(i => i.QueueType == RVerifyQueueType.SignUp && i.PhoneNumber == email)
+                    .OrderByDescending(i => i.DateTime)
+                    .FirstOrDefaultAsync();
+                if (lastAttempt != null && lastAttempt.DateTime > DateTime.Now.AddSeconds(-PhoneSignUpResendCooldownSeconds))
+                {
+                    double secondsLeft = (lastAttempt.DateTime.AddSeconds(PhoneSignUpResendCooldownSeconds) - DateTime.Now).TotalSeconds;
+                    return new RServiceResult<RVerifyQueueItem>(null, $"لطفاً {Math.Ceiling(secondsLeft)} ثانیهٔ دیگر مجدداً تلاش کنید.");
+                }
+            }
+
             var oldSecrets = await _context.VerifyQueueItems.Where(i => i.DateTime < DateTime.Now.AddDays(-1)).ToListAsync();
             if (oldSecrets.Count > 0)
             {
@@ -1179,11 +1210,12 @@ namespace RSecurityBackend.Services.Implementation
                 await _context.SaveChangesAsync();
             }
 
-            //checking this queue for previous signup attempts is unnecessary and is not done intentionally
+            //checking this queue for previous signup attempts is unnecessary and is not done intentionally for the email case
             RVerifyQueueItem item = new RVerifyQueueItem()
             {
                 QueueType = RVerifyQueueType.SignUp,
-                Email = email,
+                Email = isEmail ? email : null,
+                PhoneNumber = isEmail ? null : email,
                 DateTime = DateTime.Now,
                 ClientIPAddress = clientIPAddress,
                 ClientAppName = clientAppName,
@@ -1212,7 +1244,7 @@ namespace RSecurityBackend.Services.Implementation
         /// </summary>
         /// <param name="verifyQueueType"></param>
         /// <param name="secret"></param>
-        /// <returns>associated email</returns>
+        /// <returns>associated email address or phone number</returns>
         public virtual async Task<RServiceResult<string>> RetrieveEmailFromQueueSecret(RVerifyQueueType verifyQueueType, string secret)
         {
 
@@ -1223,26 +1255,34 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<string>("");
             }
 
-            return new RServiceResult<string>(item.Email);
+            return new RServiceResult<string>(!string.IsNullOrEmpty(item.Email) ? item.Email : item.PhoneNumber);
 
         }
 
         /// <summary>
-        /// finalize signup process using email
+        /// finalize signup process using email or phone number (sms otp), matching whichever
+        /// channel was used in <see cref="SignUp"/> (detected the same way: "@" present == email)
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number (must match what was passed to SignUp)</param>
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
         /// <param name="surName"></param>
-        /// <param name="phoneNumber"></param>
+        /// <param name="phoneNumber">optional secondary phone number, only used in the email-signup case</param>
         /// <returns></returns>
         public virtual async Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber)
         {
-            RAppUser existingUser = await _userManager.FindByEmailAsync(email);
+            bool isEmail = email.Contains('@');
+
+            RAppUser existingUser =
+                isEmail
+                ?
+                await _userManager.FindByEmailAsync(email)
+                :
+                await _userManager.Users.Where(u => u.PhoneNumber == email).SingleOrDefaultAsync();
             if (existingUser != null)
             {
-                return new RServiceResult<bool>(false, "این آدرس ایمیل قبلا استفاده شده است");
+                return new RServiceResult<bool>(false, isEmail ? "این آدرس ایمیل قبلا استفاده شده است" : "این شماره تلفن قبلا استفاده شده است");
             }
 
             existingUser = await _userManager.FindByNameAsync(email);
@@ -1257,13 +1297,13 @@ namespace RSecurityBackend.Services.Implementation
                    (await RetrieveEmailFromQueueSecret(RVerifyQueueType.SignUp, secret)).Result
                   )
             {
-                return new RServiceResult<bool>(false, "کد ارسالی به ایمیل اشتباه وارد شده است");
+                return new RServiceResult<bool>(false, isEmail ? "کد ارسالی به ایمیل اشتباه وارد شده است" : "کد ارسالی به شماره تلفن اشتباه وارد شده است");
             }
 
             secret = secret.Trim();
 
-            firstName = firstName.Trim();
-            surName = surName.Trim();
+            firstName = (firstName ?? "").Trim();
+            surName = (surName ?? "").Trim();
 
             if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(surName))
             {
@@ -1273,14 +1313,16 @@ namespace RSecurityBackend.Services.Implementation
             RegisterRAppUser newUserInfo = new RegisterRAppUser()
             {
                 Username = email,
-                Email = email,
+                Email = isEmail ? email : null,
                 Password = password,
                 Status = RAppUserStatus.Active,
                 IsAdmin = false,
                 FirstName = firstName,
                 SurName = surName,
                 NickName = $"{firstName} {surName}".Trim(),
-                PhoneNumber = string.IsNullOrEmpty(phoneNumber) ? null : phoneNumber,
+                //in the email case phoneNumber is an optional extra profile field; in the phone
+                //case the identifier itself (email param) is the phone number
+                PhoneNumber = isEmail ? (string.IsNullOrEmpty(phoneNumber) ? null : phoneNumber) : email,
             };
 
             RServiceResult<RAppUser> userAddResult = await AddUser(newUserInfo);
@@ -1290,10 +1332,22 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<bool>(false, userAddResult.ExceptionString);
             }
 
-            userAddResult.Result.EmailConfirmed = true;
+            if (isEmail)
+            {
+                userAddResult.Result.EmailConfirmed = true;
+            }
+            else
+            {
+                userAddResult.Result.PhoneNumberConfirmed = true;
+            }
             await _userManager.UpdateAsync(userAddResult.Result);
 
-            RVerifyQueueItem[] failedQueue = await _context.VerifyQueueItems.Where(i => i.Email == email && i.Secret != secret && i.QueueType == RVerifyQueueType.SignUp).ToArrayAsync();
+            RVerifyQueueItem[] failedQueue =
+                isEmail
+                ?
+                await _context.VerifyQueueItems.Where(i => i.Email == email && i.Secret != secret && i.QueueType == RVerifyQueueType.SignUp).ToArrayAsync()
+                :
+                await _context.VerifyQueueItems.Where(i => i.PhoneNumber == email && i.Secret != secret && i.QueueType == RVerifyQueueType.SignUp).ToArrayAsync();
             if (failedQueue.Length != 0)
             {
                 _context.VerifyQueueItems.RemoveRange(failedQueue);
@@ -1304,6 +1358,7 @@ namespace RSecurityBackend.Services.Implementation
             return new RServiceResult<bool>(true);
 
         }
+
 
         /// <summary>
         /// Start forgot password process using email
@@ -1842,6 +1897,23 @@ namespace RSecurityBackend.Services.Implementation
             string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل";
             return op == RVerifyQueueType.KickOutUser ? $"حساب کاربری شما به دلیل {secretCode} حذف شد." : $"لطفا {secretCode} را در صفحهٔ {opString} وارد کنید.";
         }
+
+        /// <summary>
+        /// Sign Up By Phone Sms Text (override to customize wording/branding)
+        /// </summary>
+        /// <param name="op"></param>
+        /// <param name="secretCode"></param>
+        /// <returns>sms text</returns>
+        public virtual string GetSmsText(RVerifyQueueType op, string secretCode)
+        {
+            return $"کد تایید شما: {secretCode}";
+        }
+
+        /// <summary>
+        /// minimum seconds to wait between two consecutive sms otp requests for the same phone number
+        /// (override to read from configuration if you want it tunable without a code change)
+        /// </summary>
+        public virtual int PhoneSignUpResendCooldownSeconds => 60;
 
         #endregion
 

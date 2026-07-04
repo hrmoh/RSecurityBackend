@@ -22,8 +22,9 @@ namespace SampleProject.Controllers
         /// <param name="emailSender"></param>
         /// <param name="imageFileService"></param>
         /// <param name="captchaService"></param>
-        public AppUserController(IConfiguration configuration, IAppUserService appUserService, IHttpContextAccessor httpContextAccessor, IUserPermissionChecker userPermissionChecker, IEmailSender emailSender, IImageFileService imageFileService, ICaptchaService captchaService)
-            : base(configuration, appUserService, httpContextAccessor, userPermissionChecker, emailSender, imageFileService, captchaService)
+        /// <param name="smsSender"></param>
+        public AppUserController(IConfiguration configuration, IAppUserService appUserService, IHttpContextAccessor httpContextAccessor, IUserPermissionChecker userPermissionChecker, IEmailSender emailSender, IImageFileService imageFileService, ICaptchaService captchaService, ISmsSender smsSender)
+            : base(configuration, appUserService, httpContextAccessor, userPermissionChecker, emailSender, imageFileService, captchaService, smsSender)
         {
 
         }

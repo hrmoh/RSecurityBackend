@@ -951,7 +951,10 @@ namespace RSecurityBackend.Controllers
 
 
         /// <summary>
-        /// signup
+        /// signup using email or phone number (sms otp). If <see cref="UnverifiedSignUpViewModel.Email"/>
+        /// contains an "@" it is treated as an email address and the code is sent by email,
+        /// otherwise it is treated as a phone number and the code is sent by sms (requires an
+        /// ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true).
         /// </summary>
         /// <param name="signUpViewModel">signUpViewModel</param>
         /// <returns>next step: "verify" or "finalize"</returns>
@@ -965,8 +968,21 @@ namespace RSecurityBackend.Controllers
             if (SiteInReadOnlyMode)
                 return BadRequest("سایت به دلایل فنی مثل انتقال سرور موقتاً در حالت فقط خواندنی قرار دارد. لطفاً ساعاتی دیگر مجدداً برای ثبت نام تلاش کنید.");
 
-            if (!SignupEnabled)
-                return BadRequest("ثبت نام غیرفعال است.");
+            bool isEmail = !string.IsNullOrEmpty(signUpViewModel.Email) && signUpViewModel.Email.Contains('@');
+
+            if (isEmail)
+            {
+                if (!SignupEnabled)
+                    return BadRequest("ثبت نام غیرفعال است.");
+            }
+            else
+            {
+                if (!PhoneSignupEnabled)
+                    return BadRequest("ثبت نام با شماره تلفن غیرفعال است.");
+
+                if (_smsSender == null)
+                    return BadRequest("Sms sender is not configured (register an ISmsSender implementation in DI).");
+            }
 
             RServiceResult<bool> captchaRes = await _captchaService.Evaluate(signUpViewModel.CaptchaImageId, signUpViewModel.CaptchaValue);
             if (!string.IsNullOrEmpty(captchaRes.ExceptionString))
@@ -975,9 +991,12 @@ namespace RSecurityBackend.Controllers
             if (!captchaRes.Result)
                 return BadRequest("مقدار تصویر امنیتی درست وارد نشده است.");
 
-            var bannedEmail = await _appUserService.GetBannedEmailInformationAsync(signUpViewModel.Email);
-            if (bannedEmail.Result != null)
-                return BadRequest("ایمیل شما در لیست سیاه قرار دارد و نمی‌توانید با آن مجدداً ثبت نام کنید.");
+            if (isEmail)
+            {
+                var bannedEmail = await _appUserService.GetBannedEmailInformationAsync(signUpViewModel.Email);
+                if (bannedEmail.Result != null)
+                    return BadRequest("ایمیل شما در لیست سیاه قرار دارد و نمی‌توانید با آن مجدداً ثبت نام کنید.");
+            }
 
             string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
             RServiceResult<RVerifyQueueItem> res = await _appUserService.SignUp(signUpViewModel.Email, clientIPAddress, signUpViewModel.ClientAppName, signUpViewModel.Language);
@@ -988,17 +1007,28 @@ namespace RSecurityBackend.Controllers
 
             try
             {
-                await _emailSender.SendEmailAsync
-                    (
-                    signUpViewModel.Email,
-                    _appUserService.GetEmailSubject(RVerifyQueueType.SignUp, res.Result.Secret),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.SignUp, res.Result.Secret, signUpViewModel.CallbackUrl)
-                    );
+                if (isEmail)
+                {
+                    await _emailSender.SendEmailAsync
+                        (
+                        signUpViewModel.Email,
+                        _appUserService.GetEmailSubject(RVerifyQueueType.SignUp, res.Result.Secret),
+                        _appUserService.GetEmailHtmlContent(RVerifyQueueType.SignUp, res.Result.Secret, signUpViewModel.CallbackUrl)
+                        );
+                }
+                else
+                {
+                    await _smsSender.SendSmsAsync
+                        (
+                        signUpViewModel.Email,
+                        _appUserService.GetSmsText(RVerifyQueueType.SignUp, res.Result.Secret)
+                        );
+                }
                 return Ok("verify");
             }
             catch (Exception exp)
             {
-                return BadRequest("Error sending email: " + exp.ToString());
+                return BadRequest($"Error sending {(isEmail ? "email" : "sms")}: " + exp.ToString());
             }
         }
 
@@ -1007,7 +1037,7 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <param name="type"></param>
         /// <param name="secret"></param>
-        /// <returns>associated secret email</returns> 
+        /// <returns>associated secret email or phone number</returns> 
         [HttpGet]
         [AllowAnonymous]
         [Route("verify")]
@@ -1031,7 +1061,7 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// finalize signup process
+        /// finalize signup process (email or phone number, matching whichever channel was used in SignUp)
         /// </summary>
         /// <param name="newUserInfo"></param>
         /// <returns></returns>
@@ -1222,6 +1252,19 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// Is phone (sms) Sign-up enabled?
+        /// </summary>
+        /// <returns></returns>
+        public bool PhoneSignupEnabled
+        {
+            get
+            {
+                string enabled = Configuration.GetSection("PhoneSignUp")["Enabled"];
+                return !string.IsNullOrEmpty(enabled) && bool.Parse(enabled);
+            }
+        }
+
+        /// <summary>
         /// reset password
         /// </summary>
         /// <param name="pwd"></param>
@@ -1345,6 +1388,12 @@ namespace RSecurityBackend.Controllers
         protected IEmailSender _emailSender;
 
         /// <summary>
+        /// ISmsSender instance (nullable: only required if phone signup is used; RSecurityBackend
+        /// ships no concrete implementation, register your gateway(s) of choice as ISmsSender in DI)
+        /// </summary>
+        protected ISmsSender _smsSender;
+
+        /// <summary>
         /// Image File Service
         /// </summary>
         protected readonly IImageFileService _imageFileService;
@@ -1371,7 +1420,11 @@ namespace RSecurityBackend.Controllers
         /// <param name="emailSender"></param>
         /// <param name="imageFileService"></param>
         /// <param name="captchaService"></param>
-        public AppUserControllerBase(IConfiguration configuration, IAppUserService appUserService, IHttpContextAccessor httpContextAccessor, IUserPermissionChecker userPermissionChecker, IEmailSender emailSender, IImageFileService imageFileService, ICaptchaService captchaService)
+        /// <param name="smsSender">
+        /// optional: only needed if you use phone (sms) signup. RSecurityBackend does not ship a
+        /// concrete ISmsSender, implement/register whichever gateway(s) you use in your own app.
+        /// </param>
+        public AppUserControllerBase(IConfiguration configuration, IAppUserService appUserService, IHttpContextAccessor httpContextAccessor, IUserPermissionChecker userPermissionChecker, IEmailSender emailSender, IImageFileService imageFileService, ICaptchaService captchaService, ISmsSender smsSender = null)
         {
             Configuration = configuration;
             _appUserService = appUserService;
@@ -1380,6 +1433,7 @@ namespace RSecurityBackend.Controllers
             _emailSender = emailSender;
             _imageFileService = imageFileService;
             _captchaService = captchaService;
+            _smsSender = smsSender;
         }
     }
 }

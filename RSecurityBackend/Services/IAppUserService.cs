@@ -214,9 +214,12 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<RImage>> GetUserImage(Guid userId);
 
          /// <summary>
-        /// Start signup process using email
+        /// Start signup process using email or phone number (sms otp). If <paramref name="email"/>
+        /// contains an "@" it is treated as an email address (verification code sent by email),
+        /// otherwise it is treated as a phone number (verification code sent by sms - requires an
+        /// ISmsSender to be registered in DI).
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
         /// <param name="langauge"></param>
@@ -228,19 +231,20 @@ namespace RSecurityBackend.Services
         /// </summary>
         /// <param name="verifyQueueType"></param>
         /// <param name="secret"></param>
-        /// <returns>associated email</returns>
+        /// <returns>associated email address or phone number</returns>
         Task<RServiceResult<string>> RetrieveEmailFromQueueSecret(RVerifyQueueType verifyQueueType,  string secret);
 
 
         /// <summary>
-        /// finalize signup process using email
+        /// finalize signup process using email or phone number (sms otp), matching whichever
+        /// channel was used in <see cref="SignUp"/> (detected the same way: "@" present == email)
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number (must match what was passed to SignUp)</param>
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
         /// <param name="surName"></param>
-        /// <param name="phoneNumber"></param>
+        /// <param name="phoneNumber">optional secondary phone number, only used in the email-signup case</param>
         /// <returns></returns>
         Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber);
 
@@ -303,6 +307,19 @@ namespace RSecurityBackend.Services
         /// <param name="signupCallbackUrl"></param>
         /// <returns>html content</returns>
         string GetEmailHtmlContent(RVerifyQueueType op, string secretCode, string signupCallbackUrl);
+
+        /// <summary>
+        /// Sign Up By Phone Sms Text
+        /// </summary>
+        /// <param name="op"></param>
+        /// <param name="secretCode"></param>
+        /// <returns>sms text</returns>
+        string GetSmsText(RVerifyQueueType op, string secretCode);
+
+        /// <summary>
+        /// minimum seconds to wait between two consecutive sms otp requests for the same phone number
+        /// </summary>
+        int PhoneSignUpResendCooldownSeconds { get; }
 
         /// <summary>
         /// secret used for generating Jwt token

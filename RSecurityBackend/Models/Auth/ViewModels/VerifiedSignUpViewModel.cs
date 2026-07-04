@@ -8,7 +8,8 @@ namespace RSecurityBackend.Models.Auth.ViewModels
     public class VerifiedSignUpViewModel
     {
         /// <summary>
-        /// Email
+        /// Email address or phone number (must match whatever value was originally passed to
+        /// SignUp/UnverifiedSignUpViewModel.Email - "@" present means it's an email)
         /// </summary>
         /// <example>email@domain.com</example>
         public string Email { get; set; }
@@ -38,7 +39,8 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         public string SurName { get; set; }
 
         /// <summary>
-        /// User Mobile Phone Number
+        /// User Mobile Phone Number (optional secondary phone number; only used when
+        /// signing up with an email - ignored when Email itself holds a phone number)
         /// </summary>
         /// <example>+989121234567</example>
         [Phone]

@@ -19,6 +19,7 @@ using RSecurityBackend.Utilities;
 using SampleProject.DbContext;
 using SampleProject.Models.Auth.Memory;
 using SampleProject.Services.Implementation;
+using SampleProject.Sms;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text;
@@ -242,6 +243,8 @@ builder.Services.AddTransient<ISecretGenerator, SecretGenerator>();
 
 // email service
 builder.Services.AddTransient<IEmailSender, MailKitEmailSender>();
+
+builder.Services.AddTransient<ISmsSender, CompositeSmsSender>();
 builder.Services.Configure<SmptConfig>(builder.Configuration);
 
 //messaging service

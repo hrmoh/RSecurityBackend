@@ -8,7 +8,9 @@ namespace RSecurityBackend.Models.Auth.ViewModels
     public class UnverifiedSignUpViewModel
     {
         /// <summary>
-        /// Email
+        /// Email address or phone number. If it contains an "@" it is treated as an email
+        /// (verification code sent by email), otherwise as a phone number (verification code
+        /// sent by sms - requires an ISmsSender to be registered in DI).
         /// </summary>
         /// <example>email@domain.com</example>
         public string Email { get; set; }
