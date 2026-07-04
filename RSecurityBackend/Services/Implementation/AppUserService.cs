@@ -1379,7 +1379,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
-                //we ignore input model in automatic auditing to prevent loginng password data, so we would add a manual auditing to have enough data on login intrusion and ...
+                //we ignore input model in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
                 REvent log = new REvent()
                 {
                     EventType = "AppUser/ResetPassword (POST)(Manual)",
@@ -1431,6 +1431,152 @@ namespace RSecurityBackend.Services.Implementation
             await _context.SaveChangesAsync();
 
             return new RServiceResult<bool>(true);
+
+        }
+
+        /// <summary>
+        /// request change email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newEmail"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <param name="clientAppName"></param>
+        /// <param name="langauge"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string langauge)
+        {
+            if (string.IsNullOrEmpty(clientIPAddress))
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, "client ip address is empty");
+            }
+
+            if (string.IsNullOrEmpty(clientAppName))
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, "client app name is empty");
+            }
+
+            RAppUser rAppUser = await _userManager.FindByEmailAsync(newEmail);
+            if (rAppUser == null)
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+            }
+
+            var oldSecrets = await _context.VerifyQueueItems.Where(i => i.DateTime < DateTime.Now.AddDays(-1)).ToListAsync();
+            if (oldSecrets.Count > 0)
+            {
+                _context.VerifyQueueItems.RemoveRange(oldSecrets);
+                await _context.SaveChangesAsync();
+            }
+
+            //checking this queue for previous signup attempts is unnecessary and is not done intentionally
+            RVerifyQueueItem item = new RVerifyQueueItem()
+            {
+                QueueType = RVerifyQueueType.ChangeEmail,
+                Email = newEmail,
+                DateTime = DateTime.Now,
+                ClientIPAddress = clientIPAddress,
+                ClientAppName = clientAppName,
+                Secret = $"{(new Random(DateTime.Now.Millisecond)).Next(0, 99999)}".PadLeft(6, '0'),
+                Language = langauge
+            };
+
+            var existingSecrets = await _context.VerifyQueueItems.Where(i => i.Secret == item.Secret).ToListAsync();
+            if (existingSecrets.Count > 0)
+            {
+                _context.VerifyQueueItems.RemoveRange(existingSecrets);
+                await _context.SaveChangesAsync();
+            }
+
+            await _context.VerifyQueueItems.AddAsync
+                (
+                item
+                );
+            await _context.SaveChangesAsync();
+            return new RServiceResult<RVerifyQueueItem>(item);
+        }
+
+        /// <summary>
+        /// change email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="newEmail"></param>
+        /// <param name="secret"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <returns>old email</returns>
+        public virtual async Task<RServiceResult<string>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress)
+        {
+            var resUser = await GetUserInformation(userId);
+            if(!string.IsNullOrEmpty(resUser.ExceptionString))
+            {
+                return new RServiceResult<string>("", resUser.ExceptionString);
+            }
+            var user = resUser.Result;
+            if(user == null)
+            {
+                return new RServiceResult<string>("", "user == null");
+            }
+            if (bool.Parse(Configuration["AuditNetEnabled"]))
+            {
+                //we ignore input model in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
+                REvent log = new REvent()
+                {
+                    EventType = $"Change Email (POST)(Manual) to {newEmail}",
+                    StartDate = DateTime.UtcNow,
+                    UserName = user.Username,
+                    IpAddress = clientIPAddress
+                };
+                _context.AuditLogs.Add(log);
+                await _context.SaveChangesAsync();
+            }
+
+            RAppUser existingUser = await _userManager.FindByEmailAsync(newEmail);
+            if (existingUser != null)
+            {
+                return new RServiceResult<string>("", $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+            }
+
+
+            if (
+                newEmail
+                !=
+                (await RetrieveEmailFromQueueSecret(RVerifyQueueType.ChangeEmail, secret)).Result
+             )
+            {
+                return new RServiceResult<string>("", "کلمه عبور اشتباه وارد شده است");
+            }
+
+            _context.UserOldEmails.Add
+                (
+                new UserOldEmail()
+                {
+                    Email = existingUser.Email,
+                    NormalizedEmail = existingUser.NormalizedEmail,
+                    ChangeDate = DateTime.Now,
+                }
+                );
+
+            string oldEmail = existingUser.Email;
+            if (existingUser.UserName == existingUser.Email)
+            {
+                existingUser.UserName = newEmail;
+            }
+            existingUser.Email = newEmail;
+            existingUser.NormalizedEmail = _userManager.NormalizeEmail(newEmail);
+
+            await _userManager.UpdateAsync(existingUser);
+
+            
+
+            RVerifyQueueItem[] failedQueue = await _context.VerifyQueueItems.Where(i => i.Email == newEmail && i.QueueType == RVerifyQueueType.ChangeEmail).ToArrayAsync();
+            if (failedQueue.Length != 0)
+            {
+                _context.VerifyQueueItems.RemoveRange(failedQueue);
+            }
+
+
+            await _context.SaveChangesAsync();
+
+            return new RServiceResult<string>(oldEmail);
 
         }
 
@@ -1677,8 +1823,9 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secretCode"></param>
         public virtual string GetEmailSubject(RVerifyQueueType op, string secretCode)
         {
-            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : "Self Delete User";
-            return $"Application {opString} Code:{secretCode}";
+            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeEmail ? "Change Email" : op == RVerifyQueueType.EmailChaned ? "Email changed" : "Self Delete User";
+            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.EmailChaned ? "New Email" : "Code")}:{secretCode}";
+
         }
 
         /// <summary>
@@ -1692,7 +1839,7 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (!string.IsNullOrEmpty(signupCallbackUrl))
                 return $"{signupCallbackUrl}?secret={secretCode}";
-            string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : "حذف کاربر";
+            string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل";
             return op == RVerifyQueueType.KickOutUser ? $"حساب کاربری شما به دلیل {secretCode} حذف شد." : $"لطفا {secretCode} را در صفحهٔ {opString} وارد کنید.";
         }
 

@@ -262,6 +262,21 @@
             <param name="fpwdViewModel">signUpViewModel</param>
             <returns>result</returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.RequestChangeEmail(RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel)">
+            <summary>
+            request change email
+            </summary>
+            <param name="viewModel"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.ChangeEmail(System.String,System.String)">
+            <summary>
+            change email
+            </summary>
+            <param name="newmail"></param>
+            <param name="secret"></param>
+            <returns></returns>
+        </member>
         <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.SiteInReadOnlyMode">
             <summary>
             read only mode
@@ -1087,6 +1102,11 @@
             change logs
             </summary>
         </member>
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.UserOldEmails">
+            <summary>
+            user old emails
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Audit.Db.REvent">
             <summary>
             Audit Event
@@ -1482,6 +1502,51 @@
             kick out user
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.ChangeEmail">
+            <summary>
+            change email
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.EmailChaned">
+            <summary>
+            email changed
+            </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Auth.Db.UserOldEmail">
+            <summary>
+            user old email
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.Id">
+            <summary>
+            id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.UserId">
+            <summary>
+            user id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.User">
+            <summary>
+            user
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.ChangeDate">
+            <summary>
+            change date
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.Email">
+            <summary>
+            email
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.NormalizedEmail">
+            <summary>
+            normalized email
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Auth.Memory.SecurableItem">
             <summary>
             securable itmes: forms and ...
@@ -1705,6 +1770,27 @@
             <summary>
             secret for securing signup process
             </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel">
+            <summary>
+            change email view model
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.NewEmail">
+            <summary>
+            new email
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.Password">
+            <summary>
+            user password
+            </summary>
+            <example>Test!123</example>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.CallbackUrl">
+             <summary>
+            CallbackUrl
+             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.LoggedOnUserModel">
             <summary>
@@ -3242,6 +3328,27 @@
             <param name="email"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.RequestChangeEmail(System.Guid,System.String,System.String,System.String,System.String)">
+            <summary>
+            request change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="clientIPAddress"></param>
+            <param name="clientAppName"></param>
+            <param name="langauge"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
+            <summary>
+            change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="secret"></param>
+            <param name="clientIPAddress"></param>
+            <returns>old email</returns>
+        </member>
         <member name="T:RSecurityBackend.Services.IAuditLogService">
             <summary>
             Audit Log Service
@@ -3653,6 +3760,27 @@
             <param name="password"></param>
             <param name="clientIPAddress"></param>       
             <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.RequestChangeEmail(System.Guid,System.String,System.String,System.String,System.String)">
+            <summary>
+            request change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="clientIPAddress"></param>
+            <param name="clientAppName"></param>
+            <param name="langauge"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
+            <summary>
+            change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="secret"></param>
+            <param name="clientIPAddress"></param>
+            <returns>old email</returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FindUserByEmail(System.String)">
             <summary>

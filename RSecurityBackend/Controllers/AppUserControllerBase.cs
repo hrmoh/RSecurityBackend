@@ -1097,6 +1097,107 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// request change email
+        /// </summary>
+        /// <param name="viewModel"></param>
+        /// <returns></returns>
+        [HttpPost("email/request/change/{newmail}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        public virtual async Task<IActionResult> RequestChangeEmail([FromBody]ChangeEmailViewModel viewModel)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
+
+            var user = (await _appUserService.GetUserInformation(loggedOnUserId)).Result;
+            var loginResult = await _appUserService.Login(new LoginViewModel()
+            {
+                Username = user.Email,
+                Password = viewModel.Password,
+                ClientAppName = session == null ? "Unknonw Session" : session.Result.ClientAppName,
+                Language = session == null ? "Unknown Session" : session.Result.Language
+            },
+            clientIPAddress
+            );
+
+            if (loginResult.Result == null)
+            {
+                return BadRequest(loginResult.ExceptionString);
+            }
+
+            RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeEmail(
+                loggedOnUserId,
+                viewModel.NewEmail,
+                clientIPAddress,
+                session == null ? "Unknonw Session" : session.Result.ClientAppName,
+                session == null ? "Unknown Session" : session.Result.Language
+                );
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+            {
+                return BadRequest(res.ExceptionString);
+            }
+
+            try
+            {
+                await _emailSender.SendEmailAsync
+                    (
+                    viewModel.NewEmail,
+                    _appUserService.GetEmailSubject(RVerifyQueueType.ChangeEmail, res.Result.Secret),
+                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.ChangeEmail, res.Result.Secret, viewModel.CallbackUrl)
+                    );
+            }
+            catch (Exception exp)
+            {
+                return BadRequest("Error sending email: " + exp.ToString());
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// change email
+        /// </summary>
+        /// <param name="newmail"></param>
+        /// <param name="secret"></param>
+        /// <returns></returns>
+        [HttpPut("email/change/{newmail}/{secret}")]
+        [Authorize]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        public virtual async Task<IActionResult> ChangeEmail(string newmail, string secret)
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+            string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
+
+
+            RServiceResult<string> res = await _appUserService.ChangeEmail(
+                loggedOnUserId,
+                newmail,
+                secret,
+                clientIPAddress
+                );
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+            {
+                return BadRequest(res.ExceptionString);
+            }
+
+            _ = _emailSender.SendEmailAsync(res.Result,
+                    _appUserService.GetEmailSubject(RVerifyQueueType.EmailChaned, ""),
+                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChaned, newmail, "")
+
+                );
+
+            return Ok();
+        }
+
+        /// <summary>
         /// read only mode
         /// </summary>
         public bool SiteInReadOnlyMode
