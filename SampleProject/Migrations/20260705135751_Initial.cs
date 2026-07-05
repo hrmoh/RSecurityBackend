@@ -490,6 +490,27 @@ namespace SampleProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserOldEmails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ChangeDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserOldEmails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserOldEmails_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WorkspaceUserInvitations",
                 columns: table => new
                 {
@@ -688,6 +709,11 @@ namespace SampleProject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserOldEmails_UserId",
+                table: "UserOldEmails",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_VerifyQueueItems_Secret",
                 table: "VerifyQueueItems",
                 column: "Secret",
@@ -761,6 +787,9 @@ namespace SampleProject.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserBehaviourLogs");
+
+            migrationBuilder.DropTable(
+                name: "UserOldEmails");
 
             migrationBuilder.DropTable(
                 name: "VerifyQueueItems");

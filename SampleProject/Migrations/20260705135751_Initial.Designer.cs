@@ -12,7 +12,7 @@ using SampleProject.DbContext;
 namespace SampleProject.Migrations
 {
     [DbContext(typeof(RDbContext))]
-    [Migration("20251101053237_Initial")]
+    [Migration("20260705135751_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -454,6 +454,31 @@ namespace SampleProject.Migrations
                     b.ToTable("VerifyQueueItems");
                 });
 
+            modelBuilder.Entity("RSecurityBackend.Models.Auth.Db.UserOldEmail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ChangeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserOldEmails");
+                });
+
             modelBuilder.Entity("RSecurityBackend.Models.ChangeTracking.RChangeLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -877,6 +902,17 @@ namespace SampleProject.Migrations
                 });
 
             modelBuilder.Entity("RSecurityBackend.Models.Auth.Db.RUserBehaviourLog", b =>
+                {
+                    b.HasOne("RSecurityBackend.Models.Auth.Db.RAppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RSecurityBackend.Models.Auth.Db.UserOldEmail", b =>
                 {
                     b.HasOne("RSecurityBackend.Models.Auth.Db.RAppUser", "User")
                         .WithMany()
