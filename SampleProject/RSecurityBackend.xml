@@ -44,31 +44,35 @@
             <summary>
             UserGroupPermissionRequirement
             </summary>
+            <remarks>
+            constructor
+            </remarks>
+            <param name="securableItemShortName"></param>
+            <param name="operationShortName"></param>
+        </member>
+        <member name="M:RSecurityBackend.Authorization.UserGroupPermissionRequirement.#ctor(System.String,System.String)">
+            <summary>
+            UserGroupPermissionRequirement
+            </summary>
+            <remarks>
+            constructor
+            </remarks>
+            <param name="securableItemShortName"></param>
+            <param name="operationShortName"></param>
         </member>
         <member name="P:RSecurityBackend.Authorization.UserGroupPermissionRequirement.SecurableItemShortName">
              <summary>
             
              </summary>
              <see cref="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.ShortName"/>
-             <example>
-             job
-             </example>
+             <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Authorization.UserGroupPermissionRequirement.OperationShortName">
             <summary>
             
             </summary>
             <see cref="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.ShortName"/>
-            <example>
-            view
-            </example>
-        </member>
-        <member name="M:RSecurityBackend.Authorization.UserGroupPermissionRequirement.#ctor(System.String,System.String)">
-            <summary>
-            constructor
-            </summary>
-            <param name="securableItemShortName"></param>
-            <param name="operationShortName"></param>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Controllers.AppUserControllerBase">
             <summary>
@@ -231,7 +235,10 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.SignUp(RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel)">
             <summary>
-            signup
+            signup using email or phone number (sms otp). If <see cref="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.Email"/>
+            contains an "@" it is treated as an email address and the code is sent by email,
+            otherwise it is treated as a phone number and the code is sent by sms (requires an
+            ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true).
             </summary>
             <param name="signUpViewModel">signUpViewModel</param>
             <returns>next step: "verify" or "finalize"</returns>
@@ -242,11 +249,11 @@
             </summary>
             <param name="type"></param>
             <param name="secret"></param>
-            <returns>associated secret email</returns> 
+            <returns>associated secret email or phone number</returns> 
         </member>
         <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.FinalizeSignUp(RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel)">
             <summary>
-            finalize signup process
+            finalize signup process (email or phone number, matching whichever channel was used in SignUp)
             </summary>
             <param name="newUserInfo"></param>
             <returns></returns>
@@ -258,6 +265,21 @@
             <param name="fpwdViewModel">signUpViewModel</param>
             <returns>result</returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.RequestChangeEmail(RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel)">
+            <summary>
+            request change email
+            </summary>
+            <param name="viewModel"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.ChangeEmail(System.String,System.String)">
+            <summary>
+            change email
+            </summary>
+            <param name="newmail"></param>
+            <param name="secret"></param>
+            <returns></returns>
+        </member>
         <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.SiteInReadOnlyMode">
             <summary>
             read only mode
@@ -266,6 +288,12 @@
         <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.SignupEnabled">
             <summary>
             Is Sign-up enabled?
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.PhoneSignupEnabled">
+            <summary>
+            Is phone (sms) Sign-up enabled?
             </summary>
             <returns></returns>
         </member>
@@ -317,6 +345,12 @@
             IEmailSender instance
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Controllers.AppUserControllerBase._smsSender">
+            <summary>
+            ISmsSender instance (nullable: only required if phone signup is used; RSecurityBackend
+            ships no concrete implementation, register your gateway(s) of choice as ISmsSender in DI)
+            </summary>
+        </member>
         <member name="F:RSecurityBackend.Controllers.AppUserControllerBase._imageFileService">
             <summary>
             Image File Service
@@ -332,7 +366,7 @@
             Configuration
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.#ctor(Microsoft.Extensions.Configuration.IConfiguration,RSecurityBackend.Services.IAppUserService,Microsoft.AspNetCore.Http.IHttpContextAccessor,RSecurityBackend.Services.IUserPermissionChecker,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.ICaptchaService)">
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.#ctor(Microsoft.Extensions.Configuration.IConfiguration,RSecurityBackend.Services.IAppUserService,Microsoft.AspNetCore.Http.IHttpContextAccessor,RSecurityBackend.Services.IUserPermissionChecker,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.ICaptchaService,RSecurityBackend.Services.ISmsSender)">
             <summary>
             constructor
             </summary>
@@ -343,6 +377,10 @@
             <param name="emailSender"></param>
             <param name="imageFileService"></param>
             <param name="captchaService"></param>
+            <param name="smsSender">
+            optional: only needed if you use phone (sms) signup. RSecurityBackend does not ship a
+            concrete ISmsSender, implement/register whichever gateway(s) you use in your own app.
+            </param>
         </member>
         <member name="T:RSecurityBackend.Controllers.AuditLogControllerBase">
             <summary>
@@ -428,16 +466,38 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.NotifyUserAsync(System.Guid,RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel)">
+            <summary>
+            notify a sepcific user
+            </summary>
+            <param name="userId"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.NotifyAllUsersAsync(System.Boolean,RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel)">
+            <summary>
+            notfy all users
+            </summary>
+            <param name="email"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="F:RSecurityBackend.Controllers.NotificationControllerBase._notificationService">
             <summary>
             Notification Service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.#ctor(RSecurityBackend.Services.IRNotificationService)">
+        <member name="F:RSecurityBackend.Controllers.NotificationControllerBase._appUserService">
+            <summary>
+            user service
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.NotificationControllerBase.#ctor(RSecurityBackend.Services.IRNotificationService,RSecurityBackend.Services.IAppUserService)">
             <summary>
             constructor
             </summary>
             <param name="notificationService"></param>
+            <param name="appUserService"></param>
         </member>
         <member name="T:RSecurityBackend.Controllers.RGenericOptionsControllerBase">
             <summary>
@@ -453,7 +513,7 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetValue(System.String,System.String)">
             <summary>
-            get user level option, Security Warning: every authenticated user could see value of global options, so do not store sensitive data into them
+            get user level option
             </summary>
             <param name="name"></param>
             <param name="value"></param>
@@ -470,6 +530,40 @@
             <summary>
             set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them or you can override this behaviour in your derived class
             </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.GetWorkspaceOptionValue(System.Guid,System.String)">
+            <summary>
+            get user level option in a workspace, if option value is not found it returns empty string
+            </summary>
+            <param name="workspace"></param>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetWorkspaceOptionValue(System.Guid,System.String,System.String)">
+            <summary>
+            get user level option in a workspace
+            </summary>
+            <param name="name"></param>
+            <param name="workspace"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.GetGlobalWorkspaceOptionValue(System.Guid,System.String)">
+            <summary>
+            get workspace global option value, Security Warning: every authenticated user in a workspace could see value of global options, so do not store sensitive data into them  or you can override this behaviour in your derived class
+            </summary>
+            <param name="workspace"></param>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Controllers.RGenericOptionsControllerBase.SetGlobalWorkspaceOptionValue(System.Guid,System.String,System.String)">
+            <summary>
+            set global option value, Security Warning: every authenticated user could change value of global options, so do not store sensitive data into them or you can override this behaviour in your derived class
+            </summary>
+            <param name="workspace"></param>
             <param name="name"></param>
             <param name="value"></param>
             <returns></returns>
@@ -870,12 +964,12 @@
             <param name="existingGroupInfo">existingGroupInfo.id could be passed empty and it is ignored completely</param>
             <returns>true if succeeds</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.Guid,System.String)">
+        <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.Delete(System.Guid,System.Guid)">
             <summary>
             delete role
             </summary>
             <param name="workspace"></param>
-            <param name="roleName">role name</param>
+            <param name="roleId">role id</param>
             <returns>true if succeeds</returns>
         </member>
         <member name="M:RSecurityBackend.Controllers.WorkspaceRoleControllerBase.GetRoleSecurableItemsStatus(System.Guid,System.String)">
@@ -1020,6 +1114,16 @@
         <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.WorkspaceUserInvitations">
             <summary>
             workspace user invitation
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.RChangeLogs">
+            <summary>
+            change logs
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.UserOldEmails">
+            <summary>
+            user old emails
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Audit.Db.REvent">
@@ -1243,17 +1347,13 @@
             <summary>
             SecurableItem short name
             </summary>
-            <example>
-            job
-            </example>
+            <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RPermission.OperationShortName">
             <summary>
             Operation short name
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Db.RTemporaryUserSession">
             <summary>
@@ -1287,17 +1387,13 @@
             <summary>
             Client Application Name
             </summary>
-            <example>
-            My Angular Client
-            </example>
+            <example>My Angular Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RTemporaryUserSession.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.RTemporaryUserSession.LoginTime">
             <summary>
@@ -1398,9 +1494,7 @@
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Db.RVerifyQueueType">
             <summary>
@@ -1425,6 +1519,51 @@
         <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.KickOutUser">
             <summary>
             kick out user
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.ChangeEmail">
+            <summary>
+            change email
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.EmailChaned">
+            <summary>
+            email changed
+            </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Auth.Db.UserOldEmail">
+            <summary>
+            user old email
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.Id">
+            <summary>
+            id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.UserId">
+            <summary>
+            user id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.User">
+            <summary>
+            user
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.ChangeDate">
+            <summary>
+            change date
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.Email">
+            <summary>
+            email
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.NormalizedEmail">
+            <summary>
+            normalized email
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Memory.SecurableItem">
@@ -1459,7 +1598,12 @@
         </member>
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.WorkspaceRoleEntityShortName">
             <summary>
-            worspace role
+            workspace role
+            </summary>
+        </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.NotificationEntityShortName">
+            <summary>
+            notifications
             </summary>
         </member>
         <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.ViewOperationShortName">
@@ -1527,6 +1671,11 @@
             view members
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Models.Auth.Memory.SecurableItem.BulkOpertaionShortName">
+            <summary>
+            bulk operation
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Items">
             <summary>
             list of forms and their permissions
@@ -1541,28 +1690,22 @@
             <summary>
             Short Name
             </summary>
-            <example>
-            user
-            </example>
+            <example>user</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Description">
             <summary>
             Descripttion
             </summary>
-            <example>
-            کاربران
-            </example>
+            <example>کاربران</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItem.Operations">
             <summary>
             Operations (short name + description + has permission)
             </summary>
-            <example>
-            [
+            <example>[
                 [view, مشاهده, true],
                 [add, ایجاد, false]
-            ]
-            </example>
+            ]</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation">
             <summary>
@@ -1587,17 +1730,13 @@
             <summary>
             Short Name
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.Description">
             <summary>
             Descripttion
             </summary>
-            <example>
-            مشاهده
-            </example>
+            <example>مشاهده</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperation.Prerequisites">
             <summary>
@@ -1613,11 +1752,19 @@
             <summary>
             SecurableItemOperation Prerequisite
             </summary>
+            <remarks>
+            
+            </remarks>
+            <param name="secureItemShortName"></param>
+            <param name="operationShortName"></param>
         </member>
         <member name="M:RSecurityBackend.Models.Auth.Memory.SecurableItemOperationPrerequisite.#ctor(System.String,System.String)">
             <summary>
-            
+            SecurableItemOperation Prerequisite
             </summary>
+            <remarks>
+            
+            </remarks>
             <param name="secureItemShortName"></param>
             <param name="operationShortName"></param>
         </member>
@@ -1625,17 +1772,13 @@
             <summary>
             Prerequisite SecureItem ShortName
             </summary>
-            <example>
-            job
-            </example>
+            <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Memory.SecurableItemOperationPrerequisite.OperationShortName">
             <summary>
             Prerequisite Operation ShortName
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.BillingUserSignup">
             <summary>
@@ -1646,6 +1789,27 @@
             <summary>
             secret for securing signup process
             </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel">
+            <summary>
+            change email view model
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.NewEmail">
+            <summary>
+            new email
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.Password">
+            <summary>
+            user password
+            </summary>
+            <example>Test!123</example>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.CallbackUrl">
+             <summary>
+            CallbackUrl
+             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.LoggedOnUserModel">
             <summary>
@@ -1681,33 +1845,25 @@
             <summary>
             username
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.Password">
             <summary>
             password
             </summary>
-            <example>
-            Test!123
-            </example>     
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.ClientAppName">
             <summary>
             Client App Name
             </summary>
-            <example>
-            Swashbuckle UI Client
-            </example>
+            <example>Swashbuckle UI Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser">
             <summary>
@@ -1722,56 +1878,42 @@
             Id
             </summary>
             
-            <example>
-            </example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.Username">
             <summary>
             User Name
             </summary>
-            <example>
-            test
-            </example>
+            <example>test</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.Email">
             <summary>
             User Email
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.PhoneNumber">
             <summary>
             User Mobile Phone Number
             </summary>
-            <example>
-            +989121234567
-            </example>
+            <example>+989121234567</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.FirstName">
             <summary>
             First Name
             </summary>
-            <example>
-            Hamid Reza
-            </example>
+            <example>Hamid Reza</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.SurName">
             <summary>
             SurName
             </summary>
-            <example>
-            Mohammadi
-            </example>
+            <example>Mohammadi</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.Status">
             <summary>
             user status
             </summary>
-            <example>
-            1
-            </example>
+            <example>1</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.RImageId">
             <summary>
@@ -1798,6 +1940,11 @@
             email verified
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRAppUser.CreateDate">
+            <summary>
+            create date
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.PublicRUserSession">
             <summary>
             a safe subset of RUserSession
@@ -1822,17 +1969,13 @@
             <summary>
             Client Application Name
             </summary>
-            <example>
-            App Angular Client
-            </example>
+            <example>App Angular Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRUserSession.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.PublicRUserSession.LoginTime">
             <summary>
@@ -1853,17 +1996,13 @@
             <summary>
             desired password, if sent empty system generates one
             </summary>
-            <example>
-            Test!123
-            </example>
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.RegisterRAppUser.IsAdmin">
             <summary>
             is admin
             </summary>
-            <example>
-            false
-            </example>
+            <example>false</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.ResetPasswordViewModel">
             <summary>
@@ -1874,25 +2013,19 @@
             <summary>
             Email
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.ResetPasswordViewModel.Secret">
             <summary>
             Secret
             </summary>
-            <example>
-            4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=
-            </example>
+            <example>4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.ResetPasswordViewModel.Password">
             <summary>
             password
             </summary>
-            <example>
-            Test!123
-            </example>
+            <example>Test!123</example>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.SelfDeleteViewModel">
             <summary>
@@ -1903,9 +2036,7 @@
             <summary>
             user password
             </summary>
-            <example>
-            Test!123
-            </example>     
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.SelfDeleteViewModel.CallbackUrl">
              <summary>
@@ -1934,27 +2065,23 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.Email">
             <summary>
-            Email
+            Email address or phone number. If it contains an "@" it is treated as an email
+            (verification code sent by email), otherwise as a phone number (verification code
+            sent by sms - requires an ISmsSender to be registered in DI).
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.ClientAppName">
             <summary>
             Client App Name
             </summary>
-            <example>
-            Swashbuckle UI Client
-            </example>
+            <example>Swashbuckle UI Client</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.Language">
             <summary>
             Client Language
             </summary>
-            <example>
-            fa-IR
-            </example>
+            <example>fa-IR</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.CaptchaImageId">
             <summary>
@@ -1993,51 +2120,106 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.Email">
             <summary>
-            Email
+            Email address or phone number (must match whatever value was originally passed to
+            SignUp/UnverifiedSignUpViewModel.Email - "@" present means it's an email)
             </summary>
-            <example>
-            email@domain.com
-            </example>
+            <example>email@domain.com</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.Secret">
             <summary>
             Secret
             </summary>
-            <example>
-            4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=
-            </example>
+            <example>4ozHJQN0X6CebX0He0/xaznhIjvubfySFnwdoCYLLo8=</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.Password">
             <summary>
             password
             </summary>
-            <example>
-            Test!123
-            </example>
+            <example>Test!123</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.FirstName">
             <summary>
             First Name
             </summary>
-            <example>
-            Hamid Reza
-            </example>
+            <example>Hamid Reza</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.SurName">
             <summary>
             SurName
             </summary>
-            <example>
-            Mohammadi
-            </example>        
+            <example>Mohammadi</example>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.PhoneNumber">
             <summary>
-            User Mobile Phone Number
+            User Mobile Phone Number (optional secondary phone number; only used when
+            signing up with an email - ignored when Email itself holds a phone number)
             </summary>
-            <example>
-            +989121234567
-            </example>
+            <example>+989121234567</example>
+        </member>
+        <member name="T:RSecurityBackend.Models.ChangeTracking.RChangeLog">
+            <summary>
+            change log model
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.WorkspaceId">
+            <summary>
+            Workspace Id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Workspace">
+            <summary>
+            Workspace
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityName">
+            <summary>
+            Entity
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Operation">
+            <summary>
+            Operation
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.DateTime">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.RAppUserId">
+            <summary>
+            user id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.RAppUser">
+            <summary>
+            user
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.Description">
+            <summary>
+            Description
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityJson">
+            <summary>
+            Entity Json
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityUId">
+            <summary>
+            entity guid
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.ChangeTracking.RChangeLog.EntityId">
+            <summary>
+            entity id
+            </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWorkspace">
             <summary>
@@ -2089,17 +2271,13 @@
             <summary>
             SecurableItem short name
             </summary>
-            <example>
-            job
-            </example>
+            <example>job</example>
         </member>
         <member name="P:RSecurityBackend.Models.Cloud.RWSPermission.OperationShortName">
             <summary>
             Operation short name
             </summary>
-            <example>
-            view
-            </example>
+            <example>view</example>
         </member>
         <member name="T:RSecurityBackend.Models.Cloud.RWSRole">
             <summary>
@@ -2417,6 +2595,16 @@
             user
             </summary>
         </member>
+        <member name="P:RSecurityBackend.Models.Generic.Db.RGenericOption.WorkspaceId">
+            <summary>
+            workspace id
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Generic.Db.RGenericOption.Workspace">
+            <summary>
+            workspace
+            </summary>
+        </member>
         <member name="T:RSecurityBackend.Models.Generic.Db.RLongRunningJobStatus">
             <summary>
             Long Running Job Status
@@ -2598,17 +2786,13 @@
             <summary>
             پوشه محل ذخیره تصویر
             </summary>
-            <example>
-            2017-08
-            </example>
+            <example>2017-08</example>
         </member>
         <member name="P:RSecurityBackend.Models.Image.RImage.StoredFileName">
             <summary>
             نام فایل ذخیره شده با بالاترین کیفیت
             </summary>
-            <example>
-            85007253-09f2-4434-8b7e-1a23db2cd9c9.png
-            </example>
+            <example>85007253-09f2-4434-8b7e-1a23db2cd9c9.png</example>
         </member>
         <member name="P:RSecurityBackend.Models.Image.RImage.DataTime">
             <summary>
@@ -2765,6 +2949,26 @@
         <member name="P:RSecurityBackend.Models.Notification.RUserNotification.NotificationType">
             <summary>
             Notifiation Type
+            </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel">
+            <summary>
+            new notification view model
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel.Subject">
+            <summary>
+            Subject
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel.HtmlText">
+            <summary>
+            Text
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Notification.ViewModels.NewNotificationViewModel.NotificationType">
+            <summary>
+            Notification Type
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Notification.ViewModels.RUserNotificationViewModel">
@@ -3000,12 +3204,15 @@
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.SignUp(System.String,System.String,System.String,System.String)">
             <summary>
-            Start signup process using email
+            Start signup process using email or phone number (sms otp). If <paramref name="email"/>
+            contains an "@" it is treated as an email address (verification code sent by email),
+            otherwise it is treated as a phone number (verification code sent by sms - requires an
+            ISmsSender to be registered in DI).
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number</param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.RetrieveEmailFromQueueSecret(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
@@ -3014,18 +3221,19 @@
             </summary>
             <param name="verifyQueueType"></param>
             <param name="secret"></param>
-            <returns>associated email</returns>
+            <returns>associated email address or phone number</returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            finalize signup process using email
+            finalize signup process using email or phone number (sms otp), matching whichever
+            channel was used in <see cref="M:RSecurityBackend.Services.IAppUserService.SignUp(System.String,System.String,System.String,System.String)"/> (detected the same way: "@" present == email)
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number (must match what was passed to SignUp)</param>
             <param name="secret"></param>
             <param name="password"></param>
             <param name="firstName"></param>
             <param name="surName"></param>
-            <param name="phoneNumber"></param>
+            <param name="phoneNumber">optional secondary phone number, only used in the email-signup case</param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.ForgotPassword(System.String,System.String,System.String,System.String)">
@@ -3035,7 +3243,7 @@
             <param name="email"></param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.ResetPassword(System.String,System.String,System.String,System.String)">
@@ -3088,6 +3296,19 @@
             <param name="signupCallbackUrl"></param>
             <returns>html content</returns>
         </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.GetSmsText(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
+            <summary>
+            Sign Up By Phone Sms Text
+            </summary>
+            <param name="op"></param>
+            <param name="secretCode"></param>
+            <returns>sms text</returns>
+        </member>
+        <member name="P:RSecurityBackend.Services.IAppUserService.PhoneSignUpResendCooldownSeconds">
+            <summary>
+            minimum seconds to wait between two consecutive sms otp requests for the same phone number
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.Services.IAppUserService.TokenSecret">
             <summary>
             secret used for generating Jwt token
@@ -3136,6 +3357,37 @@
             </summary>
             <param name="email"></param>
             <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.NotifyAllUsersAsync(System.String,System.String,RSecurityBackend.Models.Notification.NotificationType,System.Boolean)">
+            <summary>
+            notify all users
+            </summary>
+            <param name="subject"></param>
+            <param name="htmlText"></param>
+            <param name="notificationType"></param>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.RequestChangeEmail(System.Guid,System.String,System.String,System.String,System.String)">
+            <summary>
+            request change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="clientIPAddress"></param>
+            <param name="clientAppName"></param>
+            <param name="language"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
+            <summary>
+            change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="secret"></param>
+            <param name="clientIPAddress"></param>
+            <returns>old email</returns>
         </member>
         <member name="T:RSecurityBackend.Services.IAuditLogService">
             <summary>
@@ -3501,12 +3753,16 @@
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.SignUp(System.String,System.String,System.String,System.String)">
             <summary>
-            Start signup process using email
+            Start signup process using email or phone number (sms otp).
+            If <paramref name="email"/> contains an "@" it is treated as an email address
+            (verification code sent by email via IEmailSender at the controller level),
+            otherwise it is treated as a phone number (verification code sent by sms via
+            ISmsSender at the controller level).
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number</param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.RetrieveEmailFromQueueSecret(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
@@ -3515,18 +3771,19 @@
             </summary>
             <param name="verifyQueueType"></param>
             <param name="secret"></param>
-            <returns>associated email</returns>
+            <returns>associated email address or phone number</returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            finalize signup process using email
+            finalize signup process using email or phone number (sms otp), matching whichever
+            channel was used in <see cref="M:RSecurityBackend.Services.Implementation.AppUserService.SignUp(System.String,System.String,System.String,System.String)"/> (detected the same way: "@" present == email)
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number (must match what was passed to SignUp)</param>
             <param name="secret"></param>
             <param name="password"></param>
             <param name="firstName"></param>
             <param name="surName"></param>
-            <param name="phoneNumber"></param>
+            <param name="phoneNumber">optional secondary phone number, only used in the email-signup case</param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ForgotPassword(System.String,System.String,System.String,System.String)">
@@ -3536,7 +3793,7 @@
             <param name="email"></param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ResetPassword(System.String,System.String,System.String,System.String)">
@@ -3548,6 +3805,27 @@
             <param name="password"></param>
             <param name="clientIPAddress"></param>       
             <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.RequestChangeEmail(System.Guid,System.String,System.String,System.String,System.String)">
+            <summary>
+            request change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="clientIPAddress"></param>
+            <param name="clientAppName"></param>
+            <param name="language"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
+            <summary>
+            change email
+            </summary>
+            <param name="userId"></param>
+            <param name="newEmail"></param>
+            <param name="secret"></param>
+            <param name="clientIPAddress"></param>
+            <returns>old email</returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FindUserByEmail(System.String)">
             <summary>
@@ -3631,6 +3909,20 @@
             <param name="signupCallbackUrl"></param>
             <returns>html content</returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.GetSmsText(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
+            <summary>
+            Sign Up By Phone Sms Text (override to customize wording/branding)
+            </summary>
+            <param name="op"></param>
+            <param name="secretCode"></param>
+            <returns>sms text</returns>
+        </member>
+        <member name="P:RSecurityBackend.Services.Implementation.AppUserService.PhoneSignUpResendCooldownSeconds">
+            <summary>
+            minimum seconds to wait between two consecutive sms otp requests for the same phone number
+            (override to read from configuration if you want it tunable without a code change)
+            </summary>
+        </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.LogUserBehaviourAsync(System.Guid,System.String)">
             <summary>
             log user bad behaviuor
@@ -3670,6 +3962,16 @@
             <param name="email"></param>
             <returns></returns>
         </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.NotifyAllUsersAsync(System.String,System.String,RSecurityBackend.Models.Notification.NotificationType,System.Boolean)">
+            <summary>
+            notify all users
+            </summary>
+            <param name="subject"></param>
+            <param name="htmlText"></param>
+            <param name="notificationType"></param>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
         <member name="F:RSecurityBackend.Services.Implementation.AppUserService._context">
             <summary>
             Main Database context
@@ -3705,12 +4007,17 @@
             secret generator
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Services.Implementation.AppUserService._emailSender">
+            <summary>
+            Email sender
+            </summary>
+        </member>
         <member name="P:RSecurityBackend.Services.Implementation.AppUserService.Configuration">
             <summary>
             Configuration
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.#ctor(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},Microsoft.AspNetCore.Identity.UserManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.SignInManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.RoleManager{RSecurityBackend.Models.Auth.Db.RAppRole},RSecurityBackend.Services.ISecretGenerator,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.IUserRoleService,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.#ctor(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},Microsoft.AspNetCore.Identity.UserManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.SignInManager{RSecurityBackend.Models.Auth.Db.RAppUser},Microsoft.AspNetCore.Identity.RoleManager{RSecurityBackend.Models.Auth.Db.RAppRole},RSecurityBackend.Services.ISecretGenerator,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.IUserRoleService,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
             constructor
             </summary>
@@ -3722,6 +4029,7 @@
             <param name="imageFileService"></param>
             <param name="userRoleService"></param>
             <param name="configuration"></param>
+            <param name="emailSender"></param>
         </member>
         <member name="T:RSecurityBackend.Services.Implementation.AuditLogServiceEF">
             <summary>
@@ -4105,30 +4413,33 @@
             generic options service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.SetAsync(System.String,System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.SetAsync(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             modify an option or add a new one if an option with the requested name does not exist
             </summary>
             <param name="optionName"></param>
             <param name="optionValue"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value
             </summary>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value using context
             </summary>
             <param name="context"></param>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="F:RSecurityBackend.Services.Implementation.RGenericOptionsServiceEF._context">
@@ -4402,12 +4713,12 @@
             <param name="language"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.WorkspaceRolesServiceBase.DeleteRole(System.Guid,System.Guid,System.String)">
             <summary>
             delete user role
             </summary>
             <param name="workspaceId"></param>
-            <param name="roleName"></param>
+            <param name="roleId"></param>
             <param name="language"></param>
             <returns>true if succeeds</returns>
         </member>
@@ -4755,30 +5066,33 @@
             generic options service
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.SetAsync(System.String,System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.SetAsync(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             modify an option or add a new one if an option with the requested name does not exist
             </summary>
             <param name="optionName"></param>
             <param name="optionValue"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value, if option value is not found it returns empty string
             </summary>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid})">
+        <member name="M:RSecurityBackend.Services.IRGenericOptionsService.GetValueAsync(RSecurityBackend.DbContext.RSecurityDbContext{RSecurityBackend.Models.Auth.Db.RAppUser,RSecurityBackend.Models.Auth.Db.RAppRole,System.Guid},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             get option value using context
             </summary>
             <param name="context"></param>
             <param name="optionName"></param>
             <param name="userId"></param>
+            <param name="workspaceId"></param>
             <returns></returns>
         </member>
         <member name="T:RSecurityBackend.Services.IRNotificationService">
@@ -4854,6 +5168,23 @@
             <summary>
             Generates a secret
             </summary>
+            <returns></returns>
+        </member>
+        <member name="T:RSecurityBackend.Services.ISmsSender">
+            <summary>
+            Sms sender abstraction, mirroring <see cref="T:Microsoft.AspNetCore.Identity.UI.Services.IEmailSender"/>.
+            RSecurityBackend ships no concrete implementation on purpose: pick/implement whichever
+            gateway(s) you want (Kavenegar, Ghasedak, ippanel, Twilio, ...) in the consuming
+            application and register it (or a composite/multi-provider wrapper around several of them)
+            as <see cref="T:RSecurityBackend.Services.ISmsSender"/> in your DI container.
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Services.ISmsSender.SendSmsAsync(System.String,System.String)">
+            <summary>
+            send an sms message to a phone number
+            </summary>
+            <param name="phoneNumber">destination phone number (E.164 format recommended, e.g. +989121234567)</param>
+            <param name="message">message text</param>
             <returns></returns>
         </member>
         <member name="T:RSecurityBackend.Services.IUserPermissionChecker">
@@ -5002,12 +5333,12 @@
             <param name="language"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.DeleteRole(System.Guid,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IWorkspaceRolesService.DeleteRole(System.Guid,System.Guid,System.String)">
             <summary>
             delete user role
             </summary>
             <param name="workspaceId"></param>
-            <param name="roleName"></param>
+            <param name="roleId"></param>
             <param name="language"></param>
             <returns>true if succeeds</returns>
         </member>

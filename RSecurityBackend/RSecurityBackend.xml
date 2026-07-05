@@ -235,7 +235,10 @@
         </member>
         <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.SignUp(RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel)">
             <summary>
-            signup
+            signup using email or phone number (sms otp). If <see cref="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.Email"/>
+            contains an "@" it is treated as an email address and the code is sent by email,
+            otherwise it is treated as a phone number and the code is sent by sms (requires an
+            ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true).
             </summary>
             <param name="signUpViewModel">signUpViewModel</param>
             <returns>next step: "verify" or "finalize"</returns>
@@ -246,11 +249,11 @@
             </summary>
             <param name="type"></param>
             <param name="secret"></param>
-            <returns>associated secret email</returns> 
+            <returns>associated secret email or phone number</returns> 
         </member>
         <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.FinalizeSignUp(RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel)">
             <summary>
-            finalize signup process
+            finalize signup process (email or phone number, matching whichever channel was used in SignUp)
             </summary>
             <param name="newUserInfo"></param>
             <returns></returns>
@@ -285,6 +288,12 @@
         <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.SignupEnabled">
             <summary>
             Is Sign-up enabled?
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.PhoneSignupEnabled">
+            <summary>
+            Is phone (sms) Sign-up enabled?
             </summary>
             <returns></returns>
         </member>
@@ -336,6 +345,12 @@
             IEmailSender instance
             </summary>
         </member>
+        <member name="F:RSecurityBackend.Controllers.AppUserControllerBase._smsSender">
+            <summary>
+            ISmsSender instance (nullable: only required if phone signup is used; RSecurityBackend
+            ships no concrete implementation, register your gateway(s) of choice as ISmsSender in DI)
+            </summary>
+        </member>
         <member name="F:RSecurityBackend.Controllers.AppUserControllerBase._imageFileService">
             <summary>
             Image File Service
@@ -351,7 +366,7 @@
             Configuration
             </summary>
         </member>
-        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.#ctor(Microsoft.Extensions.Configuration.IConfiguration,RSecurityBackend.Services.IAppUserService,Microsoft.AspNetCore.Http.IHttpContextAccessor,RSecurityBackend.Services.IUserPermissionChecker,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.ICaptchaService)">
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.#ctor(Microsoft.Extensions.Configuration.IConfiguration,RSecurityBackend.Services.IAppUserService,Microsoft.AspNetCore.Http.IHttpContextAccessor,RSecurityBackend.Services.IUserPermissionChecker,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender,RSecurityBackend.Services.IImageFileService,RSecurityBackend.Services.ICaptchaService,RSecurityBackend.Services.ISmsSender)">
             <summary>
             constructor
             </summary>
@@ -362,6 +377,10 @@
             <param name="emailSender"></param>
             <param name="imageFileService"></param>
             <param name="captchaService"></param>
+            <param name="smsSender">
+            optional: only needed if you use phone (sms) signup. RSecurityBackend does not ship a
+            concrete ISmsSender, implement/register whichever gateway(s) you use in your own app.
+            </param>
         </member>
         <member name="T:RSecurityBackend.Controllers.AuditLogControllerBase">
             <summary>
@@ -2046,7 +2065,9 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.UnverifiedSignUpViewModel.Email">
             <summary>
-            Email
+            Email address or phone number. If it contains an "@" it is treated as an email
+            (verification code sent by email), otherwise as a phone number (verification code
+            sent by sms - requires an ISmsSender to be registered in DI).
             </summary>
             <example>email@domain.com</example>
         </member>
@@ -2099,7 +2120,8 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.Email">
             <summary>
-            Email
+            Email address or phone number (must match whatever value was originally passed to
+            SignUp/UnverifiedSignUpViewModel.Email - "@" present means it's an email)
             </summary>
             <example>email@domain.com</example>
         </member>
@@ -2129,7 +2151,8 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.ViewModels.VerifiedSignUpViewModel.PhoneNumber">
             <summary>
-            User Mobile Phone Number
+            User Mobile Phone Number (optional secondary phone number; only used when
+            signing up with an email - ignored when Email itself holds a phone number)
             </summary>
             <example>+989121234567</example>
         </member>
@@ -3181,12 +3204,15 @@
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.SignUp(System.String,System.String,System.String,System.String)">
             <summary>
-            Start signup process using email
+            Start signup process using email or phone number (sms otp). If <paramref name="email"/>
+            contains an "@" it is treated as an email address (verification code sent by email),
+            otherwise it is treated as a phone number (verification code sent by sms - requires an
+            ISmsSender to be registered in DI).
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number</param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.RetrieveEmailFromQueueSecret(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
@@ -3195,18 +3221,19 @@
             </summary>
             <param name="verifyQueueType"></param>
             <param name="secret"></param>
-            <returns>associated email</returns>
+            <returns>associated email address or phone number</returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            finalize signup process using email
+            finalize signup process using email or phone number (sms otp), matching whichever
+            channel was used in <see cref="M:RSecurityBackend.Services.IAppUserService.SignUp(System.String,System.String,System.String,System.String)"/> (detected the same way: "@" present == email)
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number (must match what was passed to SignUp)</param>
             <param name="secret"></param>
             <param name="password"></param>
             <param name="firstName"></param>
             <param name="surName"></param>
-            <param name="phoneNumber"></param>
+            <param name="phoneNumber">optional secondary phone number, only used in the email-signup case</param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.ForgotPassword(System.String,System.String,System.String,System.String)">
@@ -3216,7 +3243,7 @@
             <param name="email"></param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.ResetPassword(System.String,System.String,System.String,System.String)">
@@ -3268,6 +3295,19 @@
             <param name="secretCode"></param>
             <param name="signupCallbackUrl"></param>
             <returns>html content</returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.GetSmsText(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
+            <summary>
+            Sign Up By Phone Sms Text
+            </summary>
+            <param name="op"></param>
+            <param name="secretCode"></param>
+            <returns>sms text</returns>
+        </member>
+        <member name="P:RSecurityBackend.Services.IAppUserService.PhoneSignUpResendCooldownSeconds">
+            <summary>
+            minimum seconds to wait between two consecutive sms otp requests for the same phone number
+            </summary>
         </member>
         <member name="P:RSecurityBackend.Services.IAppUserService.TokenSecret">
             <summary>
@@ -3336,7 +3376,7 @@
             <param name="newEmail"></param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
@@ -3713,12 +3753,16 @@
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.SignUp(System.String,System.String,System.String,System.String)">
             <summary>
-            Start signup process using email
+            Start signup process using email or phone number (sms otp).
+            If <paramref name="email"/> contains an "@" it is treated as an email address
+            (verification code sent by email via IEmailSender at the controller level),
+            otherwise it is treated as a phone number (verification code sent by sms via
+            ISmsSender at the controller level).
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number</param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.RetrieveEmailFromQueueSecret(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
@@ -3727,18 +3771,19 @@
             </summary>
             <param name="verifyQueueType"></param>
             <param name="secret"></param>
-            <returns>associated email</returns>
+            <returns>associated email address or phone number</returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FinalizeSignUp(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            finalize signup process using email
+            finalize signup process using email or phone number (sms otp), matching whichever
+            channel was used in <see cref="M:RSecurityBackend.Services.Implementation.AppUserService.SignUp(System.String,System.String,System.String,System.String)"/> (detected the same way: "@" present == email)
             </summary>
-            <param name="email"></param>
+            <param name="email">email address or phone number (must match what was passed to SignUp)</param>
             <param name="secret"></param>
             <param name="password"></param>
             <param name="firstName"></param>
             <param name="surName"></param>
-            <param name="phoneNumber"></param>
+            <param name="phoneNumber">optional secondary phone number, only used in the email-signup case</param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ForgotPassword(System.String,System.String,System.String,System.String)">
@@ -3748,7 +3793,7 @@
             <param name="email"></param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ResetPassword(System.String,System.String,System.String,System.String)">
@@ -3769,7 +3814,7 @@
             <param name="newEmail"></param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
-            <param name="langauge"></param>
+            <param name="language"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
@@ -3863,6 +3908,20 @@
             <param name="secretCode"></param>
             <param name="signupCallbackUrl"></param>
             <returns>html content</returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.GetSmsText(RSecurityBackend.Models.Auth.Db.RVerifyQueueType,System.String)">
+            <summary>
+            Sign Up By Phone Sms Text (override to customize wording/branding)
+            </summary>
+            <param name="op"></param>
+            <param name="secretCode"></param>
+            <returns>sms text</returns>
+        </member>
+        <member name="P:RSecurityBackend.Services.Implementation.AppUserService.PhoneSignUpResendCooldownSeconds">
+            <summary>
+            minimum seconds to wait between two consecutive sms otp requests for the same phone number
+            (override to read from configuration if you want it tunable without a code change)
+            </summary>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.LogUserBehaviourAsync(System.Guid,System.String)">
             <summary>
@@ -5109,6 +5168,23 @@
             <summary>
             Generates a secret
             </summary>
+            <returns></returns>
+        </member>
+        <member name="T:RSecurityBackend.Services.ISmsSender">
+            <summary>
+            Sms sender abstraction, mirroring <see cref="T:Microsoft.AspNetCore.Identity.UI.Services.IEmailSender"/>.
+            RSecurityBackend ships no concrete implementation on purpose: pick/implement whichever
+            gateway(s) you want (Kavenegar, Ghasedak, ippanel, Twilio, ...) in the consuming
+            application and register it (or a composite/multi-provider wrapper around several of them)
+            as <see cref="T:RSecurityBackend.Services.ISmsSender"/> in your DI container.
+            </summary>
+        </member>
+        <member name="M:RSecurityBackend.Services.ISmsSender.SendSmsAsync(System.String,System.String)">
+            <summary>
+            send an sms message to a phone number
+            </summary>
+            <param name="phoneNumber">destination phone number (E.164 format recommended, e.g. +989121234567)</param>
+            <param name="message">message text</param>
             <returns></returns>
         </member>
         <member name="T:RSecurityBackend.Services.IUserPermissionChecker">
