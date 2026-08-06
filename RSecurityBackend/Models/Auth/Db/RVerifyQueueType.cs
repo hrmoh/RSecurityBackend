@@ -28,6 +28,6 @@
         /// <summary>
         /// email changed
         /// </summary>
-        EmailChaned = 5,
+        EmailChanged = 5,
     }
 }

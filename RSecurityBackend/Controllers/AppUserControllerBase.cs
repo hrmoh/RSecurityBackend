@@ -1154,9 +1154,14 @@ namespace RSecurityBackend.Controllers
             clientIPAddress
             );
 
-            if (loginResult.Result == null)
+            if (!string.IsNullOrEmpty(loginResult.ExceptionString))
             {
                 return BadRequest(loginResult.ExceptionString);
+            }
+
+            if (loginResult.Result == null)
+            {
+                return BadRequest("loginResult.Result == null");
             }
 
             RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeEmail(
@@ -1219,8 +1224,8 @@ namespace RSecurityBackend.Controllers
             }
 
             _ = _emailSender.SendEmailAsync(res.Result,
-                    _appUserService.GetEmailSubject(RVerifyQueueType.EmailChaned, ""),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChaned, newmail, "")
+                    _appUserService.GetEmailSubject(RVerifyQueueType.EmailChanged, ""),
+                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChanged, newmail, "")
 
                 );
 
@@ -1263,6 +1268,7 @@ namespace RSecurityBackend.Controllers
                 return !string.IsNullOrEmpty(enabled) && bool.Parse(enabled);
             }
         }
+
 
         /// <summary>
         /// reset password

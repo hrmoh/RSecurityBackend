@@ -1511,7 +1511,7 @@ namespace RSecurityBackend.Services.Implementation
             }
 
             RAppUser rAppUser = await _userManager.FindByEmailAsync(newEmail);
-            if (rAppUser == null)
+            if (rAppUser != null)
             {
                 return new RServiceResult<RVerifyQueueItem>(null, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
             }
@@ -1878,8 +1878,11 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secretCode"></param>
         public virtual string GetEmailSubject(RVerifyQueueType op, string secretCode)
         {
-            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeEmail ? "Change Email" : op == RVerifyQueueType.EmailChaned ? "Email changed" : "Self Delete User";
-            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.EmailChaned ? "New Email" : "Code")}:{secretCode}";
+            if (op == RVerifyQueueType.EmailChanged)
+                return "Email changed";
+
+            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeEmail ? "Change Email" : op == RVerifyQueueType.EmailChanged ? "Email changed" : "Self Delete User";
+            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.EmailChanged ? "New Email" : "Code")}:{secretCode}";
 
         }
 
@@ -1894,6 +1897,8 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (!string.IsNullOrEmpty(signupCallbackUrl))
                 return $"{signupCallbackUrl}?secret={secretCode}";
+            if (op == RVerifyQueueType.EmailChanged)
+                return $"ایمیل حساب کاربری شما به {secretCode} تغییر کرد.";
             string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل";
             return op == RVerifyQueueType.KickOutUser ? $"حساب کاربری شما به دلیل {secretCode} حذف شد." : $"لطفا {secretCode} را در صفحهٔ {opString} وارد کنید.";
         }
