@@ -396,11 +396,10 @@ namespace RSecurityBackend.Services
         /// change email
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="newEmail"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
-        /// <returns>old email</returns>
-        Task<RServiceResult<string>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress);
+        /// <returns>old email + new email</returns>
+        Task<RServiceResult<string[]>> ChangeEmail(Guid userId, string secret, string clientIPAddress);
 
 
     }

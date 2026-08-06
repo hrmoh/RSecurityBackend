@@ -376,7 +376,7 @@ namespace RSecurityBackend.Controllers
                 return BadRequest("You can not disable yourself!");
             if (loggedOnUserId == id && !string.IsNullOrEmpty(existingUserInfo.Password))
                 return BadRequest("Please use setmypassword method to change your own password.");
-            if(loggedOnUserId == id)
+            if (loggedOnUserId == id)
             {
                 existingUserInfo.IsAdmin = (await _appUserService.IsAdmin(id)).Result;//ignore changing isAdmin status for a user modifying himself/herself
             }
@@ -1131,105 +1131,112 @@ namespace RSecurityBackend.Controllers
         /// </summary>
         /// <param name="viewModel"></param>
         /// <returns></returns>
-        [HttpPost("email/request/change/{newmail}")]
+        [HttpPost("email/request/change")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public virtual async Task<IActionResult> RequestChangeEmail([FromBody]ChangeEmailViewModel viewModel)
+        public virtual async Task<IActionResult> RequestChangeEmail([FromBody] ChangeEmailViewModel viewModel)
         {
-            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
-
-            var user = (await _appUserService.GetUserInformation(loggedOnUserId)).Result;
-            var loginResult = await _appUserService.Login(new LoginViewModel()
-            {
-                Username = user.Email,
-                Password = viewModel.Password,
-                ClientAppName = session == null ? "Unknonw Session" : session.Result.ClientAppName,
-                Language = session == null ? "Unknown Session" : session.Result.Language
-            },
-            clientIPAddress
-            );
-
-            if (!string.IsNullOrEmpty(loginResult.ExceptionString))
-            {
-                return BadRequest(loginResult.ExceptionString);
-            }
-
-            if (loginResult.Result == null)
-            {
-                return BadRequest("loginResult.Result == null");
-            }
-
-            RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeEmail(
-                loggedOnUserId,
-                viewModel.NewEmail,
-                clientIPAddress,
-                session == null ? "Unknonw Session" : session.Result.ClientAppName,
-                session == null ? "Unknown Session" : session.Result.Language
-                );
-            if (!string.IsNullOrEmpty(res.ExceptionString))
-            {
-                return BadRequest(res.ExceptionString);
-            }
-
             try
             {
+                Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+                Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+                string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
+
+                var user = (await _appUserService.GetUserInformation(loggedOnUserId)).Result;
+                var loginResult = await _appUserService.Login(new LoginViewModel()
+                {
+                    Username = user.Email,
+                    Password = viewModel.Password,
+                    ClientAppName = session == null ? "Unknonw Session" : session.Result.ClientAppName,
+                    Language = session == null ? "Unknown Session" : session.Result.Language
+                },
+                clientIPAddress
+                );
+
+                if (!string.IsNullOrEmpty(loginResult.ExceptionString))
+                {
+                    return BadRequest(loginResult.ExceptionString);
+                }
+
+                if (loginResult.Result == null)
+                {
+                    return BadRequest("loginResult.Result == null");
+                }
+
+                RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeEmail(
+                    loggedOnUserId,
+                    viewModel.NewEmail,
+                    clientIPAddress,
+                    session == null ? "Unknonw Session" : session.Result.ClientAppName,
+                    session == null ? "Unknown Session" : session.Result.Language
+                    );
+                if (!string.IsNullOrEmpty(res.ExceptionString))
+                {
+                    return BadRequest(res.ExceptionString);
+                }
+
                 await _emailSender.SendEmailAsync
                     (
                     viewModel.NewEmail,
                     _appUserService.GetEmailSubject(RVerifyQueueType.ChangeEmail, res.Result.Secret),
                     _appUserService.GetEmailHtmlContent(RVerifyQueueType.ChangeEmail, res.Result.Secret, viewModel.CallbackUrl)
                     );
+
+                return Ok();
+
             }
             catch (Exception exp)
             {
-                return BadRequest("Error sending email: " + exp.ToString());
+                return BadRequest(exp.ToString());
             }
-
-            return Ok();
         }
 
         /// <summary>
         /// change email
         /// </summary>
-        /// <param name="newmail"></param>
         /// <param name="secret"></param>
         /// <returns></returns>
-        [HttpPut("email/change/{newmail}/{secret}")]
+        [HttpPut("email/change/{secret}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public virtual async Task<IActionResult> ChangeEmail(string newmail, string secret)
+        public virtual async Task<IActionResult> ChangeEmail(string secret)
         {
-            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
-            Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
-            string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
-
-
-            RServiceResult<string> res = await _appUserService.ChangeEmail(
-                loggedOnUserId,
-                newmail,
-                secret,
-                clientIPAddress
-                );
-            if (!string.IsNullOrEmpty(res.ExceptionString))
+            try
             {
-                return BadRequest(res.ExceptionString);
+                Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+                Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+                string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
+
+
+                RServiceResult<string[]> res = await _appUserService.ChangeEmail(
+                    loggedOnUserId,
+                    secret,
+                    clientIPAddress
+                    );
+                if (!string.IsNullOrEmpty(res.ExceptionString))
+                {
+                    return BadRequest(res.ExceptionString);
+                }
+
+                _ = _emailSender.SendEmailAsync(res.Result[0],
+                        _appUserService.GetEmailSubject(RVerifyQueueType.EmailChanged, ""),
+                        _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChanged, res.Result[1], "")
+
+                    );
+
+                return Ok();
+
             }
-
-            _ = _emailSender.SendEmailAsync(res.Result,
-                    _appUserService.GetEmailSubject(RVerifyQueueType.EmailChanged, ""),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChanged, newmail, "")
-
-                );
-
-            return Ok();
+            catch (Exception exp)
+            {
+                return BadRequest(exp.ToString());
+            }
         }
 
         /// <summary>

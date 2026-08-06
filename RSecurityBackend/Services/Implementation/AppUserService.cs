@@ -1554,22 +1554,22 @@ namespace RSecurityBackend.Services.Implementation
         /// change email
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="newEmail"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
         /// <returns>old email</returns>
-        public virtual async Task<RServiceResult<string>> ChangeEmail(Guid userId, string newEmail, string secret, string clientIPAddress)
+        public virtual async Task<RServiceResult<string[]>> ChangeEmail(Guid userId, string secret, string clientIPAddress)
         {
             var resUser = await GetUserInformation(userId);
             if(!string.IsNullOrEmpty(resUser.ExceptionString))
             {
-                return new RServiceResult<string>("", resUser.ExceptionString);
+                return new RServiceResult<string[]>(null, resUser.ExceptionString);
             }
             var user = resUser.Result;
             if(user == null)
             {
-                return new RServiceResult<string>("", "user == null");
+                return new RServiceResult<string[]>(null, "user == null");
             }
+            string newEmail = (await RetrieveEmailFromQueueSecret(RVerifyQueueType.ChangeEmail, secret)).Result;
             if (bool.Parse(Configuration["AuditNetEnabled"]))
             {
                 //we ignore input model in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
@@ -1587,18 +1587,9 @@ namespace RSecurityBackend.Services.Implementation
             RAppUser existingUser = await _userManager.FindByEmailAsync(newEmail);
             if (existingUser != null)
             {
-                return new RServiceResult<string>("", $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+                return new RServiceResult<string[]>(null, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
             }
-
-
-            if (
-                newEmail
-                !=
-                (await RetrieveEmailFromQueueSecret(RVerifyQueueType.ChangeEmail, secret)).Result
-             )
-            {
-                return new RServiceResult<string>("", "کلمه عبور اشتباه وارد شده است");
-            }
+           
 
             _context.UserOldEmails.Add
                 (
@@ -1631,7 +1622,7 @@ namespace RSecurityBackend.Services.Implementation
 
             await _context.SaveChangesAsync();
 
-            return new RServiceResult<string>(oldEmail);
+            return new RServiceResult<string[]>([oldEmail, newEmail]);
 
         }
 
