@@ -1133,7 +1133,7 @@ namespace RSecurityBackend.Controllers
         /// <returns></returns>
         [HttpPost("email/request/change")]
         [Authorize]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public virtual async Task<IActionResult> RequestChangeEmail([FromBody] ChangeEmailViewModel viewModel)
@@ -1198,10 +1198,10 @@ namespace RSecurityBackend.Controllers
         /// change email
         /// </summary>
         /// <param name="secret"></param>
-        /// <returns></returns>
+        /// <returns>new email</returns>
         [HttpPut("email/change/{secret}")]
         [Authorize]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public virtual async Task<IActionResult> ChangeEmail(string secret)
@@ -1230,7 +1230,7 @@ namespace RSecurityBackend.Controllers
 
                     );
 
-                return Ok();
+                return Ok(res.Result[1]);
 
             }
             catch (Exception exp)
