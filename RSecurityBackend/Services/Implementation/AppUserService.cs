@@ -125,6 +125,21 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری شما غیرفعال شده است." : "You user is deactivated.");
             }
 
+            return await IssueSessionAsync(appUser, clientIPAddress, loginViewModel.ClientAppName, loginViewModel.Language);
+        }
+
+        /// <summary>
+        /// create a new session for an already-authenticated user and issue a JWT for it -
+        /// shared tail used by both <see cref="Login"/> (password auth) and
+        /// <see cref="ExternalLogin"/> (external provider auth)
+        /// </summary>
+        /// <param name="appUser"></param>
+        /// <param name="clientIPAddress"></param>
+        /// <param name="clientAppName"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        private async Task<RServiceResult<LoggedOnUserModel>> IssueSessionAsync(RAppUser appUser, string clientIPAddress, string clientAppName, string language)
+        {
             RServiceResult<SecurableItem[]> securableItems = await GetUserSecurableItemsStatus(appUser.Id);
             if (!string.IsNullOrEmpty(securableItems.ExceptionString))
                 return new RServiceResult<LoggedOnUserModel>(null, securableItems.ExceptionString);
@@ -134,8 +149,8 @@ namespace RSecurityBackend.Services.Implementation
                 {
                     RAppUserId = appUser.Id,
                     ClientIPAddress = clientIPAddress,
-                    ClientAppName = loginViewModel.ClientAppName,
-                    Language = loginViewModel.Language,
+                    ClientAppName = clientAppName,
+                    Language = language,
                     LoginTime = DateTime.Now,
                     LastRenewal = DateTime.Now,
                     ValidUntil = DateTime.Now + TimeSpan.FromSeconds(DefaultTokenExpirationInSeconds),
@@ -147,7 +162,10 @@ namespace RSecurityBackend.Services.Implementation
 
             await _context.SaveChangesAsync();
 
-            RServiceResult<string> userToken = await GenerateToken(loginViewModel.Username, appUser.Id, userSession.Id, loginViewModel.Language);
+            //always use the account's canonical UserName for the token, never whatever
+            //string the caller happened to authenticate with (which, since Login now accepts
+            //a confirmed email or confirmed phone number too, is not necessarily the same value)
+            RServiceResult<string> userToken = await GenerateToken(appUser.UserName, appUser.Id, userSession.Id, language);
             if (userToken.Result == null)
             {
                 return new RServiceResult<LoggedOnUserModel>(null, userToken.ExceptionString);
@@ -181,6 +199,135 @@ namespace RSecurityBackend.Services.Implementation
                     SecurableItem = securableItems.Result
                 }
                 );
+        }
+
+        /// <summary>
+        /// login (or, on first use, auto-signup + link) using an already-verified external
+        /// identity provider (e.g. Google). The caller (controller) is responsible for
+        /// validating the raw provider token/credential BEFORE calling this - by the time
+        /// <paramref name="payload"/> reaches here it is trusted at face value.
+        /// </summary>
+        /// <param name="payload">verified claims extracted from the provider's token</param>
+        /// <param name="clientIPAddress"></param>
+        /// <param name="clientAppName"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        public virtual async Task<RServiceResult<LoggedOnUserModel>> ExternalLogin(ExternalAuthPayload payload, string clientIPAddress, string clientAppName, string language)
+        {
+            try
+            {
+                if (payload == null || string.IsNullOrEmpty(payload.Provider) || string.IsNullOrEmpty(payload.ProviderKey))
+                {
+                    return new RServiceResult<LoggedOnUserModel>(null, "invalid external auth payload");
+                }
+
+                if (string.IsNullOrEmpty(clientIPAddress))
+                {
+                    return new RServiceResult<LoggedOnUserModel>(null, "client ip address is empty");
+                }
+
+                if (string.IsNullOrEmpty(clientAppName))
+                {
+                    return new RServiceResult<LoggedOnUserModel>(null, "client app name is empty");
+                }
+
+                if (bool.Parse(Configuration["AuditNetEnabled"]))
+                {
+                    REvent log = new REvent()
+                    {
+                        EventType = $"AppUser/ExternalLogin (POST)(Manual) via {payload.Provider}",
+                        StartDate = DateTime.UtcNow,
+                        UserName = payload.Email,
+                        IpAddress = clientIPAddress
+                    };
+                    _context.AuditLogs.Add(log);
+                    await _context.SaveChangesAsync();
+                }
+
+                RServiceResult<bool> checkUserExists = await EnsureDefaultUserExists();
+                if (!checkUserExists.Result)
+                {
+                    return new RServiceResult<LoggedOnUserModel>(null, checkUserExists.ExceptionString);
+                }
+
+                //1) already linked to this exact provider identity?
+                RAppUser appUser = await _userManager.FindByLoginAsync(payload.Provider, payload.ProviderKey);
+
+                if (appUser == null)
+                {
+                    //2) not linked yet - if the provider vouches for a verified email that
+                    //matches an existing (also confirmed) local account, link to that account
+                    //instead of creating a duplicate. Only ever done when the provider itself
+                    //reports the email as verified - otherwise this would be an account
+                    //takeover vector (sign up elsewhere using someone else's email, "link" here)
+                    if (!string.IsNullOrEmpty(payload.Email) && payload.EmailVerified)
+                    {
+                        RAppUser existingByEmail = await _userManager.FindByEmailAsync(payload.Email);
+                        if (existingByEmail != null && existingByEmail.EmailConfirmed)
+                        {
+                            appUser = existingByEmail;
+                        }
+                    }
+
+                    if (appUser == null)
+                    {
+                        //3) no existing account at all - auto-signup, same trust rules as (2):
+                        //requires the provider to report a verified email
+                        if (string.IsNullOrEmpty(payload.Email))
+                        {
+                            return new RServiceResult<LoggedOnUserModel>(null, (language ?? "").StartsWith("fa") ? "ارائه‌دهنده، ایمیلی برای این حساب کاربری ارسال نکرد." : "Identity provider did not supply an email address.");
+                        }
+                        if (!payload.EmailVerified)
+                        {
+                            return new RServiceResult<LoggedOnUserModel>(null, (language ?? "").StartsWith("fa") ? "ایمیل شما توسط ارائه‌دهنده تایید نشده است." : "Your email is not verified by the identity provider.");
+                        }
+
+                        string firstName = string.IsNullOrEmpty(payload.FirstName) ? payload.DisplayName : payload.FirstName;
+                        if (string.IsNullOrEmpty(firstName))
+                        {
+                            firstName = payload.Email;
+                        }
+
+                        RegisterRAppUser newUserInfo = new RegisterRAppUser()
+                        {
+                            Username = payload.Email,
+                            Email = payload.Email,
+                            //external-provider accounts don't need a usable local password;
+                            //AddUser already generates one when none is supplied
+                            Password = null,
+                            Status = RAppUserStatus.Active,
+                            IsAdmin = false,
+                            FirstName = firstName,
+                            SurName = payload.SurName,
+                            NickName = string.IsNullOrEmpty(payload.DisplayName) ? firstName : payload.DisplayName,
+                        };
+
+                        RServiceResult<RAppUser> addResult = await AddUser(newUserInfo);
+                        if (addResult.Result == null)
+                        {
+                            return new RServiceResult<LoggedOnUserModel>(null, addResult.ExceptionString);
+                        }
+                        appUser = addResult.Result;
+                    }
+
+                    IdentityResult linkResult = await _userManager.AddLoginAsync(appUser, new UserLoginInfo(payload.Provider, payload.ProviderKey, payload.DisplayName));
+                    if (!linkResult.Succeeded)
+                    {
+                        return new RServiceResult<LoggedOnUserModel>(null, ErrorsToString(linkResult.Errors));
+                    }
+                }
+
+                if (appUser.Status == RAppUserStatus.Inactive)
+                {
+                    return new RServiceResult<LoggedOnUserModel>(null, (language ?? "").StartsWith("fa") ? "نام کاربری شما غیرفعال شده است." : "You user is deactivated.");
+                }
+
+                return await IssueSessionAsync(appUser, clientIPAddress, clientAppName, language);
+            }
+            catch (Exception exp)
+            {
+                return new RServiceResult<LoggedOnUserModel>(null, exp.ToString());
+            }
         }
 
         /// <summary>

@@ -54,7 +54,70 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// renew an expired session
+        /// login using an external identity provider (e.g. Google). The client performs the
+        /// provider's own sign-in flow (its SDK) itself and posts the resulting ID token here;
+        /// this endpoint validates it (via whichever IExternalAuthValidator is registered for
+        /// <paramref name="provider"/>) and finds-or-creates + logs in the local account.
+        /// </summary>
+        /// <param name="provider">provider name, e.g. "Google" - must match a registered IExternalAuthValidator.ProviderName</param>
+        /// <param name="viewModel"></param>
+        /// <returns>LoggedOnUserModel</returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("login/external/{provider}")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(LoggedOnUserModel))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public virtual async Task<IActionResult> ExternalLogin(
+            string provider,
+            [AuditIgnore]
+            [FromBody]
+            ExternalLoginViewModel viewModel
+            )
+        {
+            try
+            {
+                IExternalAuthValidator validator =
+                    _externalAuthValidators?.FirstOrDefault(v => string.Equals(v.ProviderName, provider, StringComparison.OrdinalIgnoreCase));
+                if (validator == null)
+                {
+                    return BadRequest($"Unsupported or unconfigured external auth provider: {provider} (register an IExternalAuthValidator implementation for it in DI).");
+                }
+
+                if (string.IsNullOrEmpty(viewModel?.IdToken))
+                {
+                    return BadRequest("IdToken is empty.");
+                }
+
+                RServiceResult<ExternalAuthPayload> validationResult = await validator.ValidateAsync(viewModel.IdToken);
+                if (!string.IsNullOrEmpty(validationResult.ExceptionString) || validationResult.Result == null)
+                {
+                    return BadRequest(string.IsNullOrEmpty(validationResult.ExceptionString) ? "Invalid external token." : validationResult.ExceptionString);
+                }
+
+                //the payload is whatever the client's own sign-in produced; the provider name
+                //used for account linking should be the one WE trust for this route, not
+                //whatever (if anything) the validator put in the payload
+                validationResult.Result.Provider = validator.ProviderName;
+
+                string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                RServiceResult<LoggedOnUserModel> res = await _appUserService.ExternalLogin(
+                    validationResult.Result,
+                    clientIPAddress,
+                    viewModel.ClientAppName,
+                    viewModel.Language
+                    );
+                if (res.Result == null)
+                {
+                    return BadRequest(res.ExceptionString);
+                }
+
+                return Ok(res.Result);
+            }
+            catch (Exception exp)
+            {
+                return BadRequest(exp.ToString());
+            }
+        }
         /// </summary>
         /// <param name="sessionId">user session id</param>
         /// <returns>LoggedOnUserModel</returns>
@@ -1470,6 +1533,14 @@ namespace RSecurityBackend.Controllers
         protected ISmsSender _smsSender;
 
         /// <summary>
+        /// registered IExternalAuthValidator instances, one per identity provider you support
+        /// (nullable/empty: only required if external login (Google, ...) is used;
+        /// RSecurityBackend ships no concrete implementation, register whichever provider(s)
+        /// you use in your own app)
+        /// </summary>
+        protected IEnumerable<IExternalAuthValidator> _externalAuthValidators;
+
+        /// <summary>
         /// Image File Service
         /// </summary>
         protected readonly IImageFileService _imageFileService;
@@ -1500,7 +1571,12 @@ namespace RSecurityBackend.Controllers
         /// optional: only needed if you use phone (sms) signup. RSecurityBackend does not ship a
         /// concrete ISmsSender, implement/register whichever gateway(s) you use in your own app.
         /// </param>
-        public AppUserControllerBase(IConfiguration configuration, IAppUserService appUserService, IHttpContextAccessor httpContextAccessor, IUserPermissionChecker userPermissionChecker, IEmailSender emailSender, IImageFileService imageFileService, ICaptchaService captchaService, ISmsSender smsSender = null)
+        /// <param name="externalAuthValidators">
+        /// optional: only needed if you use external (Google, ...) login. RSecurityBackend does
+        /// not ship a concrete IExternalAuthValidator, implement/register whichever provider(s)
+        /// you use in your own app.
+        /// </param>
+        public AppUserControllerBase(IConfiguration configuration, IAppUserService appUserService, IHttpContextAccessor httpContextAccessor, IUserPermissionChecker userPermissionChecker, IEmailSender emailSender, IImageFileService imageFileService, ICaptchaService captchaService, ISmsSender smsSender = null, IEnumerable<IExternalAuthValidator> externalAuthValidators = null)
         {
             Configuration = configuration;
             _appUserService = appUserService;
@@ -1510,6 +1586,7 @@ namespace RSecurityBackend.Controllers
             _imageFileService = imageFileService;
             _captchaService = captchaService;
             _smsSender = smsSender;
+            _externalAuthValidators = externalAuthValidators;
         }
     }
 }

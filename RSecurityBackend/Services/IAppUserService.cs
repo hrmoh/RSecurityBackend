@@ -29,6 +29,19 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<LoggedOnUserModel>> Login(LoginViewModel loginViewModel, string clientIPAddress);
 
         /// <summary>
+        /// login (or, on first use, auto-signup + link) using an already-verified external
+        /// identity provider (e.g. Google). The caller (controller) must validate the raw
+        /// provider token BEFORE calling this - see <see cref="IExternalAuthValidator"/>;
+        /// by the time <paramref name="payload"/> reaches here it is trusted at face value.
+        /// </summary>
+        /// <param name="payload">verified claims - produced by an IExternalAuthValidator</param>
+        /// <param name="clientIPAddress"></param>
+        /// <param name="clientAppName"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        Task<RServiceResult<LoggedOnUserModel>> ExternalLogin(ExternalAuthPayload payload, string clientIPAddress, string clientAppName, string language);
+
+        /// <summary>
         /// replace a (probably expired session) with a new one
         /// </summary>
         /// <param name="sessionId"></param>

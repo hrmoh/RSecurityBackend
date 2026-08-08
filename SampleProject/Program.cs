@@ -17,6 +17,7 @@ using RSecurityBackend.Services;
 using RSecurityBackend.Services.Implementation;
 using RSecurityBackend.Utilities;
 using SampleProject.DbContext;
+using SampleProject.ExternalAuth;
 using SampleProject.Models.Auth.Memory;
 using SampleProject.Services.Implementation;
 using SampleProject.Sms;
@@ -246,6 +247,10 @@ builder.Services.AddTransient<IEmailSender, MailKitEmailSender>();
 
 builder.Services.AddTransient<ISmsSender, CompositeSmsSender>();
 builder.Services.Configure<SmptConfig>(builder.Configuration);
+
+//external login providers - one AddTransient<IExternalAuthValidator, ...> registration per
+//provider you support; the endpoint picks the matching one by ProviderName at request time
+builder.Services.AddTransient<IExternalAuthValidator, GoogleIdTokenValidator>();
 
 //messaging service
 builder.Services.AddTransient<IRNotificationService, RNotificationService>();
