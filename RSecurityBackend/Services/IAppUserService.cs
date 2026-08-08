@@ -371,12 +371,19 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> LockoutAsync(Guid userId, string cause, DateTimeOffset offset);
 
         /// <summary>
-        /// before kicking out a bad behving user ban him or her from signing up again
-        /// (bans whichever contact channel(s) the user has: email, phone number, or both)
+        /// before kicking out a bad behving user ban him or her from signing up again.
+        /// Bans not only the user's CURRENT email/phone number, but every email and phone
+        /// number this user has ever verified and later moved away from via ChangeContact
+        /// (see UserOldContact) - otherwise a user could dodge a ban simply by changing their
+        /// contact info right before being kicked out.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cause">document the cause</param>
-        /// <returns></returns>
+        /// <returns>
+        /// one representative banned entry (current email, else current phone, else the first
+        /// historical value banned) for backward compatibility with existing callers - every
+        /// value banned by this call is persisted regardless of what is returned here
+        /// </returns>
         Task<RServiceResult<BannedEmail>> BanUserFromSigningUpAgainAsync(Guid userId, string cause);
 
         /// <summary>

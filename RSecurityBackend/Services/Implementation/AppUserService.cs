@@ -2269,38 +2269,130 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// before kicking out a bad behving user ban him or her from signing up again
-        /// (bans whichever contact channel(s) the user has: email, phone number, or both)
+        /// before kicking out a bad behving user ban him or her from signing up again.
+        /// Bans not only the user's CURRENT email/phone number, but every email and phone
+        /// number this user has ever verified and later moved away from via
+        /// <see cref="ChangeContact"/> (see <see cref="UserOldContact"/>) - otherwise a user
+        /// could dodge a ban simply by changing their contact info right before being kicked
+        /// out, then signing up again with the address they just abandoned.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cause">document the cause</param>
-        /// <returns></returns>
+        /// <returns>
+        /// one representative banned entry (current email, else current phone, else the first
+        /// historical value banned) for backward compatibility with existing callers - every
+        /// value banned by this call is persisted regardless of what is returned here
+        /// </returns>
         public async Task<RServiceResult<BannedEmail>> BanUserFromSigningUpAgainAsync(Guid userId, string cause)
         {
             RAppUser appUser =
                 await _userManager.Users.Where(u => u.Id == userId).SingleOrDefaultAsync();
 
-            string email = appUser.NormalizedEmail;
-            if (!string.IsNullOrEmpty(email) && email.Contains("@GMAIL.COM"))
+            string NormalizeGmailAlias(string normalizedEmail)
             {
-                if (email.Contains("+") && email.IndexOf("+") < email.IndexOf("@GMAIL.COM"))
+                if (string.IsNullOrEmpty(normalizedEmail))
+                    return normalizedEmail;
+                if (normalizedEmail.Contains("@GMAIL.COM"))
                 {
-                    email = email.Substring(0, email.IndexOf("+")) + "@GMAIL.COM";
+                    if (normalizedEmail.Contains("+") && normalizedEmail.IndexOf("+") < normalizedEmail.IndexOf("@GMAIL.COM"))
+                    {
+                        normalizedEmail = normalizedEmail.Substring(0, normalizedEmail.IndexOf("+")) + "@GMAIL.COM";
+                    }
+                }
+                return normalizedEmail;
+            }
+
+            //ordered so the CURRENT values come first - preserved for the single-entry return
+            //value below, to keep existing callers seeing the same thing they used to
+            List<string> orderedEmailsToBan = new List<string>();
+            List<string> orderedPhonesToBan = new List<string>();
+
+            if (!string.IsNullOrEmpty(appUser.NormalizedEmail))
+            {
+                orderedEmailsToBan.Add(NormalizeGmailAlias(appUser.NormalizedEmail));
+            }
+            if (!string.IsNullOrEmpty(appUser.PhoneNumber))
+            {
+                orderedPhonesToBan.Add(appUser.PhoneNumber);
+            }
+
+            List<UserOldContact> history = await _context.UserOldContacts.Where(c => c.UserId == userId).ToListAsync();
+            foreach (UserOldContact old in history)
+            {
+                if (string.IsNullOrEmpty(old.Value))
+                    continue;
+                if (old.IsEmail)
+                {
+                    string normalized = string.IsNullOrEmpty(old.NormalizedValue) ? _userManager.NormalizeEmail(old.Value) : old.NormalizedValue;
+                    orderedEmailsToBan.Add(NormalizeGmailAlias(normalized));
+                }
+                else
+                {
+                    orderedPhonesToBan.Add(old.Value);
                 }
             }
 
-            var bannedEmail = new BannedEmail()
+            //de-duplicate while preserving order (a value could repeat across history, or a
+            //historical value could coincidentally match the current one)
+            List<string> emailsToBan = orderedEmailsToBan.Distinct().ToList();
+            List<string> phonesToBan = orderedPhonesToBan.Distinct().ToList();
+
+            //skip anything already banned - keeps this idempotent if ever called more than
+            //once for the same user, and avoids duplicate rows
+            List<BannedEmail> alreadyBanned =
+                await _context.BannedEmails
+                .Where(b => (b.NormalizedEmail != null && emailsToBan.Contains(b.NormalizedEmail)) || (b.PhoneNumber != null && phonesToBan.Contains(b.PhoneNumber)))
+                .ToListAsync();
+            HashSet<string> alreadyBannedEmails = alreadyBanned.Where(b => b.NormalizedEmail != null).Select(b => b.NormalizedEmail).ToHashSet();
+            HashSet<string> alreadyBannedPhones = alreadyBanned.Where(b => b.PhoneNumber != null).Select(b => b.PhoneNumber).ToHashSet();
+
+            BannedEmail primaryBannedEntry = null;
+
+            foreach (string normalizedEmail in emailsToBan)
             {
-                NormalizedEmail = string.IsNullOrEmpty(email) ? null : email,
-                PhoneNumber = string.IsNullOrEmpty(appUser.PhoneNumber) ? null : appUser.PhoneNumber,
-                Description = cause
-            };
-            _context.BannedEmails.Add
-                (
-               bannedEmail
-                );
+                if (alreadyBannedEmails.Contains(normalizedEmail))
+                    continue;
+                BannedEmail entry = new BannedEmail()
+                {
+                    NormalizedEmail = normalizedEmail,
+                    PhoneNumber = null,
+                    Description = cause
+                };
+                _context.BannedEmails.Add(entry);
+                if (primaryBannedEntry == null)
+                    primaryBannedEntry = entry;
+            }
+
+            foreach (string phoneNumber in phonesToBan)
+            {
+                if (alreadyBannedPhones.Contains(phoneNumber))
+                    continue;
+                BannedEmail entry = new BannedEmail()
+                {
+                    NormalizedEmail = null,
+                    PhoneNumber = phoneNumber,
+                    Description = cause
+                };
+                _context.BannedEmails.Add(entry);
+                if (primaryBannedEntry == null)
+                    primaryBannedEntry = entry;
+            }
+
+            if (primaryBannedEntry == null)
+            {
+                //nothing new to ban: either the user had no email/phone at all (current or
+                //historical), or every value they ever held is already banned
+                BannedEmail existingRepresentative =
+                    alreadyBanned.FirstOrDefault(b => (!string.IsNullOrEmpty(b.NormalizedEmail) && emailsToBan.Contains(b.NormalizedEmail)) || (!string.IsNullOrEmpty(b.PhoneNumber) && phonesToBan.Contains(b.PhoneNumber)));
+                if (existingRepresentative != null)
+                {
+                    return new RServiceResult<BannedEmail>(existingRepresentative);
+                }
+                return new RServiceResult<BannedEmail>(null, "کاربر هیچ ایمیل یا شماره تلفنی (فعلی یا سابق) برای مسدود کردن ندارد.");
+            }
+
             await _context.SaveChangesAsync();
-            return new RServiceResult<BannedEmail>(bannedEmail);
+            return new RServiceResult<BannedEmail>(primaryBannedEntry);
 
         }
 
