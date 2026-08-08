@@ -283,6 +283,17 @@
             <param name="secret"></param>
             <returns>new email address or phone number</returns>
         </member>
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.NotifyOldContactOfChangeAsync(RSecurityBackend.Models.Auth.ViewModels.ContactChangeResult)">
+            <summary>
+            best-effort notification to the OLD email/phone number after a successful
+            <see cref="M:RSecurityBackend.Controllers.AppUserControllerBase.ChangeContact(System.String)"/>. Deliberately swallows all exceptions: this is a
+            security courtesy notice, not part of the contact-change transaction itself, and
+            the old channel may legitimately be unreachable (e.g. a lost phone/inaccessible
+            mailbox is often exactly why the user is changing it in the first place).
+            </summary>
+            <param name="result"></param>
+            <returns></returns>
+        </member>
         <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.SiteInReadOnlyMode">
             <summary>
             read only mode
@@ -1186,7 +1197,8 @@
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Db.BannedEmail">
             <summary>
-            banned emails (previous users who had been kicked out and their emails are logged to not allow them to signup again)
+            banned emails/phone numbers (previous users who had been kicked out and their email
+            and/or phone number are logged to not allow them to signup again)
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.BannedEmail.Id">
@@ -1196,7 +1208,12 @@
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.BannedEmail.NormalizedEmail">
             <summary>
-            all capital email
+            all capital email (null if this ban entry does not cover an email address)
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.BannedEmail.PhoneNumber">
+            <summary>
+            banned phone number (null if this ban entry does not cover a phone number)
             </summary>
         </member>
         <member name="P:RSecurityBackend.Models.Auth.Db.BannedEmail.Description">
@@ -3049,7 +3066,9 @@
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.Login(RSecurityBackend.Models.Auth.ViewModels.LoginViewModel,System.String)">
             <summary>
-            Login user, if failed return LoggedOnUserModel is null
+            Login user, if failed return LoggedOnUserModel is null. <see cref="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.Username"/>
+            is resolved, in order: as a UserName, then as a confirmed email address, then as a
+            confirmed phone number. An unconfirmed email/phone number cannot be used to log in.
             </summary>
             <param name="loginViewModel"></param>
             <param name="clientIPAddress"></param>
@@ -3382,6 +3401,7 @@
         <member name="M:RSecurityBackend.Services.IAppUserService.BanUserFromSigningUpAgainAsync(System.Guid,System.String)">
             <summary>
             before kicking out a bad behving user ban him or her from signing up again
+            (bans whichever contact channel(s) the user has: email, phone number, or both)
             </summary>
             <param name="userId"></param>
             <param name="cause">document the cause</param>
@@ -3392,6 +3412,13 @@
             get banned email information
             </summary>
             <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.IAppUserService.GetBannedPhoneNumberInformationAsync(System.String)">
+            <summary>
+            get banned phone number information
+            </summary>
+            <param name="phoneNumber"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.IAppUserService.NotifyAllUsersAsync(System.String,System.String,RSecurityBackend.Models.Notification.NotificationType,System.Boolean)">
@@ -3596,7 +3623,9 @@
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.Login(RSecurityBackend.Models.Auth.ViewModels.LoginViewModel,System.String)">
             <summary>
-            Login user, if failed return LoggedOnUserModel is null
+            Login user, if failed return LoggedOnUserModel is null. <see cref="P:RSecurityBackend.Models.Auth.ViewModels.LoginViewModel.Username"/>
+            is resolved, in order: as a UserName, then as a confirmed email address, then as a
+            confirmed phone number. An unconfirmed email/phone number cannot be used to log in.
             </summary>
             <param name="loginViewModel"></param>
             <param name="clientIPAddress"></param>
@@ -3994,6 +4023,7 @@
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.BanUserFromSigningUpAgainAsync(System.Guid,System.String)">
             <summary>
             before kicking out a bad behving user ban him or her from signing up again
+            (bans whichever contact channel(s) the user has: email, phone number, or both)
             </summary>
             <param name="userId"></param>
             <param name="cause">document the cause</param>
@@ -4004,6 +4034,13 @@
             get banned email information
             </summary>
             <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.GetBannedPhoneNumberInformationAsync(System.String)">
+            <summary>
+            get banned phone number information
+            </summary>
+            <param name="phoneNumber"></param>
             <returns></returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.NotifyAllUsersAsync(System.String,System.String,RSecurityBackend.Models.Notification.NotificationType,System.Boolean)">
