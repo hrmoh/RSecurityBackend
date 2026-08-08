@@ -1250,24 +1250,12 @@ namespace RSecurityBackend.Controllers
                     return BadRequest(res.ExceptionString);
                 }
 
-                //notify the OLD contact value as a security notice - only if there was one
-                //(i.e. this was a change, not a first-time link)
-                if (!string.IsNullOrEmpty(res.Result.OldValue))
-                {
-                    if (res.Result.IsEmail)
-                    {
-                        _ = _emailSender.SendEmailAsync(res.Result.OldValue,
-                                _appUserService.GetEmailSubject(RVerifyQueueType.ContactChanged, ""),
-                                _appUserService.GetEmailHtmlContent(RVerifyQueueType.ContactChanged, res.Result.NewValue, "")
-                            );
-                    }
-                    else if (_smsSender != null)
-                    {
-                        _ = _smsSender.SendSmsAsync(res.Result.OldValue,
-                                _appUserService.GetSmsText(RVerifyQueueType.ContactChanged, res.Result.NewValue)
-                            );
-                    }
-                }
+                //best-effort security notice to the OLD contact value - only if there was one
+                //(i.e. this was a change, not a first-time link). Deliberately fire-and-forget:
+                //the old email/phone may well be unreachable (that can be exactly why the user
+                //is changing it), so a failure here must never fail the already-successful
+                //contact change, nor make this request wait on it.
+                _ = NotifyOldContactOfChangeAsync(res.Result);
 
                 return Ok(res.Result.NewValue);
 
@@ -1275,6 +1263,42 @@ namespace RSecurityBackend.Controllers
             catch (Exception exp)
             {
                 return BadRequest(exp.ToString());
+            }
+        }
+
+        /// <summary>
+        /// best-effort notification to the OLD email/phone number after a successful
+        /// <see cref="ChangeContact"/>. Deliberately swallows all exceptions: this is a
+        /// security courtesy notice, not part of the contact-change transaction itself, and
+        /// the old channel may legitimately be unreachable (e.g. a lost phone/inaccessible
+        /// mailbox is often exactly why the user is changing it in the first place).
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        protected virtual async Task NotifyOldContactOfChangeAsync(ContactChangeResult result)
+        {
+            try
+            {
+                if (result == null || string.IsNullOrEmpty(result.OldValue))
+                    return;
+
+                if (result.IsEmail)
+                {
+                    await _emailSender.SendEmailAsync(result.OldValue,
+                            _appUserService.GetEmailSubject(RVerifyQueueType.ContactChanged, ""),
+                            _appUserService.GetEmailHtmlContent(RVerifyQueueType.ContactChanged, result.NewValue, "")
+                        );
+                }
+                else if (_smsSender != null)
+                {
+                    await _smsSender.SendSmsAsync(result.OldValue,
+                            _appUserService.GetSmsText(RVerifyQueueType.ContactChanged, result.NewValue)
+                        );
+                }
+            }
+            catch
+            {
+                //intentionally swallowed - see method summary
             }
         }
 
