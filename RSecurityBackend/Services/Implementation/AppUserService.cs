@@ -1490,15 +1490,19 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// request change email
+        /// start changing (or first-time linking) the logged on user's email or phone number.
+        /// If <paramref name="newContact"/> contains an "@" it is treated as an email address
+        /// (verification code sent by email via IEmailSender at the controller level), otherwise
+        /// as a phone number (verification code sent by sms via ISmsSender at the controller
+        /// level).
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="newEmail"></param>
+        /// <param name="newContact">new email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
         /// <param name="language"></param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string language)
+        public virtual async Task<RServiceResult<RVerifyQueueItem>> RequestChangeContact(Guid userId, string newContact, string clientIPAddress, string clientAppName, string language)
         {
             try
             {
@@ -1512,10 +1516,52 @@ namespace RSecurityBackend.Services.Implementation
                     return new RServiceResult<RVerifyQueueItem>(null, "client app name is empty");
                 }
 
-                RAppUser rAppUser = await _userManager.FindByEmailAsync(newEmail);
-                if (rAppUser != null)
+                if (string.IsNullOrEmpty(newContact))
                 {
-                    return new RServiceResult<RVerifyQueueItem>(null, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+                    return new RServiceResult<RVerifyQueueItem>(null, "email/phone number is empty");
+                }
+
+                bool isEmail = newContact.Contains('@');
+
+                RAppUser existingUser =
+                    isEmail
+                    ?
+                    await _userManager.FindByEmailAsync(newContact)
+                    :
+                    await _userManager.Users.Where(u => u.PhoneNumber == newContact).SingleOrDefaultAsync();
+                if (existingUser != null && existingUser.Id != userId)
+                {
+                    return new RServiceResult<RVerifyQueueItem>(null, isEmail ? $"کاربری با این ایمیل وجود دارد. - {newContact}" : $"کاربری با این شماره تلفن وجود دارد. - {newContact}");
+                }
+
+                RAppUser requestingUser = await _userManager.FindByIdAsync(userId.ToString());
+                if (requestingUser == null)
+                {
+                    return new RServiceResult<RVerifyQueueItem>(null, "user == null");
+                }
+
+                if (isEmail && newContact == requestingUser.Email)
+                {
+                    return new RServiceResult<RVerifyQueueItem>(null, "این آدرس ایمیل هم اکنون ثبت شده است.");
+                }
+                if (!isEmail && newContact == requestingUser.PhoneNumber)
+                {
+                    return new RServiceResult<RVerifyQueueItem>(null, "این شماره تلفن هم اکنون ثبت شده است.");
+                }
+
+                if (!isEmail)
+                {
+                    //sms costs money (unlike email), so we enforce a resend cooldown for the phone case
+                    RVerifyQueueItem lastAttempt =
+                        await _context.VerifyQueueItems
+                        .Where(i => i.QueueType == RVerifyQueueType.ChangeContact && i.PhoneNumber == newContact)
+                        .OrderByDescending(i => i.DateTime)
+                        .FirstOrDefaultAsync();
+                    if (lastAttempt != null && lastAttempt.DateTime > DateTime.Now.AddSeconds(-PhoneSignUpResendCooldownSeconds))
+                    {
+                        double secondsLeft = (lastAttempt.DateTime.AddSeconds(PhoneSignUpResendCooldownSeconds) - DateTime.Now).TotalSeconds;
+                        return new RServiceResult<RVerifyQueueItem>(null, $"لطفاً {Math.Ceiling(secondsLeft)} ثانیهٔ دیگر مجدداً تلاش کنید.");
+                    }
                 }
 
                 var oldSecrets = await _context.VerifyQueueItems.Where(i => i.DateTime < DateTime.Now.AddDays(-1)).ToListAsync();
@@ -1525,11 +1571,12 @@ namespace RSecurityBackend.Services.Implementation
                     await _context.SaveChangesAsync();
                 }
 
-                //checking this queue for previous signup attempts is unnecessary and is not done intentionally
+                //checking this queue for previous change-contact attempts is unnecessary and is not done intentionally
                 RVerifyQueueItem item = new RVerifyQueueItem()
                 {
-                    QueueType = RVerifyQueueType.ChangeEmail,
-                    Email = newEmail,
+                    QueueType = RVerifyQueueType.ChangeContact,
+                    Email = isEmail ? newContact : null,
+                    PhoneNumber = isEmail ? null : newContact,
                     DateTime = DateTime.Now,
                     ClientIPAddress = clientIPAddress,
                     ClientAppName = clientAppName,
@@ -1559,86 +1606,129 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// change email
+        /// confirm a pending email/phone number change (or first-time link) started by
+        /// <see cref="RequestChangeContact"/>, using the OTP secret
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
-        /// <returns>old email</returns>
-        public virtual async Task<RServiceResult<string[]>> ChangeEmail(Guid userId, string secret, string clientIPAddress)
+        /// <returns>old value (null if this was a first-time link) + new value</returns>
+        public virtual async Task<RServiceResult<ContactChangeResult>> ChangeContact(Guid userId, string secret, string clientIPAddress)
         {
             try
             {
-                var resUser = await GetUserInformation(userId);
-                if (!string.IsNullOrEmpty(resUser.ExceptionString))
+                RAppUser updatingUserInfo = await _userManager.FindByIdAsync(userId.ToString());
+                if (updatingUserInfo == null)
                 {
-                    return new RServiceResult<string[]>(null, resUser.ExceptionString);
+                    return new RServiceResult<ContactChangeResult>(null, "user == null");
                 }
-                var user = resUser.Result;
-                if (user == null)
+
+                secret = (secret ?? "").Trim();
+                RVerifyQueueItem queueItem = await _context.VerifyQueueItems.Where(i => i.QueueType == RVerifyQueueType.ChangeContact && i.Secret == secret).SingleOrDefaultAsync();
+                if (queueItem == null)
                 {
-                    return new RServiceResult<string[]>(null, "user == null");
+                    return new RServiceResult<ContactChangeResult>(null, "کد وارد شده معتبر نیست یا منقضی شده است.");
                 }
-                string newEmail = (await RetrieveEmailFromQueueSecret(RVerifyQueueType.ChangeEmail, secret)).Result;
+
+                bool isEmail = !string.IsNullOrEmpty(queueItem.Email);
+                string newContact = isEmail ? queueItem.Email : queueItem.PhoneNumber;
+
                 if (bool.Parse(Configuration["AuditNetEnabled"]))
                 {
                     //we ignore input model in automatic auditing to prevent logging password data, so we would add a manual auditing to have enough data on login intrusion and ...
                     REvent log = new REvent()
                     {
-                        EventType = $"Change Email (POST)(Manual) to {newEmail}",
+                        EventType = $"Change Contact (POST)(Manual) to {newContact}",
                         StartDate = DateTime.UtcNow,
-                        UserName = user.Username,
+                        UserName = updatingUserInfo.UserName,
                         IpAddress = clientIPAddress
                     };
                     _context.AuditLogs.Add(log);
                     await _context.SaveChangesAsync();
                 }
+
                 {
-                    RAppUser notShouldExistUser = await _userManager.FindByEmailAsync(newEmail);
-                    if (notShouldExistUser != null)
+                    //re-check uniqueness: time has passed since RequestChangeContact, so someone
+                    //else could have taken this email/phone number in the meantime
+                    RAppUser notShouldExistUser =
+                        isEmail
+                        ?
+                        await _userManager.FindByEmailAsync(newContact)
+                        :
+                        await _userManager.Users.Where(u => u.PhoneNumber == newContact).SingleOrDefaultAsync();
+                    if (notShouldExistUser != null && notShouldExistUser.Id != userId)
                     {
-                        return new RServiceResult<string[]>(null, $"کاربری با این ایمیل وجود دارد. - {newEmail}");
+                        return new RServiceResult<ContactChangeResult>(null, isEmail ? $"کاربری با این ایمیل وجود دارد. - {newContact}" : $"کاربری با این شماره تلفن وجود دارد. - {newContact}");
                     }
                 }
 
-                _context.UserOldEmails.Add
-                    (
-                    new UserOldEmail()
-                    {
-                        Email = user.Email,
-                        NormalizedEmail = _userManager.NormalizeEmail(user.Email),
-                        ChangeDate = DateTime.Now,
-                    }
-                    );
+                string oldValue = isEmail ? updatingUserInfo.Email : updatingUserInfo.PhoneNumber;
 
-                string oldEmail = user.Email;
-                var updatingUserInfo = await _userManager.FindByEmailAsync(oldEmail);
-                if (updatingUserInfo.UserName == updatingUserInfo.Email)
+                if (!string.IsNullOrEmpty(oldValue))
                 {
-                    updatingUserInfo.UserName = newEmail;
+                    //this is a change, not a first-time link: keep an audit trail; the caller is
+                    //expected to notify the OLD contact value (ContactChanged) as a security notice
+                    _context.UserOldContacts.Add
+                        (
+                        new UserOldContact()
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = updatingUserInfo.Id,
+                            IsEmail = isEmail,
+                            Value = oldValue,
+                            NormalizedValue = isEmail ? _userManager.NormalizeEmail(oldValue) : null,
+                            ChangeDate = DateTime.Now,
+                        }
+                        );
                 }
-                updatingUserInfo.Email = newEmail;
-                updatingUserInfo.NormalizedEmail = _userManager.NormalizeEmail(newEmail);
+
+                if (isEmail)
+                {
+                    if (updatingUserInfo.UserName == updatingUserInfo.Email)
+                    {
+                        updatingUserInfo.UserName = newContact;
+                    }
+                    updatingUserInfo.Email = newContact;
+                    updatingUserInfo.NormalizedEmail = _userManager.NormalizeEmail(newContact);
+                    updatingUserInfo.EmailConfirmed = true;
+                }
+                else
+                {
+                    if (updatingUserInfo.UserName == updatingUserInfo.PhoneNumber)
+                    {
+                        updatingUserInfo.UserName = newContact;
+                    }
+                    updatingUserInfo.PhoneNumber = newContact;
+                    updatingUserInfo.PhoneNumberConfirmed = true;
+                }
 
                 await _userManager.UpdateAsync(updatingUserInfo);
 
-
-
-                RVerifyQueueItem[] failedQueue = await _context.VerifyQueueItems.Where(i => i.Email == newEmail && i.QueueType == RVerifyQueueType.ChangeEmail).ToArrayAsync();
+                RVerifyQueueItem[] failedQueue =
+                    isEmail
+                    ?
+                    await _context.VerifyQueueItems.Where(i => i.Email == newContact && i.QueueType == RVerifyQueueType.ChangeContact).ToArrayAsync()
+                    :
+                    await _context.VerifyQueueItems.Where(i => i.PhoneNumber == newContact && i.QueueType == RVerifyQueueType.ChangeContact).ToArrayAsync();
                 if (failedQueue.Length != 0)
                 {
                     _context.VerifyQueueItems.RemoveRange(failedQueue);
                 }
 
-
                 await _context.SaveChangesAsync();
 
-                return new RServiceResult<string[]>([oldEmail, newEmail]);
+                return new RServiceResult<ContactChangeResult>(
+                    new ContactChangeResult()
+                    {
+                        IsEmail = isEmail,
+                        OldValue = string.IsNullOrEmpty(oldValue) ? null : oldValue,
+                        NewValue = newContact,
+                    });
 
             }
             catch (Exception exp)
             {
-                return new RServiceResult<string[]>(null, exp.ToString());
+                return new RServiceResult<ContactChangeResult>(null, exp.ToString());
             }
 
         }
@@ -1886,11 +1976,11 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="secretCode"></param>
         public virtual string GetEmailSubject(RVerifyQueueType op, string secretCode)
         {
-            if (op == RVerifyQueueType.EmailChanged)
-                return "Email changed";
+            if (op == RVerifyQueueType.ContactChanged)
+                return "Email/phone number changed";
 
-            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeEmail ? "Change Email" : op == RVerifyQueueType.EmailChanged ? "Email changed" : "Self Delete User";
-            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.EmailChanged ? "New Email" : "Code")}:{secretCode}";
+            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeContact ? "Change Email/Phone Number" : op == RVerifyQueueType.ContactChanged ? "Email/phone number changed" : "Self Delete User";
+            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.ContactChanged ? "New Value" : "Code")}:{secretCode}";
 
         }
 
@@ -1905,9 +1995,9 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (!string.IsNullOrEmpty(signupCallbackUrl))
                 return $"{signupCallbackUrl}?secret={secretCode}";
-            if (op == RVerifyQueueType.EmailChanged)
-                return $"ایمیل حساب کاربری شما به {secretCode} تغییر کرد.";
-            string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل";
+            if (op == RVerifyQueueType.ContactChanged)
+                return $"ایمیل یا شماره تلفن حساب کاربری شما به {secretCode} تغییر کرد.";
+            string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل یا شماره تلفن";
             return op == RVerifyQueueType.KickOutUser ? $"حساب کاربری شما به دلیل {secretCode} حذف شد." : $"لطفا {secretCode} را در صفحهٔ {opString} وارد کنید.";
         }
 
@@ -1919,6 +2009,8 @@ namespace RSecurityBackend.Services.Implementation
         /// <returns>sms text</returns>
         public virtual string GetSmsText(RVerifyQueueType op, string secretCode)
         {
+            if (op == RVerifyQueueType.ContactChanged)
+                return $"ایمیل یا شماره تلفن حساب کاربری شما به {secretCode} تغییر کرد.";
             return $"کد تایید شما: {secretCode}";
         }
 

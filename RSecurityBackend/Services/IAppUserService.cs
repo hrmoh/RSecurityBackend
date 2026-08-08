@@ -382,24 +382,29 @@ namespace RSecurityBackend.Services
 
 
         /// <summary>
-        /// request change email
+        /// start changing (or, if the user has none yet for that channel, first-time linking)
+        /// the logged on user's email or phone number. If <paramref name="newContact"/> contains
+        /// an "@" it is treated as an email address (verification code sent by email), otherwise
+        /// as a phone number (verification code sent by sms - requires an ISmsSender to be
+        /// registered in DI, and is subject to <see cref="PhoneSignUpResendCooldownSeconds"/>).
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="newEmail"></param>
+        /// <param name="newContact">new email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
         /// <param name="language"></param>
         /// <returns></returns>
-        Task<RServiceResult<RVerifyQueueItem>> RequestChangeEmail(Guid userId, string newEmail, string clientIPAddress, string clientAppName, string language);
+        Task<RServiceResult<RVerifyQueueItem>> RequestChangeContact(Guid userId, string newContact, string clientIPAddress, string clientAppName, string language);
 
         /// <summary>
-        /// change email
+        /// confirm a pending email/phone number change (or first-time link) started by
+        /// <see cref="RequestChangeContact"/>, using the OTP secret
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
-        /// <returns>old email + new email</returns>
-        Task<RServiceResult<string[]>> ChangeEmail(Guid userId, string secret, string clientIPAddress);
+        /// <returns>old value (or null if this was a first-time link) + new value</returns>
+        Task<RServiceResult<ContactChangeResult>> ChangeContact(Guid userId, string secret, string clientIPAddress);
 
 
     }

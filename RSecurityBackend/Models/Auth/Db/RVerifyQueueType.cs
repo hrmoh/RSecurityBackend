@@ -22,12 +22,15 @@
         /// </summary>
         KickOutUser = 3,
         /// <summary>
-        /// change email
+        /// change (or first-time link) either email or phone number, whichever
+        /// channel is detected in the requested new contact value (see
+        /// <see cref="Services.IAppUserService.RequestChangeContact"/>)
         /// </summary>
-        ChangeEmail = 4,
+        ChangeContact = 4,
         /// <summary>
-        /// email changed
+        /// email or phone number changed (sent to the OLD contact value as a
+        /// security notice, only when there was a previous value to notify)
         /// </summary>
-        EmailChanged = 5,
+        ContactChanged = 5,
     }
 }

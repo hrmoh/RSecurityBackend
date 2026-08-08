@@ -179,7 +179,7 @@ namespace RSecurityBackend.DbContext
         /// <summary>
         /// user old emails
         /// </summary>
-        public DbSet<UserOldEmail> UserOldEmails { get; set; }
+        public DbSet<UserOldContact> UserOldContacts { get; set; }
 
 
     }

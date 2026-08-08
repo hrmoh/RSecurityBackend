@@ -1127,19 +1127,27 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// request change email
+        /// request changing (or first-time linking) the logged on user's email or phone number.
+        /// If <see cref="ChangeContactViewModel.NewContact"/> contains an "@" it is treated as an
+        /// email address and the code is sent by email, otherwise as a phone number and the code
+        /// is sent by sms (requires an ISmsSender to be registered in DI).
         /// </summary>
         /// <param name="viewModel"></param>
         /// <returns></returns>
-        [HttpPost("email/request/change")]
+        [HttpPost("contact/request/change")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public virtual async Task<IActionResult> RequestChangeEmail([FromBody] ChangeEmailViewModel viewModel)
+        public virtual async Task<IActionResult> RequestChangeContact([FromBody] ChangeContactViewModel viewModel)
         {
             try
             {
+                bool isEmail = !string.IsNullOrEmpty(viewModel.NewContact) && viewModel.NewContact.Contains('@');
+
+                if (!isEmail && _smsSender == null)
+                    return BadRequest("Sms sender is not configured (register an ISmsSender implementation in DI).");
+
                 Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
                 Guid sessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
                 string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
@@ -1148,7 +1156,7 @@ namespace RSecurityBackend.Controllers
                 var user = (await _appUserService.GetUserInformation(loggedOnUserId)).Result;
                 var loginResult = await _appUserService.Login(new LoginViewModel()
                 {
-                    Username = user.Email,
+                    Username = user.Username,
                     Password = viewModel.Password,
                     ClientAppName = session == null ? "Unknonw Session" : session.Result.ClientAppName,
                     Language = session == null ? "Unknown Session" : session.Result.Language
@@ -1166,9 +1174,9 @@ namespace RSecurityBackend.Controllers
                     return BadRequest("loginResult.Result == null");
                 }
 
-                RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeEmail(
+                RServiceResult<RVerifyQueueItem> res = await _appUserService.RequestChangeContact(
                     loggedOnUserId,
-                    viewModel.NewEmail,
+                    viewModel.NewContact,
                     clientIPAddress,
                     session == null ? "Unknonw Session" : session.Result.ClientAppName,
                     session == null ? "Unknown Session" : session.Result.Language
@@ -1178,12 +1186,23 @@ namespace RSecurityBackend.Controllers
                     return BadRequest(res.ExceptionString);
                 }
 
-                await _emailSender.SendEmailAsync
-                    (
-                    viewModel.NewEmail,
-                    _appUserService.GetEmailSubject(RVerifyQueueType.ChangeEmail, res.Result.Secret),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.ChangeEmail, res.Result.Secret, viewModel.CallbackUrl)
-                    );
+                if (isEmail)
+                {
+                    await _emailSender.SendEmailAsync
+                        (
+                        viewModel.NewContact,
+                        _appUserService.GetEmailSubject(RVerifyQueueType.ChangeContact, res.Result.Secret),
+                        _appUserService.GetEmailHtmlContent(RVerifyQueueType.ChangeContact, res.Result.Secret, viewModel.CallbackUrl)
+                        );
+                }
+                else
+                {
+                    await _smsSender.SendSmsAsync
+                        (
+                        viewModel.NewContact,
+                        _appUserService.GetSmsText(RVerifyQueueType.ChangeContact, res.Result.Secret)
+                        );
+                }
 
                 return Ok();
 
@@ -1195,16 +1214,17 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// change email
+        /// confirm a pending email/phone number change (or first-time link) started by
+        /// <see cref="RequestChangeContact"/>
         /// </summary>
         /// <param name="secret"></param>
-        /// <returns>new email</returns>
-        [HttpPut("email/change/{secret}")]
+        /// <returns>new email address or phone number</returns>
+        [HttpPut("contact/change/{secret}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
-        public virtual async Task<IActionResult> ChangeEmail(string secret)
+        public virtual async Task<IActionResult> ChangeContact(string secret)
         {
             try
             {
@@ -1214,7 +1234,7 @@ namespace RSecurityBackend.Controllers
                 var session = await _appUserService.GetUserSession(loggedOnUserId, sessionId);
 
 
-                RServiceResult<string[]> res = await _appUserService.ChangeEmail(
+                RServiceResult<ContactChangeResult> res = await _appUserService.ChangeContact(
                     loggedOnUserId,
                     secret,
                     clientIPAddress
@@ -1224,13 +1244,26 @@ namespace RSecurityBackend.Controllers
                     return BadRequest(res.ExceptionString);
                 }
 
-                _ = _emailSender.SendEmailAsync(res.Result[0],
-                        _appUserService.GetEmailSubject(RVerifyQueueType.EmailChanged, ""),
-                        _appUserService.GetEmailHtmlContent(RVerifyQueueType.EmailChanged, res.Result[1], "")
+                //notify the OLD contact value as a security notice - only if there was one
+                //(i.e. this was a change, not a first-time link)
+                if (!string.IsNullOrEmpty(res.Result.OldValue))
+                {
+                    if (res.Result.IsEmail)
+                    {
+                        _ = _emailSender.SendEmailAsync(res.Result.OldValue,
+                                _appUserService.GetEmailSubject(RVerifyQueueType.ContactChanged, ""),
+                                _appUserService.GetEmailHtmlContent(RVerifyQueueType.ContactChanged, res.Result.NewValue, "")
+                            );
+                    }
+                    else if (_smsSender != null)
+                    {
+                        _ = _smsSender.SendSmsAsync(res.Result.OldValue,
+                                _appUserService.GetSmsText(RVerifyQueueType.ContactChanged, res.Result.NewValue)
+                            );
+                    }
+                }
 
-                    );
-
-                return Ok(res.Result[1]);
+                return Ok(res.Result.NewValue);
 
             }
             catch (Exception exp)

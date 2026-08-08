@@ -265,20 +265,23 @@
             <param name="fpwdViewModel">signUpViewModel</param>
             <returns>result</returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.RequestChangeEmail(RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel)">
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.RequestChangeContact(RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel)">
             <summary>
-            request change email
+            request changing (or first-time linking) the logged on user's email or phone number.
+            If <see cref="P:RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel.NewContact"/> contains an "@" it is treated as an
+            email address and the code is sent by email, otherwise as a phone number and the code
+            is sent by sms (requires an ISmsSender to be registered in DI).
             </summary>
             <param name="viewModel"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.ChangeEmail(System.String,System.String)">
+        <member name="M:RSecurityBackend.Controllers.AppUserControllerBase.ChangeContact(System.String)">
             <summary>
-            change email
+            confirm a pending email/phone number change (or first-time link) started by
+            <see cref="M:RSecurityBackend.Controllers.AppUserControllerBase.RequestChangeContact(RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel)"/>
             </summary>
-            <param name="newmail"></param>
             <param name="secret"></param>
-            <returns></returns>
+            <returns>new email address or phone number</returns>
         </member>
         <member name="P:RSecurityBackend.Controllers.AppUserControllerBase.SiteInReadOnlyMode">
             <summary>
@@ -1121,7 +1124,7 @@
             change logs
             </summary>
         </member>
-        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.UserOldEmails">
+        <member name="P:RSecurityBackend.DbContext.RSecurityDbContext`3.UserOldContacts">
             <summary>
             user old emails
             </summary>
@@ -1521,49 +1524,59 @@
             kick out user
             </summary>
         </member>
-        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.ChangeEmail">
+        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.ChangeContact">
             <summary>
-            change email
+            change (or first-time link) either email or phone number, whichever
+            channel is detected in the requested new contact value (see
+            <see cref="M:RSecurityBackend.Services.IAppUserService.RequestChangeContact(System.Guid,System.String,System.String,System.String,System.String)"/>)
             </summary>
         </member>
-        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.EmailChaned">
+        <member name="F:RSecurityBackend.Models.Auth.Db.RVerifyQueueType.ContactChanged">
             <summary>
-            email changed
+            email or phone number changed (sent to the OLD contact value as a
+            security notice, only when there was a previous value to notify)
             </summary>
         </member>
-        <member name="T:RSecurityBackend.Models.Auth.Db.UserOldEmail">
+        <member name="T:RSecurityBackend.Models.Auth.Db.UserOldContact">
             <summary>
-            user old email
+            history record for a user's previous email address or phone number,
+            written whenever an existing (non-null) contact value is replaced via
+            <see cref="M:RSecurityBackend.Services.IAppUserService.ChangeContact(System.Guid,System.String,System.String)"/>
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.Id">
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.Id">
             <summary>
             id
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.UserId">
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.UserId">
             <summary>
             user id
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.User">
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.User">
             <summary>
             user
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.ChangeDate">
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.ChangeDate">
             <summary>
             change date
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.Email">
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.IsEmail">
             <summary>
-            email
+            true if <see cref="P:RSecurityBackend.Models.Auth.Db.UserOldContact.Value"/> is an old email address, false if it is an old phone number
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldEmail.NormalizedEmail">
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.Value">
             <summary>
-            normalized email
+            the old email address or phone number
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.Db.UserOldContact.NormalizedValue">
+            <summary>
+            normalized email (only meaningful when <see cref="P:RSecurityBackend.Models.Auth.Db.UserOldContact.IsEmail"/> is true, otherwise null)
             </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.Memory.SecurableItem">
@@ -1790,26 +1803,49 @@
             secret for securing signup process
             </summary>
         </member>
-        <member name="T:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel">
+        <member name="T:RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel">
             <summary>
-            change email view model
+            request to change (or first-time link) the logged on user's email or phone number
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.NewEmail">
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel.NewContact">
             <summary>
-            new email
+            new email address or phone number. If it contains "@" it is treated as an
+            email address (verification code sent by email), otherwise as a phone
+            number (verification code sent by sms).
             </summary>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.Password">
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel.Password">
             <summary>
-            user password
+            user password (re-authentication required before a contact change)
             </summary>
             <example>Test!123</example>
         </member>
-        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeEmailViewModel.CallbackUrl">
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ChangeContactViewModel.CallbackUrl">
              <summary>
-            CallbackUrl
+            CallbackUrl (only used for the email case)
              </summary>
+        </member>
+        <member name="T:RSecurityBackend.Models.Auth.ViewModels.ContactChangeResult">
+            <summary>
+            result of a successfully confirmed email/phone number change (or first-time link)
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ContactChangeResult.IsEmail">
+            <summary>
+            true if the channel that was changed/linked is email, false if it is a phone number
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ContactChangeResult.OldValue">
+            <summary>
+            previous value for this channel, or null if this was a first-time link
+            (e.g. verifying a phone number for a user who signed up by email, or vice versa)
+            </summary>
+        </member>
+        <member name="P:RSecurityBackend.Models.Auth.ViewModels.ContactChangeResult.NewValue">
+            <summary>
+            new, now-confirmed value
+            </summary>
         </member>
         <member name="T:RSecurityBackend.Models.Auth.ViewModels.LoggedOnUserModel">
             <summary>
@@ -3368,26 +3404,30 @@
             <param name="email"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IAppUserService.RequestChangeEmail(System.Guid,System.String,System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IAppUserService.RequestChangeContact(System.Guid,System.String,System.String,System.String,System.String)">
             <summary>
-            request change email
+            start changing (or, if the user has none yet for that channel, first-time linking)
+            the logged on user's email or phone number. If <paramref name="newContact"/> contains
+            an "@" it is treated as an email address (verification code sent by email), otherwise
+            as a phone number (verification code sent by sms - requires an ISmsSender to be
+            registered in DI, and is subject to <see cref="P:RSecurityBackend.Services.IAppUserService.PhoneSignUpResendCooldownSeconds"/>).
             </summary>
             <param name="userId"></param>
-            <param name="newEmail"></param>
+            <param name="newContact">new email address or phone number</param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
             <param name="language"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.IAppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.IAppUserService.ChangeContact(System.Guid,System.String,System.String)">
             <summary>
-            change email
+            confirm a pending email/phone number change (or first-time link) started by
+            <see cref="M:RSecurityBackend.Services.IAppUserService.RequestChangeContact(System.Guid,System.String,System.String,System.String,System.String)"/>, using the OTP secret
             </summary>
             <param name="userId"></param>
-            <param name="newEmail"></param>
             <param name="secret"></param>
             <param name="clientIPAddress"></param>
-            <returns>old email</returns>
+            <returns>old value (or null if this was a first-time link) + new value</returns>
         </member>
         <member name="T:RSecurityBackend.Services.IAuditLogService">
             <summary>
@@ -3806,26 +3846,30 @@
             <param name="clientIPAddress"></param>       
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.RequestChangeEmail(System.Guid,System.String,System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.RequestChangeContact(System.Guid,System.String,System.String,System.String,System.String)">
             <summary>
-            request change email
+            start changing (or first-time linking) the logged on user's email or phone number.
+            If <paramref name="newContact"/> contains an "@" it is treated as an email address
+            (verification code sent by email via IEmailSender at the controller level), otherwise
+            as a phone number (verification code sent by sms via ISmsSender at the controller
+            level).
             </summary>
             <param name="userId"></param>
-            <param name="newEmail"></param>
+            <param name="newContact">new email address or phone number</param>
             <param name="clientIPAddress"></param>
             <param name="clientAppName"></param>
             <param name="language"></param>
             <returns></returns>
         </member>
-        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ChangeEmail(System.Guid,System.String,System.String,System.String)">
+        <member name="M:RSecurityBackend.Services.Implementation.AppUserService.ChangeContact(System.Guid,System.String,System.String)">
             <summary>
-            change email
+            confirm a pending email/phone number change (or first-time link) started by
+            <see cref="M:RSecurityBackend.Services.Implementation.AppUserService.RequestChangeContact(System.Guid,System.String,System.String,System.String,System.String)"/>, using the OTP secret
             </summary>
             <param name="userId"></param>
-            <param name="newEmail"></param>
             <param name="secret"></param>
             <param name="clientIPAddress"></param>
-            <returns>old email</returns>
+            <returns>old value (null if this was a first-time link) + new value</returns>
         </member>
         <member name="M:RSecurityBackend.Services.Implementation.AppUserService.FindUserByEmail(System.String)">
             <summary>
