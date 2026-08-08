@@ -997,6 +997,12 @@ namespace RSecurityBackend.Controllers
                 if (bannedEmail.Result != null)
                     return BadRequest("ایمیل شما در لیست سیاه قرار دارد و نمی‌توانید با آن مجدداً ثبت نام کنید.");
             }
+            else
+            {
+                var bannedPhoneNumber = await _appUserService.GetBannedPhoneNumberInformationAsync(signUpViewModel.Email);
+                if (bannedPhoneNumber.Result != null)
+                    return BadRequest("شماره تلفن شما در لیست سیاه قرار دارد و نمی‌توانید با آن مجدداً ثبت نام کنید.");
+            }
 
             string clientIPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
             RServiceResult<RVerifyQueueItem> res = await _appUserService.SignUp(signUpViewModel.Email, clientIPAddress, signUpViewModel.ClientAppName, signUpViewModel.Language);

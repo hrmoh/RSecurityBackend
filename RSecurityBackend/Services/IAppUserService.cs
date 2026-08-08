@@ -357,6 +357,7 @@ namespace RSecurityBackend.Services
 
         /// <summary>
         /// before kicking out a bad behving user ban him or her from signing up again
+        /// (bans whichever contact channel(s) the user has: email, phone number, or both)
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cause">document the cause</param>
@@ -369,6 +370,13 @@ namespace RSecurityBackend.Services
         /// <param name="email"></param>
         /// <returns></returns>
         Task<RServiceResult<BannedEmail>> GetBannedEmailInformationAsync(string email);
+
+        /// <summary>
+        /// get banned phone number information
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        /// <returns></returns>
+        Task<RServiceResult<BannedEmail>> GetBannedPhoneNumberInformationAsync(string phoneNumber);
 
         /// <summary>
         /// notify all users

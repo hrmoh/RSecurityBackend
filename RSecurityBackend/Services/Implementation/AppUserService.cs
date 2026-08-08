@@ -1977,10 +1977,10 @@ namespace RSecurityBackend.Services.Implementation
         public virtual string GetEmailSubject(RVerifyQueueType op, string secretCode)
         {
             if (op == RVerifyQueueType.ContactChanged)
-                return "Email/phone number changed";
+                return "Email changed";
 
-            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeContact ? "Change Email/Phone Number" : op == RVerifyQueueType.ContactChanged ? "Email/phone number changed" : "Self Delete User";
-            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : op == RVerifyQueueType.ContactChanged ? "New Value" : "Code")}:{secretCode}";
+            string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeContact ? "Change Email" : "Self Delete User";
+            return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : "Code")}:{secretCode}";
 
         }
 
@@ -1996,8 +1996,8 @@ namespace RSecurityBackend.Services.Implementation
             if (!string.IsNullOrEmpty(signupCallbackUrl))
                 return $"{signupCallbackUrl}?secret={secretCode}";
             if (op == RVerifyQueueType.ContactChanged)
-                return $"ایمیل یا شماره تلفن حساب کاربری شما به {secretCode} تغییر کرد.";
-            string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل یا شماره تلفن";
+                return $"ایمیل حساب کاربری شما به {secretCode} تغییر کرد. اگر این درخواست از طرف شما نبوده لطفاً هر چه سریع‌تر با پشتیبانی تماس بگیرید.";
+            string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل";
             return op == RVerifyQueueType.KickOutUser ? $"حساب کاربری شما به دلیل {secretCode} حذف شد." : $"لطفا {secretCode} را در صفحهٔ {opString} وارد کنید.";
         }
 
@@ -2010,7 +2010,7 @@ namespace RSecurityBackend.Services.Implementation
         public virtual string GetSmsText(RVerifyQueueType op, string secretCode)
         {
             if (op == RVerifyQueueType.ContactChanged)
-                return $"ایمیل یا شماره تلفن حساب کاربری شما به {secretCode} تغییر کرد.";
+                return $"شماره تلفن حساب کاربری شما به {secretCode} تغییر کرد. اگر این درخواست از طرف شما نبوده لطفاً هر چه سریع‌تر با پشتیبانی تماس بگیرید.";
             return $"کد تایید شما: {secretCode}";
         }
 
@@ -2091,6 +2091,7 @@ namespace RSecurityBackend.Services.Implementation
 
         /// <summary>
         /// before kicking out a bad behving user ban him or her from signing up again
+        /// (bans whichever contact channel(s) the user has: email, phone number, or both)
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="cause">document the cause</param>
@@ -2099,17 +2100,20 @@ namespace RSecurityBackend.Services.Implementation
         {
             RAppUser appUser =
                 await _userManager.Users.Where(u => u.Id == userId).SingleOrDefaultAsync();
+
             string email = appUser.NormalizedEmail;
-            if (email.Contains("@GMAIL.COM"))
+            if (!string.IsNullOrEmpty(email) && email.Contains("@GMAIL.COM"))
             {
                 if (email.Contains("+") && email.IndexOf("+") < email.IndexOf("@GMAIL.COM"))
                 {
                     email = email.Substring(0, email.IndexOf("+")) + "@GMAIL.COM";
                 }
             }
+
             var bannedEmail = new BannedEmail()
             {
-                NormalizedEmail = email,
+                NormalizedEmail = string.IsNullOrEmpty(email) ? null : email,
+                PhoneNumber = string.IsNullOrEmpty(appUser.PhoneNumber) ? null : appUser.PhoneNumber,
                 Description = cause
             };
             _context.BannedEmails.Add
@@ -2137,6 +2141,16 @@ namespace RSecurityBackend.Services.Implementation
                 }
             }
             return new RServiceResult<BannedEmail>(await _context.BannedEmails.Where(b => b.NormalizedEmail == email).FirstOrDefaultAsync());
+        }
+
+        /// <summary>
+        /// get banned phone number information
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<BannedEmail>> GetBannedPhoneNumberInformationAsync(string phoneNumber)
+        {
+            return new RServiceResult<BannedEmail>(await _context.BannedEmails.Where(b => b.PhoneNumber == phoneNumber).FirstOrDefaultAsync());
         }
         #endregion
 
