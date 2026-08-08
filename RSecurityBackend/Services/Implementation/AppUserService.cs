@@ -33,7 +33,9 @@ namespace RSecurityBackend.Services.Implementation
     {
 
         /// <summary>
-        /// Login user, if failed return LoggedOnUserModel is null
+        /// Login user, if failed return LoggedOnUserModel is null. <see cref="LoginViewModel.Username"/>
+        /// is resolved, in order: as a UserName, then as a confirmed email address, then as a
+        /// confirmed phone number. An unconfirmed email/phone number cannot be used to log in.
         /// </summary>
         /// <param name="loginViewModel"></param>
         /// <param name="clientIPAddress"></param>
@@ -68,11 +70,32 @@ namespace RSecurityBackend.Services.Implementation
 
             if (appUser == null)
             {
-                appUser = await _userManager.FindByEmailAsync(loginViewModel.Username);
-                if (appUser == null)
+                //fall back to a confirmed email address - UserName is always the channel the
+                //account was originally verified through (or later swapped to via a verified
+                //ChangeContact), so it never needs this confirmation check; a value only reaches
+                //here via the Email/PhoneNumber columns, which can legitimately be unconfirmed
+                //(e.g. the optional secondary phone number captured at email signup), so those
+                //must not be usable to log in until verified
+                RAppUser userByEmail = await _userManager.FindByEmailAsync(loginViewModel.Username);
+                if (userByEmail != null && userByEmail.EmailConfirmed)
                 {
-                    return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری و/یا رمز نادرست است." : "Username or password is incorrect.");
+                    appUser = userByEmail;
                 }
+            }
+
+            if (appUser == null)
+            {
+                //same reasoning as above, for a confirmed phone number
+                RAppUser userByPhone = await _userManager.Users.Where(u => u.PhoneNumber == loginViewModel.Username).SingleOrDefaultAsync();
+                if (userByPhone != null && userByPhone.PhoneNumberConfirmed)
+                {
+                    appUser = userByPhone;
+                }
+            }
+
+            if (appUser == null)
+            {
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری و/یا رمز نادرست است." : "Username or password is incorrect.");
             }
 
 
@@ -741,7 +764,14 @@ namespace RSecurityBackend.Services.Implementation
                     SurName = newUserInfo.SurName,
                     NickName = newUserInfo.NickName,
                     Email = newUserInfo.Email,
+                    //an email/phone number entered directly by an admin (this endpoint) has no
+                    //OTP verification step of its own, so we treat it as pre-verified - same trust
+                    //level as any other field an admin sets here. This also keeps these values
+                    //usable for login, since Login() requires EmailConfirmed/PhoneNumberConfirmed
+                    //for anyone looking up by email/phone rather than by UserName.
+                    EmailConfirmed = !string.IsNullOrEmpty(newUserInfo.Email),
                     PhoneNumber = newUserInfo.PhoneNumber,
+                    PhoneNumberConfirmed = !string.IsNullOrEmpty(newUserInfo.PhoneNumber),
                     CreateDate = DateTime.Now,
                     Status = newUserInfo.Status
 
@@ -1791,7 +1821,9 @@ namespace RSecurityBackend.Services.Implementation
                     FirstName = "راهبر",
                     SurName = "سیستم",
                     Email = $"{Configuration.GetSection("RSecurityBackend")["FirstUserEmail"]}",
+                    EmailConfirmed = true,
                     PhoneNumber = "00989123456789",
+                    PhoneNumberConfirmed = true,
                     CreateDate = DateTime.Now,
                     Status = RAppUserStatus.Active
                 };

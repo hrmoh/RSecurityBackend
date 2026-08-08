@@ -19,7 +19,9 @@ namespace RSecurityBackend.Services
     {
 
         /// <summary>
-        /// Login user, if failed return LoggedOnUserModel is null
+        /// Login user, if failed return LoggedOnUserModel is null. <see cref="LoginViewModel.Username"/>
+        /// is resolved, in order: as a UserName, then as a confirmed email address, then as a
+        /// confirmed phone number. An unconfirmed email/phone number cannot be used to log in.
         /// </summary>
         /// <param name="loginViewModel"></param>
         /// <param name="clientIPAddress"></param>
