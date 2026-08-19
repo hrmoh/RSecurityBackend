@@ -264,9 +264,11 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> FinalizeSignUp(string email, string secret, string password, string firstName, string surName, string phoneNumber);
 
         /// <summary>
-        /// Start forgot password process using email
+        /// Start forgot password process using email or phone number (sms otp) - same "@"
+        /// convention as SignUp. A successful ResetPassword using the resulting secret also
+        /// marks the relevant channel confirmed.
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
         /// <param name="language"></param>
@@ -274,9 +276,10 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<RVerifyQueueItem>> ForgotPassword(string email, string clientIPAddress, string clientAppName, string language);
 
         /// <summary>
-        /// reset password using email
+        /// reset password using email or phone number (sms otp). Also marks the relevant
+        /// channel (EmailConfirmed/PhoneNumberConfirmed) as verified on success.
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number</param>
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="clientIPAddress"></param>       

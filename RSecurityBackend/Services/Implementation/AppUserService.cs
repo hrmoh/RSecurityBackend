@@ -125,6 +125,22 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "نام کاربری شما غیرفعال شده است." : "You user is deactivated.");
             }
 
+            //an account created while AllowUnverifiedEmailSignUp/AllowUnverifiedPhoneSignUp was
+            //on has UserName == Email or UserName == PhoneNumber with the matching Confirmed
+            //flag left false (see FinalizeSignUp). If that flag is off NOW, block login here -
+            //otherwise nothing in this method would ever look at confirmation status for the
+            //UserName lookup, and turning the setting back off would silently do nothing. The
+            //only way back in at that point is completing ForgotPassword/ResetPassword, which
+            //also sets the matching Confirmed flag to true on success.
+            if (appUser.UserName == appUser.Email && !appUser.EmailConfirmed && !AllowUnverifiedEmailSignUp)
+            {
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "ایمیل شما هنوز تایید نشده است. لطفاً از گزینهٔ فراموشی رمز عبور برای تایید و بازیابی دسترسی استفاده کنید." : "Your email has not been verified yet. Please use forgot password to verify and regain access.");
+            }
+            if (appUser.UserName == appUser.PhoneNumber && !appUser.PhoneNumberConfirmed && !AllowUnverifiedPhoneSignUp)
+            {
+                return new RServiceResult<LoggedOnUserModel>(null, loginViewModel.Language.StartsWith("fa") ? "شماره تلفن شما هنوز تایید نشده است. لطفاً از گزینهٔ فراموشی رمز عبور برای تایید و بازیابی دسترسی استفاده کنید." : "Your phone number has not been verified yet. Please use forgot password to verify and regain access.");
+            }
+
             return await IssueSessionAsync(appUser, clientIPAddress, loginViewModel.ClientAppName, loginViewModel.Language);
         }
 
@@ -1509,14 +1525,20 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<bool>(false, userAddResult.ExceptionString);
             }
 
-            if (isEmail)
-            {
-                userAddResult.Result.EmailConfirmed = true;
-            }
-            else
-            {
-                userAddResult.Result.PhoneNumberConfirmed = true;
-            }
+            //AddUser marks EmailConfirmed/PhoneNumberConfirmed true for any value it's given -
+            //correct for its own admin-facing "trusted direct input" use case, but WRONG here:
+            //this call site has an exact per-channel verification state that must be preserved:
+            //- the channel actually used to complete THIS signup is verified only if the OTP
+            //  flow was actually completed (never true when AllowUnverifiedEmailSignUp /
+            //  AllowUnverifiedPhoneSignUp let this call skip it)
+            //- the other, optional secondary field (e.g. a phone number captured alongside an
+            //  email signup) was never verified at all, regardless of the above - overwrite
+            //  whatever AddUser assumed rather than leaving its blanket true in place
+            bool primaryChannelVerified = isEmail ? !AllowUnverifiedEmailSignUp : !AllowUnverifiedPhoneSignUp;
+
+            userAddResult.Result.EmailConfirmed = isEmail && primaryChannelVerified;
+            userAddResult.Result.PhoneNumberConfirmed = !isEmail && primaryChannelVerified;
+
             await _userManager.UpdateAsync(userAddResult.Result);
 
             RVerifyQueueItem[] failedQueue =
@@ -1538,9 +1560,14 @@ namespace RSecurityBackend.Services.Implementation
 
 
         /// <summary>
-        /// Start forgot password process using email
+        /// Start forgot password process using email or phone number (sms otp). If <paramref
+        /// name="email"/> contains an "@" it is treated as an email address, otherwise as a
+        /// phone number - same convention as <see cref="SignUp"/>. A successful
+        /// <see cref="ResetPassword"/> using the resulting secret also marks the relevant
+        /// channel (EmailConfirmed/PhoneNumberConfirmed) as verified, so this doubles as the
+        /// recovery path for an account created while unverified signup was allowed.
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number</param>
         /// <param name="clientIPAddress"></param>
         /// <param name="clientAppName"></param>
         /// <param name="language"></param>
@@ -1557,10 +1584,37 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<RVerifyQueueItem>(null, "client app name is empty");
             }
 
-            RAppUser rAppUser = await _userManager.FindByEmailAsync(email);
+            if (string.IsNullOrEmpty(email))
+            {
+                return new RServiceResult<RVerifyQueueItem>(null, "email/phone number is empty");
+            }
+
+            bool isEmail = email.Contains('@');
+
+            RAppUser rAppUser =
+                isEmail
+                ?
+                await _userManager.FindByEmailAsync(email)
+                :
+                await _userManager.Users.Where(u => u.PhoneNumber == email).SingleOrDefaultAsync();
             if (rAppUser == null)
             {
                 return new RServiceResult<RVerifyQueueItem>(null, "کاربر مورد نظر یافت نشد");
+            }
+
+            if (!isEmail)
+            {
+                //sms costs money (unlike email), so we enforce a resend cooldown for the phone case
+                RVerifyQueueItem lastAttempt =
+                    await _context.VerifyQueueItems
+                    .Where(i => i.QueueType == RVerifyQueueType.ForgotPassword && i.PhoneNumber == email)
+                    .OrderByDescending(i => i.DateTime)
+                    .FirstOrDefaultAsync();
+                if (lastAttempt != null && lastAttempt.DateTime > DateTime.Now.AddSeconds(-PhoneSignUpResendCooldownSeconds))
+                {
+                    double secondsLeft = (lastAttempt.DateTime.AddSeconds(PhoneSignUpResendCooldownSeconds) - DateTime.Now).TotalSeconds;
+                    return new RServiceResult<RVerifyQueueItem>(null, $"لطفاً {Math.Ceiling(secondsLeft)} ثانیهٔ دیگر مجدداً تلاش کنید.");
+                }
             }
 
             var oldSecrets = await _context.VerifyQueueItems.Where(i => i.DateTime < DateTime.Now.AddDays(-1)).ToListAsync();
@@ -1574,7 +1628,8 @@ namespace RSecurityBackend.Services.Implementation
             RVerifyQueueItem item = new RVerifyQueueItem()
             {
                 QueueType = RVerifyQueueType.ForgotPassword,
-                Email = email,
+                Email = isEmail ? email : null,
+                PhoneNumber = isEmail ? null : email,
                 DateTime = DateTime.Now,
                 ClientIPAddress = clientIPAddress,
                 ClientAppName = clientAppName,
@@ -1600,9 +1655,14 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
-        /// reset password using email
+        /// reset password using email or phone number (sms otp) - same convention as
+        /// <see cref="ForgotPassword"/>. On success, also marks the relevant channel
+        /// (EmailConfirmed/PhoneNumberConfirmed) as verified: successfully receiving and
+        /// submitting this OTP is exactly the same proof of ownership used everywhere else in
+        /// this file (SignUp, ChangeContact), so this is a legitimate verification, not just a
+        /// password change.
         /// </summary>
-        /// <param name="email"></param>
+        /// <param name="email">email address or phone number</param>
         /// <param name="secret"></param>
         /// <param name="password"></param>
         /// <param name="clientIPAddress"></param>       
@@ -1623,10 +1683,17 @@ namespace RSecurityBackend.Services.Implementation
                 await _context.SaveChangesAsync();
             }
 
-            RAppUser existingUser = await _userManager.FindByEmailAsync(email);
+            bool isEmail = !string.IsNullOrEmpty(email) && email.Contains('@');
+
+            RAppUser existingUser =
+                isEmail
+                ?
+                await _userManager.FindByEmailAsync(email)
+                :
+                await _userManager.Users.Where(u => u.PhoneNumber == email).SingleOrDefaultAsync();
             if (existingUser == null)
             {
-                return new RServiceResult<bool>(false, "کاربر مورد نظر با این آدرس ایمیل یافت نشد");
+                return new RServiceResult<bool>(false, isEmail ? "کاربر مورد نظر با این آدرس ایمیل یافت نشد" : "کاربر مورد نظر با این شماره تلفن یافت نشد");
             }
 
 
@@ -1650,9 +1717,27 @@ namespace RSecurityBackend.Services.Implementation
 
             existingUser.PasswordHash = _userManager.PasswordHasher.HashPassword(existingUser, password);
 
+            //successfully proving control of this exact channel via OTP is exactly the same
+            //proof used to confirm it anywhere else (SignUp, ChangeContact) - so this also
+            //verifies the account, which is what lets a user created while unverified signup
+            //was allowed regain (now-gated) login access once that setting is turned back off
+            if (isEmail)
+            {
+                existingUser.EmailConfirmed = true;
+            }
+            else
+            {
+                existingUser.PhoneNumberConfirmed = true;
+            }
+
             await _userManager.UpdateAsync(existingUser);
 
-            RVerifyQueueItem[] failedQueue = await _context.VerifyQueueItems.Where(i => i.Email == email && i.QueueType == RVerifyQueueType.ForgotPassword).ToArrayAsync();
+            RVerifyQueueItem[] failedQueue =
+                isEmail
+                ?
+                await _context.VerifyQueueItems.Where(i => i.Email == email && i.QueueType == RVerifyQueueType.ForgotPassword).ToArrayAsync()
+                :
+                await _context.VerifyQueueItems.Where(i => i.PhoneNumber == email && i.QueueType == RVerifyQueueType.ForgotPassword).ToArrayAsync();
             if (failedQueue.Length != 0)
             {
                 _context.VerifyQueueItems.RemoveRange(failedQueue);
@@ -2198,6 +2283,37 @@ namespace RSecurityBackend.Services.Implementation
         /// (override to read from configuration if you want it tunable without a code change)
         /// </summary>
         public virtual int PhoneSignUpResendCooldownSeconds => 60;
+
+        /// <summary>
+        /// if true, <see cref="FinalizeSignUp"/> creates an EMAIL-signed-up account without
+        /// requiring the OTP secret to have actually been delivered (EmailConfirmed is left
+        /// false instead) - an emergency escape hatch for when outbound email delivery is
+        /// broken. Read from configuration ("SignUp:AllowUnverified"), defaults to false.
+        /// While this is true, <see cref="Login"/> allows logging into such accounts; while
+        /// false, an already-existing unverified account can only regain access (and get
+        /// EmailConfirmed set) by completing <see cref="ForgotPassword"/>/<see cref="ResetPassword"/>.
+        /// </summary>
+        public virtual bool AllowUnverifiedEmailSignUp
+        {
+            get
+            {
+                string allow = Configuration.GetSection("SignUp")["AllowUnverified"];
+                return !string.IsNullOrEmpty(allow) && bool.Parse(allow);
+            }
+        }
+
+        /// <summary>
+        /// same as <see cref="AllowUnverifiedEmailSignUp"/>, for the phone/sms signup channel.
+        /// Read from configuration ("PhoneSignUp:AllowUnverified"), defaults to false.
+        /// </summary>
+        public virtual bool AllowUnverifiedPhoneSignUp
+        {
+            get
+            {
+                string allow = Configuration.GetSection("PhoneSignUp")["AllowUnverified"];
+                return !string.IsNullOrEmpty(allow) && bool.Parse(allow);
+            }
+        }
 
         #endregion
 

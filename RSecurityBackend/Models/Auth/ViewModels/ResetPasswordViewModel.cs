@@ -6,7 +6,7 @@
     public class ResetPasswordViewModel
     {
         /// <summary>
-        /// Email
+        /// Email address or phone number (same value submitted to forgotpassword)
         /// </summary>
         /// <example>email@domain.com</example>
         public string Email { get; set; }

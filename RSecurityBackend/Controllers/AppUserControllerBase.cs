@@ -1017,14 +1017,17 @@ namespace RSecurityBackend.Controllers
         /// signup using email or phone number (sms otp). If <see cref="UnverifiedSignUpViewModel.Email"/>
         /// contains an "@" it is treated as an email address and the code is sent by email,
         /// otherwise it is treated as a phone number and the code is sent by sms (requires an
-        /// ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true).
+        /// ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true). If
+        /// SignUp:AllowUnverified (or PhoneSignUp:AllowUnverified) is true, no code is
+        /// sent at all - <see cref="SignUpResultViewModel.Status"/> comes back as "finalize"
+        /// with the secret already attached, so the client can call finalizesignup right away.
         /// </summary>
         /// <param name="signUpViewModel">signUpViewModel</param>
-        /// <returns>next step: "verify" or "finalize"</returns>
+        /// <returns>SignUpResultViewModel</returns>
         [HttpPost]
         [AllowAnonymous]
         [Route("signup")]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(SignUpResultViewModel))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> SignUp([FromBody] UnverifiedSignUpViewModel signUpViewModel)
         {
@@ -1043,7 +1046,7 @@ namespace RSecurityBackend.Controllers
                 if (!PhoneSignupEnabled)
                     return BadRequest("ثبت نام با شماره تلفن غیرفعال است.");
 
-                if (_smsSender == null)
+                if (_smsSender == null && !AllowUnverifiedPhoneSignUp)
                     return BadRequest("Sms sender is not configured (register an ISmsSender implementation in DI).");
             }
 
@@ -1074,6 +1077,19 @@ namespace RSecurityBackend.Controllers
                 return BadRequest(res.ExceptionString);
             }
 
+            //unverified signup allowed for this channel: skip sending anything (the whole
+            //point is this must work even when outbound email delivery is broken) and hand
+            //the secret straight back - CAPTCHA above is still what gates this, finalizesignup
+            //still requires this exact secret, only the delivery step is skipped
+            if (isEmail && AllowUnverifiedEmailSignUp)
+            {
+                return Ok(new SignUpResultViewModel() { Status = "finalize", Secret = res.Result.Secret });
+            }
+            if (!isEmail && AllowUnverifiedPhoneSignUp)
+            {
+                return Ok(new SignUpResultViewModel() { Status = "finalize", Secret = res.Result.Secret });
+            }
+
             try
             {
                 if (isEmail)
@@ -1093,7 +1109,7 @@ namespace RSecurityBackend.Controllers
                         _appUserService.GetSmsText(RVerifyQueueType.SignUp, res.Result.Secret)
                         );
                 }
-                return Ok("verify");
+                return Ok(new SignUpResultViewModel() { Status = "verify", Secret = null });
             }
             catch (Exception exp)
             {
@@ -1149,7 +1165,12 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
-        /// start forgot password process by email
+        /// start forgot password process by email or phone number (sms otp). If <see
+        /// cref="UnverifiedSignUpViewModel.Email"/> contains an "@" it is treated as an email
+        /// address, otherwise as a phone number (requires an ISmsSender to be registered in
+        /// DI). Successfully completing this (via <see cref="ResetPassword"/>) also verifies
+        /// the channel used - this is the recovery path for an account created while
+        /// SignUp:AllowUnverified / PhoneSignUp:AllowUnverified was on.
         /// </summary>
         /// <param name="fpwdViewModel">signUpViewModel</param>
         /// <returns>result</returns>
@@ -1163,6 +1184,10 @@ namespace RSecurityBackend.Controllers
             UnverifiedSignUpViewModel fpwdViewModel
             )
         {
+            bool isEmail = !string.IsNullOrEmpty(fpwdViewModel.Email) && fpwdViewModel.Email.Contains('@');
+
+            if (!isEmail && _smsSender == null)
+                return BadRequest("Sms sender is not configured (register an ISmsSender implementation in DI).");
 
             RServiceResult<bool> captchaRes = await _captchaService.Evaluate(fpwdViewModel.CaptchaImageId, fpwdViewModel.CaptchaValue);
             if (!string.IsNullOrEmpty(captchaRes.ExceptionString))
@@ -1180,16 +1205,27 @@ namespace RSecurityBackend.Controllers
 
             try
             {
-                await _emailSender.SendEmailAsync
-                    (
-                    fpwdViewModel.Email,
-                    _appUserService.GetEmailSubject(RVerifyQueueType.ForgotPassword, res.Result.Secret),
-                    _appUserService.GetEmailHtmlContent(RVerifyQueueType.ForgotPassword, res.Result.Secret, fpwdViewModel.CallbackUrl)
-                    );
+                if (isEmail)
+                {
+                    await _emailSender.SendEmailAsync
+                        (
+                        fpwdViewModel.Email,
+                        _appUserService.GetEmailSubject(RVerifyQueueType.ForgotPassword, res.Result.Secret),
+                        _appUserService.GetEmailHtmlContent(RVerifyQueueType.ForgotPassword, res.Result.Secret, fpwdViewModel.CallbackUrl)
+                        );
+                }
+                else
+                {
+                    await _smsSender.SendSmsAsync
+                        (
+                        fpwdViewModel.Email,
+                        _appUserService.GetSmsText(RVerifyQueueType.ForgotPassword, res.Result.Secret)
+                        );
+                }
             }
             catch (Exception exp)
             {
-                return BadRequest("Error sending email: " + exp.ToString());
+                return BadRequest($"Error sending {(isEmail ? "email" : "sms")}: " + exp.ToString());
             }
 
             return Ok(true);
@@ -1399,6 +1435,32 @@ namespace RSecurityBackend.Controllers
             {
                 string enabled = Configuration.GetSection("PhoneSignUp")["Enabled"];
                 return !string.IsNullOrEmpty(enabled) && bool.Parse(enabled);
+            }
+        }
+
+        /// <summary>
+        /// if true, email signup can be finalized without ever verifying the OTP code (an
+        /// emergency escape hatch for when outbound email delivery is broken) - mirrors
+        /// AppUserService.AllowUnverifiedEmailSignUp, read from the same configuration key.
+        /// </summary>
+        public bool AllowUnverifiedEmailSignUp
+        {
+            get
+            {
+                string allow = Configuration.GetSection("SignUp")["AllowUnverified"];
+                return !string.IsNullOrEmpty(allow) && bool.Parse(allow);
+            }
+        }
+
+        /// <summary>
+        /// same as <see cref="AllowUnverifiedEmailSignUp"/>, for the phone/sms signup channel.
+        /// </summary>
+        public bool AllowUnverifiedPhoneSignUp
+        {
+            get
+            {
+                string allow = Configuration.GetSection("PhoneSignUp")["AllowUnverified"];
+                return !string.IsNullOrEmpty(allow) && bool.Parse(allow);
             }
         }
 
