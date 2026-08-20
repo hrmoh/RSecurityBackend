@@ -1022,13 +1022,15 @@ namespace RSecurityBackend.Controllers
         /// otherwise it is treated as a phone number and the code is sent by sms (requires an
         /// ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true). If
         /// SignUp:AllowUnverified (or PhoneSignUp:AllowUnverified) is true, no code is sent at
-        /// all - the response is still plain "verify" for backward compatibility, but the
-        /// client does not need the code the user would otherwise have received: just call
-        /// finalizesignup with any value (or an empty string) for the secret. See
-        /// <see cref="FinalizeSignUp"/> for how that's still kept CAPTCHA-gated even so.
+        /// all and the response is "finalize" instead of "verify" - the client does not need a
+        /// code in that case (call finalizesignup right away with any value, or an empty
+        /// string, for the secret; see <see cref="FinalizeSignUp"/> for how that's still kept
+        /// CAPTCHA-gated even so). The response TYPE is unchanged (plain string) either way -
+        /// only clients that want to support unverified signup need to branch on the value.
         /// </summary>
         /// <param name="signUpViewModel">signUpViewModel</param>
-        /// <returns>next step: "verify" or "finalize"</returns>
+        /// <returns>next step: "verify" (prompt the user for the code they received) or
+        /// "finalize" (no code was sent - call finalizesignup immediately)</returns>
         [HttpPost]
         [AllowAnonymous]
         [Route("signup")]
@@ -1083,13 +1085,14 @@ namespace RSecurityBackend.Controllers
             }
 
             //unverified signup allowed for this channel: skip sending anything (the whole
-            //point is this must work even when outbound email delivery is broken). The
-            //response stays "verify" unchanged - the client doesn't need the code, since
-            //FinalizeSignUp no longer requires the exact secret in this mode (see there for
-            //why that's still safe); it only needs to know THIS call happened, which it does.
+            //point is this must work even when outbound email delivery is broken) and tell the
+            //client to skip the "enter the code" step entirely - there's no code to enter.
+            //FinalizeSignUp doesn't need the actual secret value in this mode (see there for
+            //why that's still safe), so nothing further needs to be returned here besides the
+            //"finalize" signal itself.
             if ((isEmail && AllowUnverifiedEmailSignUp) || (!isEmail && AllowUnverifiedPhoneSignUp))
             {
-                return Ok("verify");
+                return Ok("finalize");
             }
 
             try
