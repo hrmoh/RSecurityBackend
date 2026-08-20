@@ -252,10 +252,14 @@ namespace RSecurityBackend.Services
 
         /// <summary>
         /// finalize signup process using email or phone number (sms otp), matching whichever
-        /// channel was used in <see cref="SignUp"/> (detected the same way: "@" present == email)
+        /// channel was used in <see cref="SignUp"/> (detected the same way: "@" present == email).
+        /// If unverified signup is allowed for that channel (SignUp:AllowUnverified /
+        /// PhoneSignUp:AllowUnverified), <paramref name="secret"/> is not checked at all - pass
+        /// any value (or an empty string); the account is created with
+        /// EmailConfirmed/PhoneNumberConfirmed left false instead.
         /// </summary>
         /// <param name="email">email address or phone number (must match what was passed to SignUp)</param>
-        /// <param name="secret"></param>
+        /// <param name="secret">OTP secret; ignored when unverified signup is allowed for this channel</param>
         /// <param name="password"></param>
         /// <param name="firstName"></param>
         /// <param name="surName"></param>

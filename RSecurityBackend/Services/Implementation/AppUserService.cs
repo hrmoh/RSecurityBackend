@@ -1484,16 +1484,44 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<bool>(false, "این نام کاربری قبلا استفاده شده است");
             }
 
-            if (
-                   email
-                   !=
-                   (await RetrieveEmailFromQueueSecret(RVerifyQueueType.SignUp, secret)).Result
-                  )
+            //the channel actually used to complete THIS signup only needs to have been
+            //verified when unverified signup is NOT allowed for it; see below for how this
+            //is used both here and for setting Confirmed flags
+            bool primaryChannelVerified = isEmail ? !AllowUnverifiedEmailSignUp : !AllowUnverifiedPhoneSignUp;
+
+            if (primaryChannelVerified)
             {
-                return new RServiceResult<bool>(false, isEmail ? "کد ارسالی به ایمیل اشتباه وارد شده است" : "کد ارسالی به شماره تلفن اشتباه وارد شده است");
+                //normal flow: the caller must supply the exact OTP secret that was emailed/texted
+                if (
+                       email
+                       !=
+                       (await RetrieveEmailFromQueueSecret(RVerifyQueueType.SignUp, secret)).Result
+                      )
+                {
+                    return new RServiceResult<bool>(false, isEmail ? "کد ارسالی به ایمیل اشتباه وارد شده است" : "کد ارسالی به شماره تلفن اشتباه وارد شده است");
+                }
+            }
+            else
+            {
+                //unverified signup is allowed for this channel: no code was ever sent, so the
+                //caller cannot be expected to know one - secret is not checked at all in this
+                //mode. What IS still required: an actual CAPTCHA-gated SignUp call must have
+                //happened for this exact email/phone (existence only, not secret match) - this
+                //is what stops finalizesignup itself from becoming a captcha-less mass-account-
+                //creation endpoint even with unverified signup turned on.
+                bool hasSignUpAttempt =
+                    isEmail
+                    ?
+                    await _context.VerifyQueueItems.AnyAsync(i => i.QueueType == RVerifyQueueType.SignUp && i.Email == email)
+                    :
+                    await _context.VerifyQueueItems.AnyAsync(i => i.QueueType == RVerifyQueueType.SignUp && i.PhoneNumber == email);
+                if (!hasSignUpAttempt)
+                {
+                    return new RServiceResult<bool>(false, isEmail ? "لطفاً ابتدا فرآیند ثبت نام را با این ایمیل آغاز کنید." : "لطفاً ابتدا فرآیند ثبت نام را با این شماره تلفن آغاز کنید.");
+                }
             }
 
-            secret = secret.Trim();
+            secret = (secret ?? "").Trim();
 
             firstName = (firstName ?? "").Trim();
             surName = (surName ?? "").Trim();
@@ -1530,23 +1558,25 @@ namespace RSecurityBackend.Services.Implementation
             //this call site has an exact per-channel verification state that must be preserved:
             //- the channel actually used to complete THIS signup is verified only if the OTP
             //  flow was actually completed (never true when AllowUnverifiedEmailSignUp /
-            //  AllowUnverifiedPhoneSignUp let this call skip it)
+            //  AllowUnverifiedPhoneSignUp let this call skip it - i.e. !primaryChannelVerified)
             //- the other, optional secondary field (e.g. a phone number captured alongside an
             //  email signup) was never verified at all, regardless of the above - overwrite
             //  whatever AddUser assumed rather than leaving its blanket true in place
-            bool primaryChannelVerified = isEmail ? !AllowUnverifiedEmailSignUp : !AllowUnverifiedPhoneSignUp;
-
             userAddResult.Result.EmailConfirmed = isEmail && primaryChannelVerified;
             userAddResult.Result.PhoneNumberConfirmed = !isEmail && primaryChannelVerified;
 
             await _userManager.UpdateAsync(userAddResult.Result);
 
+            //in the normal flow, keep the queue item that was actually matched (an audit trail
+            //of the successful signup) and only purge OTHER, abandoned attempts for the same
+            //identifier; in unverified mode there is no "matched" item (secret wasn't checked),
+            //so just purge every SignUp queue item for this identifier
             RVerifyQueueItem[] failedQueue =
                 isEmail
                 ?
-                await _context.VerifyQueueItems.Where(i => i.Email == email && i.Secret != secret && i.QueueType == RVerifyQueueType.SignUp).ToArrayAsync()
+                await _context.VerifyQueueItems.Where(i => i.Email == email && i.QueueType == RVerifyQueueType.SignUp && (!primaryChannelVerified || i.Secret != secret)).ToArrayAsync()
                 :
-                await _context.VerifyQueueItems.Where(i => i.PhoneNumber == email && i.Secret != secret && i.QueueType == RVerifyQueueType.SignUp).ToArrayAsync();
+                await _context.VerifyQueueItems.Where(i => i.PhoneNumber == email && i.QueueType == RVerifyQueueType.SignUp && (!primaryChannelVerified || i.Secret != secret)).ToArrayAsync();
             if (failedQueue.Length != 0)
             {
                 _context.VerifyQueueItems.RemoveRange(failedQueue);

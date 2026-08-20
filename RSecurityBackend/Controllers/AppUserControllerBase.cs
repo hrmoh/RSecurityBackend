@@ -118,6 +118,9 @@ namespace RSecurityBackend.Controllers
                 return BadRequest(exp.ToString());
             }
         }
+
+        /// <summary>
+        /// renew an expired session
         /// </summary>
         /// <param name="sessionId">user session id</param>
         /// <returns>LoggedOnUserModel</returns>
@@ -1018,16 +1021,18 @@ namespace RSecurityBackend.Controllers
         /// contains an "@" it is treated as an email address and the code is sent by email,
         /// otherwise it is treated as a phone number and the code is sent by sms (requires an
         /// ISmsSender to be registered in DI and PhoneSignUp:Enabled to be true). If
-        /// SignUp:AllowUnverified (or PhoneSignUp:AllowUnverified) is true, no code is
-        /// sent at all - <see cref="SignUpResultViewModel.Status"/> comes back as "finalize"
-        /// with the secret already attached, so the client can call finalizesignup right away.
+        /// SignUp:AllowUnverified (or PhoneSignUp:AllowUnverified) is true, no code is sent at
+        /// all - the response is still plain "verify" for backward compatibility, but the
+        /// client does not need the code the user would otherwise have received: just call
+        /// finalizesignup with any value (or an empty string) for the secret. See
+        /// <see cref="FinalizeSignUp"/> for how that's still kept CAPTCHA-gated even so.
         /// </summary>
         /// <param name="signUpViewModel">signUpViewModel</param>
-        /// <returns>SignUpResultViewModel</returns>
+        /// <returns>next step: "verify" or "finalize"</returns>
         [HttpPost]
         [AllowAnonymous]
         [Route("signup")]
-        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(SignUpResultViewModel))]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
         public virtual async Task<IActionResult> SignUp([FromBody] UnverifiedSignUpViewModel signUpViewModel)
         {
@@ -1078,16 +1083,13 @@ namespace RSecurityBackend.Controllers
             }
 
             //unverified signup allowed for this channel: skip sending anything (the whole
-            //point is this must work even when outbound email delivery is broken) and hand
-            //the secret straight back - CAPTCHA above is still what gates this, finalizesignup
-            //still requires this exact secret, only the delivery step is skipped
-            if (isEmail && AllowUnverifiedEmailSignUp)
+            //point is this must work even when outbound email delivery is broken). The
+            //response stays "verify" unchanged - the client doesn't need the code, since
+            //FinalizeSignUp no longer requires the exact secret in this mode (see there for
+            //why that's still safe); it only needs to know THIS call happened, which it does.
+            if ((isEmail && AllowUnverifiedEmailSignUp) || (!isEmail && AllowUnverifiedPhoneSignUp))
             {
-                return Ok(new SignUpResultViewModel() { Status = "finalize", Secret = res.Result.Secret });
-            }
-            if (!isEmail && AllowUnverifiedPhoneSignUp)
-            {
-                return Ok(new SignUpResultViewModel() { Status = "finalize", Secret = res.Result.Secret });
+                return Ok("verify");
             }
 
             try
@@ -1109,7 +1111,7 @@ namespace RSecurityBackend.Controllers
                         _appUserService.GetSmsText(RVerifyQueueType.SignUp, res.Result.Secret)
                         );
                 }
-                return Ok(new SignUpResultViewModel() { Status = "verify", Secret = null });
+                return Ok("verify");
             }
             catch (Exception exp)
             {
