@@ -67,12 +67,14 @@ namespace RSecurityBackend.Controllers
                 _memoryCache.Set(cachKeyForPath, imgPath);
             }
 
-            Response.GetTypedHeaders().LastModified = img.LastModified;
+            DateTime lastModified = img.LastModified;
+            lastModified = new DateTime(lastModified.Year, lastModified.Month, lastModified.Day, lastModified.Hour, lastModified.Minute, lastModified.Second, lastModified.Kind);
+            Response.GetTypedHeaders().LastModified = lastModified;
             Response.Headers.CacheControl = "public,max-age=86400";
 
             var requestHeaders = Request.GetTypedHeaders();
             if (requestHeaders.IfModifiedSince.HasValue &&
-                requestHeaders.IfModifiedSince.Value >= img.LastModified)
+                requestHeaders.IfModifiedSince.Value >= lastModified)
             {
                 return StatusCode(StatusCodes.Status304NotModified);
             }

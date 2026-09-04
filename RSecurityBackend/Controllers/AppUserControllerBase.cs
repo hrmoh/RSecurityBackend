@@ -846,12 +846,14 @@ namespace RSecurityBackend.Controllers
                 if (img.Result == null)
                     return NotFound();
 
-                Response.GetTypedHeaders().LastModified = img.Result.LastModified;
+                DateTime lastModified = img.Result.LastModified;
+                lastModified = new DateTime(lastModified.Year, lastModified.Month, lastModified.Day, lastModified.Hour, lastModified.Minute, lastModified.Second, lastModified.Kind);
+                Response.GetTypedHeaders().LastModified = lastModified;
                 Response.Headers.CacheControl = "private,max-age=86400";
 
                 var requestHeaders = Request.GetTypedHeaders();
                 if (requestHeaders.IfModifiedSince.HasValue &&
-                    requestHeaders.IfModifiedSince.Value >= img.Result.LastModified)
+                    requestHeaders.IfModifiedSince.Value >= lastModified)
                 {
                     return StatusCode(StatusCodes.Status304NotModified);
                 }
