@@ -68,6 +68,7 @@ namespace RSecurityBackend.Controllers
             }
 
             Response.GetTypedHeaders().LastModified = img.LastModified;
+            Response.Headers.CacheControl = "public,max-age=86400";
 
             var requestHeaders = Request.GetTypedHeaders();
             if (requestHeaders.IfModifiedSince.HasValue &&
