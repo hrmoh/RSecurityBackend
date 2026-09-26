@@ -608,9 +608,9 @@ namespace RSecurityBackend.Services.Implementation
 
             RTemporaryUserSession[] sessions =
                 userId == null ?
-                await _context.Sessions.ToArrayAsync()
+                await _context.Sessions.Include(s => s.RAppUser).ToArrayAsync()
                 :
-                await _context.Sessions.Where(s => s.RAppUserId == userId).ToArrayAsync()
+                await _context.Sessions.Include(s => s.RAppUser).Where(s => s.RAppUserId == userId).ToArrayAsync()
                 ;
 
             foreach (RTemporaryUserSession rUserSession in sessions)
