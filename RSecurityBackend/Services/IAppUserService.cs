@@ -178,8 +178,13 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <param name="oldPassword"></param>
         /// <param name="newPassword"></param>
+        /// <param name="currentSessionId">
+        /// optional: the caller's own current SessionId (from the "SessionId" claim). When supplied,
+        /// every OTHER session belonging to this user is invalidated on a successful change. Pass
+        /// null to keep the previous behavior (no sessions touched).
+        /// </param>
         /// <returns></returns>
-        Task<RServiceResult<bool>> ChangePassword(Guid userId, string oldPassword, string newPassword);
+        Task<RServiceResult<bool>> ChangePassword(Guid userId, string oldPassword, string newPassword, Guid? currentSessionId = null);
 
         /// <summary>
         /// delete user

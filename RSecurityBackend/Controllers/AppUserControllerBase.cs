@@ -469,9 +469,12 @@ namespace RSecurityBackend.Controllers
         public virtual async Task<IActionResult> SetMyPassword([AuditIgnore][FromBody] SetPasswordModel model)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid currentSessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
 
-
-            RServiceResult<bool> res = await _appUserService.ChangePassword(loggedOnUserId, model.OldPassword, model.NewPassword);
+            //invalidates every other session for this user on success, so a session an attacker may
+            //already hold elsewhere does not survive the user securing their account - the session
+            //making this call is deliberately left alone.
+            RServiceResult<bool> res = await _appUserService.ChangePassword(loggedOnUserId, model.OldPassword, model.NewPassword, currentSessionId);
             if (!res.Result)
                 return BadRequest(res.ExceptionString);
 

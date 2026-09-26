@@ -1081,7 +1081,8 @@ namespace RSecurityBackend.Services.Implementation
             existingInfo.NickName = updateUserInfo.NickName;
             existingInfo.Website = updateUserInfo.Website;
 
-            if (!string.IsNullOrEmpty(updateUserInfo.Password))
+            bool passwordSetByAdmin = !string.IsNullOrEmpty(updateUserInfo.Password);
+            if (passwordSetByAdmin)
             {
                 foreach (var passwordValidator in _userManager.PasswordValidators)
                 {
@@ -1095,10 +1096,13 @@ namespace RSecurityBackend.Services.Implementation
                 existingInfo.PasswordHash = _userManager.PasswordHasher.HashPassword(existingInfo, updateUserInfo.Password);
             }
 
-            if (updateUserInfo.Status == RAppUserStatus.Inactive)
+            if (updateUserInfo.Status == RAppUserStatus.Inactive || passwordSetByAdmin)
             {
-                _context.Sessions.RemoveRange(await _context.Sessions.Where(u => u.RAppUserId == userId).ToArrayAsync());
-                await _context.SaveChangesAsync();
+                //the controller only reaches this password branch when an admin is setting ANOTHER
+                //user's password (it rejects a user setting their own password here, directing them to
+                //setmypassword/ChangePassword instead) - so there is no "current session" of the
+                //target user to preserve, same as a forced deactivation.
+                await InvalidateSessions(userId, null);
             }
 
 
@@ -1121,8 +1125,16 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="oldPassword"></param>
         /// <param name="newPassword"></param>
+        /// <param name="currentSessionId">
+        /// optional: the caller's own current SessionId (from the "SessionId" claim). When supplied,
+        /// every OTHER session belonging to this user is invalidated on a successful change, so a
+        /// session an attacker may already hold elsewhere does not survive the user securing their
+        /// account - while the session actually performing the change is left alone. Pass null to
+        /// keep the old behavior (no sessions touched); existing callers compiled against the previous
+        /// 3-argument signature are unaffected.
+        /// </param>
         /// <returns></returns>
-        public virtual async Task<RServiceResult<bool>> ChangePassword(Guid userId, string oldPassword, string newPassword)
+        public virtual async Task<RServiceResult<bool>> ChangePassword(Guid userId, string oldPassword, string newPassword, Guid? currentSessionId = null)
         {
             RAppUser appUser = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -1136,6 +1148,12 @@ namespace RSecurityBackend.Services.Implementation
             {
                 return new RServiceResult<bool>(false, "Identity error details says: " + result.ToString());
             }
+
+            if (currentSessionId != null)
+            {
+                await InvalidateSessions(userId, currentSessionId);
+            }
+
             return new RServiceResult<bool>(true);
 
         }
@@ -1800,6 +1818,11 @@ namespace RSecurityBackend.Services.Implementation
 
             await _context.SaveChangesAsync();
 
+            //this flow exists precisely because the user has no working session (forgotten
+            //password), so there is no "current" session to preserve here, unlike ChangePassword -
+            //remove every session for this account, the same way an admin-forced deactivation does.
+            await InvalidateSessions(existingUser.Id, null);
+
             return new RServiceResult<bool>(true);
 
         }
@@ -2152,7 +2175,32 @@ namespace RSecurityBackend.Services.Implementation
         /// <summary>
         /// JWT Tokens Expiration Time Out
         /// </summary>
-        public int DefaultTokenExpirationInSeconds { get { return int.Parse($"{Configuration.GetSection("Security")["DefaultTokenExpirationInSeconds"]}"); } }
+        /// <remarks>
+        /// IsPreUpgradeSessionRecord relies on this value staying well under 24 hours to be able to
+        /// tell a pre-upgrade session row (ValidUntil - LoginTime = this value) apart from a
+        /// post-upgrade one (ValidUntil - LoginTime = SessionIdleTimeoutInDays, in days). If this is
+        /// ever configured to 24 hours or more, that heuristic can no longer distinguish the two, and a
+        /// genuinely expired pre-upgrade session could be rejected outright instead of self-healed -
+        /// i.e. exactly the mass-logout-at-deploy problem the self-heal exists to avoid. A JWT that
+        /// lives this long is already an unusual configuration on its own merits, so this only traces a
+        /// warning rather than throwing.
+        /// </remarks>
+        public int DefaultTokenExpirationInSeconds
+        {
+            get
+            {
+                int value = int.Parse($"{Configuration.GetSection("Security")["DefaultTokenExpirationInSeconds"]}");
+                if (value >= 24 * 3600)
+                {
+                    System.Diagnostics.Trace.TraceWarning(
+                        $"Security:DefaultTokenExpirationInSeconds is configured to {value} seconds (24h or more). " +
+                        "This can break AppUserService's pre-upgrade session detection (IsPreUpgradeSessionRecord) " +
+                        "and cause old sessions to be rejected instead of self-healed after a session-timeout upgrade."
+                        );
+                }
+                return value;
+            }
+        }
 
         /// <summary>
         /// How many days a <see cref="RTemporaryUserSession"/> may sit completely idle (no successful
@@ -2191,6 +2239,34 @@ namespace RSecurityBackend.Services.Implementation
         private static bool IsPreUpgradeSessionRecord(RTemporaryUserSession session)
         {
             return session.ValidUntil - session.LoginTime < TimeSpan.FromDays(1);
+        }
+
+        /// <summary>
+        /// Removes every session belonging to <paramref name="userId"/> except, optionally,
+        /// <paramref name="exceptSessionId"/>. Used after a password change/reset - unlike the sliding
+        /// SessionIdleTimeoutInDays window (which never forces a logout on its own), this is a
+        /// deliberate, event-triggered cleanup: if the password is being changed because the account
+        /// may have been compromised, any session an attacker already holds - on a device this user
+        /// never sees - should not keep working just because it is still within its idle window.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="exceptSessionId">
+        /// pass the caller's own current SessionId (from the "SessionId" claim) to keep that one
+        /// session alive, so the user isn't logged out of the very session they used to change their
+        /// password; pass null to remove all sessions (used by ResetPassword, where there is no
+        /// current session to preserve - the whole point of that flow is that the user is locked out).
+        /// </param>
+        private async Task InvalidateSessions(Guid userId, Guid? exceptSessionId)
+        {
+            RTemporaryUserSession[] sessions =
+                await _context.Sessions
+                .Where(s => s.RAppUserId == userId && (exceptSessionId == null || s.Id != exceptSessionId))
+                .ToArrayAsync();
+            if (sessions.Length != 0)
+            {
+                _context.Sessions.RemoveRange(sessions);
+                await _context.SaveChangesAsync();
+            }
         }
 
 
