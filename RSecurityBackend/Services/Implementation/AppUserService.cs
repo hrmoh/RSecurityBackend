@@ -1950,8 +1950,18 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="userId"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
+        /// <param name="currentSessionId">
+        /// optional: the caller's own current SessionId (from the "SessionId" claim). When supplied
+        /// and this is an actual change (not a first-time link - i.e. there was an old value), every
+        /// OTHER session belonging to this user is invalidated on success. This is not only a security
+        /// measure: PublicRAppUser.Email/PhoneNumber is embedded in what a client already has cached
+        /// from login (LoggedOnUserModel.User), so a session nobody forces to relogin would otherwise
+        /// keep showing/using the OLD contact value indefinitely instead of picking up the new one.
+        /// Pass null to keep the previous behavior (no sessions touched); existing callers compiled
+        /// against the previous 3-argument signature are unaffected.
+        /// </param>
         /// <returns>old value (null if this was a first-time link) + new value</returns>
-        public virtual async Task<RServiceResult<ContactChangeResult>> ChangeContact(Guid userId, string secret, string clientIPAddress)
+        public virtual async Task<RServiceResult<ContactChangeResult>> ChangeContact(Guid userId, string secret, string clientIPAddress, Guid? currentSessionId = null)
         {
             try
             {
@@ -2054,6 +2064,14 @@ namespace RSecurityBackend.Services.Implementation
                 }
 
                 await _context.SaveChangesAsync();
+
+                if (!string.IsNullOrEmpty(oldValue) && currentSessionId != null)
+                {
+                    //an actual change (not a first-time link) - other sessions are still holding the
+                    //OLD email/phone in their cached login info, so force them to relogin and pick up
+                    //the new value rather than letting them keep the stale one around indefinitely.
+                    await InvalidateSessions(userId, currentSessionId);
+                }
 
                 return new RServiceResult<ContactChangeResult>(
                     new ContactChangeResult()

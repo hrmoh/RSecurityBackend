@@ -1353,7 +1353,8 @@ namespace RSecurityBackend.Controllers
                 RServiceResult<ContactChangeResult> res = await _appUserService.ChangeContact(
                     loggedOnUserId,
                     secret,
-                    clientIPAddress
+                    clientIPAddress,
+                    sessionId
                     );
                 if (!string.IsNullOrEmpty(res.ExceptionString))
                 {

@@ -445,8 +445,15 @@ namespace RSecurityBackend.Services
         /// <param name="userId"></param>
         /// <param name="secret"></param>
         /// <param name="clientIPAddress"></param>
+        /// <param name="currentSessionId">
+        /// optional: the caller's own current SessionId (from the "SessionId" claim). When supplied
+        /// and this is an actual change (not a first-time link), every OTHER session belonging to
+        /// this user is invalidated on success, so they are forced to relogin and pick up the new
+        /// contact value instead of keeping the old one cached indefinitely. Pass null to keep the
+        /// previous behavior (no sessions touched).
+        /// </param>
         /// <returns>old value (or null if this was a first-time link) + new value</returns>
-        Task<RServiceResult<ContactChangeResult>> ChangeContact(Guid userId, string secret, string clientIPAddress);
+        Task<RServiceResult<ContactChangeResult>> ChangeContact(Guid userId, string secret, string clientIPAddress, Guid? currentSessionId = null);
 
 
     }

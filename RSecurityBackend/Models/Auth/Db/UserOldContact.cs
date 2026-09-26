@@ -5,7 +5,7 @@ namespace RSecurityBackend.Models.Auth.Db
     /// <summary>
     /// history record for a user's previous email address or phone number,
     /// written whenever an existing (non-null) contact value is replaced via
-    /// <see cref="Services.IAppUserService.ChangeContact(Guid, string, string)"/>
+    /// <see cref="Services.IAppUserService.ChangeContact(Guid, string, string, Guid?)"/>
     /// </summary>
     public class UserOldContact
     {
