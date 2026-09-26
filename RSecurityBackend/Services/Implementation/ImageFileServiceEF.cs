@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -65,6 +66,25 @@ namespace RSecurityBackend.Services.Implementation
             return new RServiceResult<RImage>(image);
         }
 
+        /// <summary>
+        /// Image extensions this service will store, mapped to the Content-Type that will always be
+        /// used both when writing RImage.ContentType and when the file is later served back (see
+        /// RImageControllerBase._Get) - never the caller-supplied Content-Type or the "contentType"
+        /// parameter below, and never a client's claimed file extension by itself. Deliberately does
+        /// not include .svg: an SVG is XML and can carry an embedded &lt;script&gt;, so unlike a
+        /// bitmap format it is not safe to treat as "just an image" even though browsers render it as
+        /// one.
+        /// </summary>
+        private static readonly Dictionary<string, string> _allowedImageContentTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { ".jpg", "image/jpeg" },
+            { ".jpeg", "image/jpeg" },
+            { ".png", "image/png" },
+            { ".gif", "image/gif" },
+            { ".bmp", "image/bmp" },
+            { ".webp", "image/webp" },
+        };
+
         private async Task<RServiceResult<RImage>> ProcessImage(IFormFile uploadedImage, RImage pictureFile, Stream stream, string originalFileNameForStreams, bool isImage, string contentType)
         {
             if (uploadedImage == null && stream == null)
@@ -72,14 +92,64 @@ namespace RSecurityBackend.Services.Implementation
                 return new RServiceResult<RImage>(null, "ProcessImage: uploadedImage == null && stream == null");
             }
 
-            pictureFile.ContentType = uploadedImage == null ? contentType : uploadedImage.ContentType;
             pictureFile.FileSizeInBytes = uploadedImage == null ? stream.Length : uploadedImage.Length;
             pictureFile.OriginalFileName = uploadedImage == null ? originalFileNameForStreams : uploadedImage.FileName;
 
+            // Read the whole upload into memory once, so it can be validated - extension allow-list,
+            // then actually decoding as an image - BEFORE anything is written to permanent storage.
+            // The previous code wrote the file to its final path first and only decoded it afterward,
+            // and only when isImage was true; isImage's caller-supplied value (see the public
+            // UploadImage endpoint) let it be set to false to skip that check entirely, so a caller of
+            // that endpoint could upload literally any file and later have it served back with
+            // whatever Content-Type it claimed at upload time - a stored-XSS delivery vector this
+            // closes by validating unconditionally, regardless of isImage.
+            byte[] fileBytes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                if (uploadedImage != null)
+                    await uploadedImage.CopyToAsync(ms);
+                else
+                {
+                    stream.Position = 0;
+                    await stream.CopyToAsync(ms);
+                }
+                fileBytes = ms.ToArray();
+            }
 
+            string ext = uploadedImage != null ? Path.GetExtension(uploadedImage.FileName).ToLower() : !string.IsNullOrEmpty(originalFileNameForStreams) ? Path.GetExtension(originalFileNameForStreams).ToLower() : ".jpg";
+            if (ext == ".jpeg")
+            {
+                ext = ".jpg";
+            }
+
+            if (!_allowedImageContentTypes.TryGetValue(ext, out string resolvedContentType))
+            {
+                return new RServiceResult<RImage>(null, $"پسوند فایل «{ext}» برای تصویر مجاز نیست.");
+            }
+
+            pictureFile.ContentType = resolvedContentType;
+
+            // Confirms fileBytes actually decodes as that kind of image - an allow-listed extension is
+            // not by itself proof the bytes behind it really are an image (isImage, below, only
+            // controls whether width/height metadata is additionally extracted from the same decode).
+            try
+            {
+                using (MemoryStream verifyStream = new MemoryStream(fileBytes))
+                using (Image img = Image.FromStream(verifyStream))
+                {
+                    if (isImage)
+                    {
+                        pictureFile.ImageWidth = img.Width;
+                        pictureFile.ImageHeight = img.Height;
+                    }
+                }
+            }
+            catch
+            {
+                return new RServiceResult<RImage>(null, "فایل ارسال شده یک تصویر معتبر نیست.");
+            }
 
             string fullDirStorePath = Path.Combine(ImageStoragePath, pictureFile.FolderName);
-
 
             if (!Directory.Exists(fullDirStorePath))
             {
@@ -93,14 +163,6 @@ namespace RSecurityBackend.Services.Implementation
                 }
             }
 
-
-
-
-            string ext = uploadedImage != null ? Path.GetExtension(uploadedImage.FileName).ToLower() : !string.IsNullOrEmpty(originalFileNameForStreams) ? Path.GetExtension(originalFileNameForStreams).ToLower() : ".jpg" ;
-            if(ext == ".jpeg")
-            {
-                ext = ".jpg";
-            }
             pictureFile.StoredFileName = Path.GetFileNameWithoutExtension(pictureFile.OriginalFileName) + ext;
 
             string originalFileStorePath = Path.Combine(fullDirStorePath, pictureFile.StoredFileName);
@@ -109,35 +171,9 @@ namespace RSecurityBackend.Services.Implementation
                 pictureFile.StoredFileName = Path.GetFileNameWithoutExtension(pictureFile.OriginalFileName) + "-" + Guid.NewGuid().ToString() + ext;
                 originalFileStorePath = Path.Combine(fullDirStorePath, pictureFile.StoredFileName);
             }
-            using (FileStream fsMain = new FileStream(originalFileStorePath, FileMode.Create))
-            {
-                if (uploadedImage != null)
-                    await uploadedImage.CopyToAsync(fsMain);
-                else
-                    await stream.CopyToAsync(fsMain);
-            }
 
-            if(isImage)
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    if (uploadedImage != null)
-                        await uploadedImage.CopyToAsync(ms);
-                    else
-                    {
-                        stream.Position = 0;
-                        await stream.CopyToAsync(ms);
-                    }
+            await File.WriteAllBytesAsync(originalFileStorePath, fileBytes);
 
-
-                    using (Image img = Bitmap.FromStream(ms))
-                    {
-                        pictureFile.ImageWidth = img.Width;
-                        pictureFile.ImageHeight = img.Height;
-                    }
-                }
-            } 
-            
             return new RServiceResult<RImage>(pictureFile);
         }
 
