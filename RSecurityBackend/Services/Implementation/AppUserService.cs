@@ -169,7 +169,7 @@ namespace RSecurityBackend.Services.Implementation
                     Language = language,
                     LoginTime = DateTime.Now,
                     LastRenewal = DateTime.Now,
-                    ValidUntil = DateTime.Now + TimeSpan.FromSeconds(DefaultTokenExpirationInSeconds),
+                    ValidUntil = DateTime.Now + TimeSpan.FromDays(SessionIdleTimeoutInDays),
                     Token = ""
                 };
 
@@ -360,6 +360,20 @@ namespace RSecurityBackend.Services.Implementation
             {
                 return new RServiceResult<LoggedOnUserModel>(null, "Invalid session");
             }
+            if (oldSession.ValidUntil < DateTime.Now && !IsPreUpgradeSessionRecord(oldSession))
+            {
+                //session sat idle (no Login/ReLogin at all) past its sliding SessionIdleTimeoutInDays
+                //window - this is what actually expires a session server-side; only an explicit
+                //logout removed a session row before this. Removing it here means a caller stuck with
+                //a genuinely dead sessionId cookie doesn't keep it around as a no-longer-renewable row.
+                _context.Sessions.Remove(oldSession);
+                await _context.SaveChangesAsync();
+                return new RServiceResult<LoggedOnUserModel>(null, "Session expired");
+            }
+            //a pre-upgrade row (see IsPreUpgradeSessionRecord) falls through here even though its old
+            //ValidUntil already looks "expired" under the old ~1-hour semantics - this is the self-heal
+            //that makes the fix deployable without a manual backfill. It gets replaced by newSession
+            //below with a fresh, correctly-computed ValidUntil, same as any other successful ReLogin.
             RAppUser appUser = oldSession.RAppUser;
             if (appUser.Status == RAppUserStatus.Inactive)
             {
@@ -378,7 +392,7 @@ namespace RSecurityBackend.Services.Implementation
                     Language = oldSession.Language,
                     LoginTime = DateTime.Now,
                     LastRenewal = DateTime.Now,
-                    ValidUntil = DateTime.Now + TimeSpan.FromSeconds(DefaultTokenExpirationInSeconds),
+                    ValidUntil = DateTime.Now + TimeSpan.FromDays(SessionIdleTimeoutInDays),
                     Token = ""
                 };
 
@@ -489,11 +503,18 @@ namespace RSecurityBackend.Services.Implementation
         /// <returns></returns>
         public virtual async Task<RServiceResult<bool>> SessionExists(Guid userId, Guid sessionId)
         {
-            return new RServiceResult<bool>(
+            //this is the check the default authorization policy runs on every authenticated request
+            //(see UserGroupPermissionHandler), so besides the session row existing at all, it also has
+            //to still be within its sliding SessionIdleTimeoutInDays window - otherwise a session that
+            //went idle past that window would keep working with its still-unexpired JWT for up to
+            //another DefaultTokenExpirationInSeconds instead of being cut off right away. Left as a
+            //pure read (no deleting the row here) since this runs on every request; ReLogin is what
+            //actually removes an idled-out session row, the next time someone tries to use it.
+            RTemporaryUserSession session =
                 await _context.Sessions
                 .Where(s => s.RAppUserId == userId && s.Id == sessionId)
-                .FirstOrDefaultAsync() != null
-                );
+                .FirstOrDefaultAsync();
+            return new RServiceResult<bool>(session != null && session.ValidUntil >= DateTime.Now);
         }
 
 
@@ -617,7 +638,8 @@ namespace RSecurityBackend.Services.Implementation
                         ClientIPAddress = rUserSession.ClientIPAddress,
                         Language = rUserSession.Language,
                         LastRenewal = rUserSession.LastRenewal,
-                        LoginTime = rUserSession.LoginTime
+                        LoginTime = rUserSession.LoginTime,
+                        ValidUntil = rUserSession.ValidUntil
                     }
                     );
 
@@ -665,7 +687,8 @@ namespace RSecurityBackend.Services.Implementation
                         ClientIPAddress = rUserSession.ClientIPAddress,
                         Language = rUserSession.Language,
                         LastRenewal = rUserSession.LastRenewal,
-                        LoginTime = rUserSession.LoginTime
+                        LoginTime = rUserSession.LoginTime,
+                        ValidUntil = rUserSession.ValidUntil
                     }
 
             );
@@ -2130,6 +2153,45 @@ namespace RSecurityBackend.Services.Implementation
         /// JWT Tokens Expiration Time Out
         /// </summary>
         public int DefaultTokenExpirationInSeconds { get { return int.Parse($"{Configuration.GetSection("Security")["DefaultTokenExpirationInSeconds"]}"); } }
+
+        /// <summary>
+        /// How many days a <see cref="RTemporaryUserSession"/> may sit completely idle (no successful
+        /// <see cref="Login"/>/<see cref="ReLogin"/>) before it is treated as expired by
+        /// <see cref="SessionExists"/> and <see cref="ReLogin"/>. This is deliberately a separate,
+        /// much longer window than <see cref="DefaultTokenExpirationInSeconds"/> (which only controls
+        /// how often the short-lived JWT itself needs silently refreshing) - the two used to be the
+        /// same value, which meant a session was never actually expired server-side: only an explicit
+        /// logout removed a session row (see the warning on <see cref="RTemporaryUserSession"/>).
+        /// Sliding: every successful Login/ReLogin resets this window from that moment, so an
+        /// occasionally-returning user never notices it; it only matters for a session nobody has
+        /// used (deliberately, or because it was stolen) for the full window.
+        /// Falls back to 90 days if "Security:SessionIdleTimeoutInDays" is not configured, so existing
+        /// consumers of this library that have not added the setting keep working unchanged.
+        /// </summary>
+        public int SessionIdleTimeoutInDays
+        {
+            get
+            {
+                var configuredValue = Configuration.GetSection("Security")["SessionIdleTimeoutInDays"];
+                return string.IsNullOrEmpty(configuredValue) ? 90 : int.Parse(configuredValue);
+            }
+        }
+
+        /// <summary>
+        /// Detects a <see cref="RTemporaryUserSession"/> row written before the
+        /// <see cref="SessionIdleTimeoutInDays"/> fix shipped, so <see cref="ReLogin"/> can self-heal
+        /// it instead of rejecting it outright - this is what makes the fix deployable without any
+        /// manual data migration. Every session ever created before this fix set
+        /// ValidUntil = LoginTime + DefaultTokenExpirationInSeconds (at most a handful of hours - it
+        /// mirrored the short-lived JWT, and nothing ever enforced it). Every session created after
+        /// this fix sets ValidUntil = LoginTime (or Now, on renewal) + SessionIdleTimeoutInDays *days*
+        /// (90 by default). A one-day gap safely tells the two apart: no reasonable JWT expiration
+        /// setting reaches 24 hours, and no reasonable idle-timeout setting is shorter than 1 day.
+        /// </summary>
+        private static bool IsPreUpgradeSessionRecord(RTemporaryUserSession session)
+        {
+            return session.ValidUntil - session.LoginTime < TimeSpan.FromDays(1);
+        }
 
 
 
