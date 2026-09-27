@@ -188,6 +188,59 @@ namespace RSecurityBackend.Controllers
             return Ok(res.Result);
         }
 
+        /// <summary>
+        /// Logs out every one of userId's sessions except the one this request is authenticated
+        /// with (users need user:delothersession to do this for another user - in that case there
+        /// is no session of the caller's to preserve, so every session belonging to that other
+        /// user is removed, i.e. a full force-logout of that account everywhere).
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns>number of sessions removed</returns>
+        [HttpDelete]
+        [Authorize]
+        [Route("delothersessions")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(int))]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        public virtual async Task<IActionResult> LogoutOtherSessions(
+            Guid userId
+            )
+        {
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            Guid callerSessionId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "SessionId").Value);
+
+            if (loggedOnUserId != userId)
+            {
+                RServiceResult<bool> canLogoutAllUsers =
+                    await _userPermissionChecker.Check
+                    (
+                        loggedOnUserId,
+                        callerSessionId,
+                        User.Claims.Any(c => c.Type == "Language") ? User.Claims.First(c => c.Type == "Language").Value : "fa-IR",
+                        SecurableItem.UserEntityShortName,
+                        SecurableItem.DelOtherUserSessionOperationShortName
+                        );
+
+                if (!string.IsNullOrEmpty(canLogoutAllUsers.ExceptionString))
+                    return BadRequest(canLogoutAllUsers.ExceptionString);
+                if (!canLogoutAllUsers.Result)
+                    return Forbid();
+            }
+
+            // the caller's own session is only meaningful to preserve when they're clearing their
+            // OWN other sessions - an admin clearing someone else's sessions has no session of
+            // theirs among that user's rows, so Guid.Empty here correctly removes all of them.
+            Guid sessionToKeep = loggedOnUserId == userId ? callerSessionId : Guid.Empty;
+
+            RServiceResult<int> res = await _appUserService.LogoutOtherSessions(userId, sessionToKeep);
+            if (!string.IsNullOrEmpty(res.ExceptionString))
+            {
+                return BadRequest(res.ExceptionString);
+            }
+
+            return Ok(res.Result);
+        }
+
 
         /// <summary>
         /// Check if my session is valid

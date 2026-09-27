@@ -494,6 +494,30 @@ namespace RSecurityBackend.Services.Implementation
             return new RServiceResult<bool>(true);
         }
 
+        /// <summary>
+        /// Logs out every one of the user's sessions except currentSessionId - the "log out of
+        /// every other device" self-service action (see IAppUserService.LogoutOtherSessions).
+        /// currentSessionId is not required to belong to userId here: if it doesn't match any of
+        /// this user's sessions (or is Guid.Empty), every session of theirs is removed, which the
+        /// caller (AppUserControllerBase) relies on to also accept "log out everywhere including
+        /// this device" by passing Guid.Empty.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="currentSessionId">the session to keep</param>
+        /// <returns>number of sessions removed</returns>
+        public virtual async Task<RServiceResult<int>> LogoutOtherSessions(Guid userId, Guid currentSessionId)
+        {
+            RTemporaryUserSession[] otherSessions =
+                await _context.Sessions
+                .Where(s => s.RAppUserId == userId && s.Id != currentSessionId)
+                .ToArrayAsync();
+            if (otherSessions.Length == 0)
+                return new RServiceResult<int>(0);
+            _context.Sessions.RemoveRange(otherSessions);
+            await _context.SaveChangesAsync();
+            return new RServiceResult<int>(otherSessions.Length);
+        }
+
 
         /// <summary>
         /// Does Session exist?

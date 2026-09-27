@@ -57,6 +57,16 @@ namespace RSecurityBackend.Services
         /// <returns></returns>
         Task<RServiceResult<bool>> Logout(Guid userId, Guid sessionId);
 
+        /// <summary>
+        /// Logs out every one of the user's sessions except the one passed in (e.g. the session
+        /// making this very request), so a user who is logged in on several devices/browsers can
+        /// clear all the others in one call instead of removing them one at a time.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="currentSessionId">the session to keep - every other session belonging to userId is removed</param>
+        /// <returns>number of sessions removed</returns>
+        Task<RServiceResult<int>> LogoutOtherSessions(Guid userId, Guid currentSessionId);
+
 
         /// <summary>
         /// Does Session exist?
