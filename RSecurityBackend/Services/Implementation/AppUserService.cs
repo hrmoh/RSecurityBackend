@@ -534,11 +534,26 @@ namespace RSecurityBackend.Services.Implementation
             //another DefaultTokenExpirationInSeconds instead of being cut off right away. Left as a
             //pure read (no deleting the row here) since this runs on every request; ReLogin is what
             //actually removes an idled-out session row, the next time someone tries to use it.
+            //
+            //BUGFIX (mass-logout regression found live, 2026-09-30): a pre-upgrade session row (see
+            //IsPreUpgradeSessionRecord) has ValidUntil computed under the OLD few-hour semantics, so
+            //it is already "expired" by this check on literally its first request after this fix
+            //deploys - failing the default authorization POLICY (not authentication), which ASP.NET
+            //Core answers with 403, not 401. GanjoorSessionChecker.PrepareClient and
+            //GanjoorReloginHandler (GanjooRazor) only treat a 401 as "try to relogin/self-heal", so
+            //that 403 never reaches ReLogin's own IsPreUpgradeSessionRecord self-heal at all - the
+            //user is just bounced straight to "please log out and log back in", for every pre-upgrade
+            //session, immediately. The same self-heal exemption ReLogin already applies is applied
+            //here too, so an old-format row keeps authorizing exactly as it silently did before this
+            //change (nothing enforced it), until it naturally passes through ReLogin - which happens
+            //routinely anyway, since the short-lived JWT itself still expires every
+            //DefaultTokenExpirationInSeconds - and gets upgraded to a real, correctly-computed
+            //SessionIdleTimeoutInDays row at that point.
             RTemporaryUserSession session =
                 await _context.Sessions
                 .Where(s => s.RAppUserId == userId && s.Id == sessionId)
                 .FirstOrDefaultAsync();
-            return new RServiceResult<bool>(session != null && session.ValidUntil >= DateTime.Now);
+            return new RServiceResult<bool>(session != null && (session.ValidUntil >= DateTime.Now || IsPreUpgradeSessionRecord(session)));
         }
 
 
