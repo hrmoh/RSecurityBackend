@@ -2610,6 +2610,41 @@ namespace RSecurityBackend.Services.Implementation
         }
 
         /// <summary>
+        /// unlock a previously locked out user (reverses LockoutAsync, resets failed access count and clears lockout cause)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<RServiceResult<bool>> UnlockAsync(Guid userId)
+        {
+            RAppUser appUser =
+                await _userManager.Users.Where(u => u.Id == userId).SingleOrDefaultAsync();
+            if (appUser == null)
+            {
+                return new RServiceResult<bool>(false, "user not found");
+            }
+
+            var res = await _userManager.SetLockoutEndDateAsync(appUser, null);
+            if (!res.Succeeded)
+            {
+                return new RServiceResult<bool>(false, ErrorsToString(res.Errors));
+            }
+
+            res = await _userManager.ResetAccessFailedCountAsync(appUser);
+            if (!res.Succeeded)
+            {
+                return new RServiceResult<bool>(false, ErrorsToString(res.Errors));
+            }
+
+            appUser.LockoutMessage = null;
+            res = await _userManager.UpdateAsync(appUser);
+            if (!res.Succeeded)
+            {
+                return new RServiceResult<bool>(false, ErrorsToString(res.Errors));
+            }
+            return new RServiceResult<bool>(true);
+        }
+
+        /// <summary>
         /// before kicking out a bad behving user ban him or her from signing up again.
         /// Bans not only the user's CURRENT email/phone number, but every email and phone
         /// number this user has ever verified and later moved away from via

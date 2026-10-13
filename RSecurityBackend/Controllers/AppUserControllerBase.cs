@@ -1634,6 +1634,35 @@ namespace RSecurityBackend.Controllers
         }
 
         /// <summary>
+        /// unlock a previously locked out user
+        /// </summary>
+        /// <param name="id">user id</param>
+        /// <returns>true if succeeds</returns>
+        [HttpPut("unlock/{id}")]
+        [Authorize(Policy = SecurableItem.UserEntityShortName + ":" + SecurableItem.Administer)]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> UnlockUserAsync(Guid id)
+        {
+            RServiceResult<PublicRAppUser> userInfo = await _appUserService.GetUserInformation(id);
+            if (userInfo.Result == null)
+            {
+                if (string.IsNullOrEmpty(userInfo.ExceptionString))
+                    return NotFound();
+                return BadRequest(userInfo.ExceptionString);
+            }
+
+            RServiceResult<bool> res = await _appUserService.UnlockAsync(id);
+            if (!res.Result)
+            {
+                return BadRequest(res.ExceptionString);
+            }
+
+            return Ok(true);
+        }
+
+        /// <summary>
         /// IAppUserService instance
         /// </summary>
         protected IAppUserService _appUserService;

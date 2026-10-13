@@ -393,6 +393,13 @@ namespace RSecurityBackend.Services
         Task<RServiceResult<bool>> LockoutAsync(Guid userId, string cause, DateTimeOffset offset);
 
         /// <summary>
+        /// unlock a previously locked out user (reverses LockoutAsync, resets failed access count and clears lockout cause)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<RServiceResult<bool>> UnlockAsync(Guid userId);
+
+        /// <summary>
         /// before kicking out a bad behving user ban him or her from signing up again.
         /// Bans not only the user's CURRENT email/phone number, but every email and phone
         /// number this user has ever verified and later moved away from via ChangeContact
