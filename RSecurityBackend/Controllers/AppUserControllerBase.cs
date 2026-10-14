@@ -294,12 +294,13 @@ namespace RSecurityBackend.Controllers
         /// <param name="paging"></param>
         /// <param name="filterByEmail"></param>
         /// <param name="filterByNickName"></param>
+        /// <param name="filterByLockedOut">true: only currently locked out users, false: only users who are not locked out, omitted: all (ignored for users without user:view-all permission)</param>
         /// <returns>All Users Information</returns>
         [HttpGet]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<PublicRAppUser>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null, string filterByNickName = null)
+        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null, string filterByNickName = null, bool? filterByLockedOut = null)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -319,7 +320,7 @@ namespace RSecurityBackend.Controllers
                 if (!string.IsNullOrEmpty(filterByEmail))
                     filterByEmail = filterByEmail.Trim();
                 RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)> usersInfo
-                    = await _appUserService.GetAllUsersInformation(paging, filterByEmail, filterByNickName);
+                    = await _appUserService.GetAllUsersInformation(paging, filterByEmail, filterByNickName, filterByLockedOut);
                 if (!string.IsNullOrEmpty(usersInfo.ExceptionString))
                 {
                     return BadRequest(usersInfo.ExceptionString);

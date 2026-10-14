@@ -148,8 +148,9 @@ namespace RSecurityBackend.Services
         /// <param name="paging"></param>
         /// <param name="filterByEmail"></param>
         /// <param name="filterByNickName"></param>
+        /// <param name="filterByLockedOut">true: only currently locked out users, false: only users who are not locked out, null: all</param>
         /// <returns></returns>
-        Task<RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>> GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName);
+        Task<RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>> GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName, bool? filterByLockedOut = null);
 
         /// <summary>
         /// all users having a certain permission

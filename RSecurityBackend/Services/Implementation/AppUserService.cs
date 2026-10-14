@@ -572,6 +572,8 @@ namespace RSecurityBackend.Services.Implementation
                 await _userManager.Users.Where(u => u.Id == userId).SingleOrDefaultAsync();
             if (appUser == null)
                 return new RServiceResult<PublicRAppUser>(null);
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            bool lockedOut = appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now;
             return new RServiceResult<PublicRAppUser>(
                 new PublicRAppUser()
                 {
@@ -588,6 +590,9 @@ namespace RSecurityBackend.Services.Implementation
                     Bio = appUser.Bio,
                     EmailConfirmed = appUser.EmailConfirmed,
                     CreateDate = appUser.CreateDate,
+                    LockedOut = lockedOut,
+                    LockoutEnd = lockedOut ? appUser.LockoutEnd : null,
+                    LockoutMessage = lockedOut ? appUser.LockoutMessage : null,
                 });
         }
 
@@ -600,10 +605,15 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="filterByNickName"></param>
         /// <returns></returns>
         public virtual async Task<RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>>
-            GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName)
+            GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName, bool? filterByLockedOut = null)
         {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
             var source = _userManager.Users
                 .Where(appUser =>
+
+                (filterByLockedOut == null || (appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now) == filterByLockedOut.Value)
+
+                &&
 
                 (string.IsNullOrEmpty(filterByEmail) || (!string.IsNullOrEmpty(filterByEmail) && appUser.Email.Contains(filterByEmail)))
 
@@ -627,6 +637,9 @@ namespace RSecurityBackend.Services.Implementation
                     Bio = appUser.Bio,
                     EmailConfirmed = appUser.EmailConfirmed,
                     CreateDate = appUser.CreateDate,
+                    LockedOut = appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now,
+                    LockoutEnd = appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now ? appUser.LockoutEnd : null,
+                    LockoutMessage = appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now ? appUser.LockoutMessage : null,
                 });
 
             return new RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>(

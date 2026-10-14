@@ -90,6 +90,23 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         /// </summary>
         public DateTime CreateDate { get; set; }
 
+        /// <summary>
+        /// true if the user is currently locked out (either purposely by an administrator or
+        /// automatically due to too many failed login attempts) - populated by user information
+        /// and user list queries
+        /// </summary>
+        public bool LockedOut { get; set; }
+
+        /// <summary>
+        /// when the current lockout ends (null if the user is not locked out)
+        /// </summary>
+        public DateTimeOffset? LockoutEnd { get; set; }
+
+        /// <summary>
+        /// the message given when the user was locked out purposely (null for automatic lockouts)
+        /// </summary>
+        public string LockoutMessage { get; set; }
+
 
     }
 }
