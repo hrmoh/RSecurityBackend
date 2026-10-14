@@ -99,7 +99,25 @@ namespace RSecurityBackend.Services.Implementation
             }
 
 
+            if (!string.IsNullOrEmpty(appUser.LockoutMessage) && (appUser.LockoutEnd == null || appUser.LockoutEnd <= DateTimeOffset.UtcNow))
+            {
+                //an administrator's lockout has expired: forget its message so it is not mistaken
+                //for the cause of a later automatic (failed password attempts) lockout
+                appUser.LockoutMessage = null;
+                await _userManager.UpdateAsync(appUser);
+            }
+
             var result = await _signInManager.CheckPasswordSignInAsync(appUser, loginViewModel.Password, true);
+            if (result.IsLockedOut && !string.IsNullOrEmpty(appUser.LockoutMessage))
+            {
+                string until = appUser.LockoutEnd?.UtcDateTime.ToString("yyyy-MM-dd HH:mm") + " UTC";
+                return new RServiceResult<LoggedOnUserModel>(null,
+                    loginViewModel.Language.StartsWith("fa") ?
+                    $"حساب کاربری شما تا {until} قفل شده است. دلیل: {appUser.LockoutMessage}"
+                    :
+                    $"Your account is locked until {until}. Reason: {appUser.LockoutMessage}"
+                    );
+            }
             if (result.IsLockedOut)
             {
                 return new RServiceResult<LoggedOnUserModel>(null,
@@ -589,6 +607,7 @@ namespace RSecurityBackend.Services.Implementation
                     Website = appUser.Website,
                     Bio = appUser.Bio,
                     EmailConfirmed = appUser.EmailConfirmed,
+                    PhoneNumberConfirmed = appUser.PhoneNumberConfirmed,
                     CreateDate = appUser.CreateDate,
                     LockedOut = lockedOut,
                     LockoutEnd = lockedOut ? appUser.LockoutEnd : null,
@@ -603,13 +622,25 @@ namespace RSecurityBackend.Services.Implementation
         /// <param name="paging"></param>
         /// <param name="filterByEmail"></param>
         /// <param name="filterByNickName"></param>
+        /// <param name="filterByLockedOut">true: only currently locked out users, false: only users who are not locked out, null: all</param>
+        /// <param name="filterByPhoneNumber">phone number (or part of it)</param>
+        /// <param name="filterByUnverified">true: only users with an unverified email or phone number, false: only fully verified users, null: all</param>
         /// <returns></returns>
         public virtual async Task<RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)>>
-            GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName, bool? filterByLockedOut = null)
+            GetAllUsersInformation(PagingParameterModel paging, string filterByEmail, string filterByNickName, bool? filterByLockedOut = null, string filterByPhoneNumber = null, bool? filterByUnverified = null)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
             var source = _userManager.Users
                 .Where(appUser =>
+
+                (string.IsNullOrEmpty(filterByPhoneNumber) || (appUser.PhoneNumber != null && appUser.PhoneNumber.Contains(filterByPhoneNumber)))
+
+                &&
+
+                (filterByUnverified == null ||
+                    ((appUser.Email != null && appUser.Email != "" && !appUser.EmailConfirmed) || (appUser.PhoneNumber != null && appUser.PhoneNumber != "" && !appUser.PhoneNumberConfirmed)) == filterByUnverified.Value)
+
+                &&
 
                 (filterByLockedOut == null || (appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now) == filterByLockedOut.Value)
 
@@ -636,6 +667,7 @@ namespace RSecurityBackend.Services.Implementation
                     Website = appUser.Website,
                     Bio = appUser.Bio,
                     EmailConfirmed = appUser.EmailConfirmed,
+                    PhoneNumberConfirmed = appUser.PhoneNumberConfirmed,
                     CreateDate = appUser.CreateDate,
                     LockedOut = appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now,
                     LockoutEnd = appUser.LockoutEnabled && appUser.LockoutEnd != null && appUser.LockoutEnd > now ? appUser.LockoutEnd : null,
@@ -2480,6 +2512,10 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (op == RVerifyQueueType.ContactChanged)
                 return "Email changed";
+            if (op == RVerifyQueueType.UserLockedOut)
+                return "Your account has been locked";
+            if (op == RVerifyQueueType.UserUnlocked)
+                return "Your account has been unlocked";
 
             string opString = op == RVerifyQueueType.SignUp ? "SignUp" : op == RVerifyQueueType.ForgotPassword ? "Forgot Password" : op == RVerifyQueueType.KickOutUser ? "User Removal" : op == RVerifyQueueType.ChangeContact ? "Change Email" : "Self Delete User";
             return $"Application {opString} {(op == RVerifyQueueType.KickOutUser ? "Cause" : "Code")}:{secretCode}";
@@ -2499,6 +2535,10 @@ namespace RSecurityBackend.Services.Implementation
                 return $"{signupCallbackUrl}?secret={secretCode}";
             if (op == RVerifyQueueType.ContactChanged)
                 return $"ایمیل حساب کاربری شما به {secretCode} تغییر کرد. اگر این درخواست از طرف شما نبوده لطفاً هر چه سریع‌تر با پشتیبانی تماس بگیرید.";
+            if (op == RVerifyQueueType.UserLockedOut)
+                return $"حساب کاربری شما قفل شد. {secretCode}";
+            if (op == RVerifyQueueType.UserUnlocked)
+                return "قفل حساب کاربری شما باز شد و می‌توانید مجدداً وارد شوید.";
             string opString = op == RVerifyQueueType.SignUp ? "ثبت نام" : op == RVerifyQueueType.ForgotPassword ? "فراموشی رمز" : op == RVerifyQueueType.UserSelfDelete ? "حذف کاربر" : "تغییر ایمیل";
             return op == RVerifyQueueType.KickOutUser ? $"حساب کاربری شما به دلیل {secretCode} حذف شد." : $"لطفا {secretCode} را در صفحهٔ {opString} وارد کنید.";
         }
@@ -2513,6 +2553,10 @@ namespace RSecurityBackend.Services.Implementation
         {
             if (op == RVerifyQueueType.ContactChanged)
                 return $"شماره تلفن حساب کاربری شما به {secretCode} تغییر کرد. اگر این درخواست از طرف شما نبوده لطفاً هر چه سریع‌تر با پشتیبانی تماس بگیرید.";
+            if (op == RVerifyQueueType.UserLockedOut)
+                return $"حساب کاربری شما قفل شد. {secretCode}";
+            if (op == RVerifyQueueType.UserUnlocked)
+                return "قفل حساب کاربری شما باز شد و می‌توانید مجدداً وارد شوید.";
             return $"کد تایید شما: {secretCode}";
         }
 

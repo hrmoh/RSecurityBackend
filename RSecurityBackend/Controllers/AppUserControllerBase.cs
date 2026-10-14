@@ -295,12 +295,14 @@ namespace RSecurityBackend.Controllers
         /// <param name="filterByEmail"></param>
         /// <param name="filterByNickName"></param>
         /// <param name="filterByLockedOut">true: only currently locked out users, false: only users who are not locked out, omitted: all (ignored for users without user:view-all permission)</param>
+        /// <param name="filterByPhoneNumber">phone number (or part of it)</param>
+        /// <param name="filterByUnverified">true: only users with an unverified email or phone number, false: only fully verified users, omitted: all</param>
         /// <returns>All Users Information</returns>
         [HttpGet]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(IEnumerable<PublicRAppUser>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
-        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null, string filterByNickName = null, bool? filterByLockedOut = null)
+        public virtual async Task<IActionResult> Get([FromQuery] PagingParameterModel paging, string filterByEmail = null, string filterByNickName = null, bool? filterByLockedOut = null, string filterByPhoneNumber = null, bool? filterByUnverified = null)
         {
             Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
 
@@ -320,7 +322,7 @@ namespace RSecurityBackend.Controllers
                 if (!string.IsNullOrEmpty(filterByEmail))
                     filterByEmail = filterByEmail.Trim();
                 RServiceResult<(PaginationMetadata PagingMeta, PublicRAppUser[] Items)> usersInfo
-                    = await _appUserService.GetAllUsersInformation(paging, filterByEmail, filterByNickName, filterByLockedOut);
+                    = await _appUserService.GetAllUsersInformation(paging, filterByEmail, filterByNickName, filterByLockedOut, filterByPhoneNumber?.Trim(), filterByUnverified);
                 if (!string.IsNullOrEmpty(usersInfo.ExceptionString))
                 {
                     return BadRequest(usersInfo.ExceptionString);
@@ -1660,7 +1662,122 @@ namespace RSecurityBackend.Controllers
                 return BadRequest(res.ExceptionString);
             }
 
+            if (NotifyUserOnUnlock)
+                await NotifyUserAsync(userInfo.Result, RVerifyQueueType.UserUnlocked, "");
+
             return Ok(true);
+        }
+
+        /// <summary>
+        /// lock a user out until a given time (the cause is shown to the user when he/she tries to login).
+        /// Users cannot lock themselves, and only admins can lock other admins.
+        /// </summary>
+        /// <param name="lockout"></param>
+        /// <returns>true if succeeds</returns>
+        [HttpPut("lockout")]
+        [Authorize(Policy = SecurableItem.UserEntityShortName + ":" + SecurableItem.Administer)]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(bool))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public virtual async Task<IActionResult> LockoutUserAsync([FromBody] LockoutUserViewModel lockout)
+        {
+            if (string.IsNullOrWhiteSpace(lockout.Cause))
+                return BadRequest("cause is required");
+            if (lockout.LockoutEnd <= DateTimeOffset.UtcNow)
+                return BadRequest("LockoutEnd must be in the future");
+
+            Guid loggedOnUserId = new Guid(User.Claims.FirstOrDefault(c => c.Type == "UserId").Value);
+            if (loggedOnUserId == lockout.UserId)
+                return BadRequest("You cannot lock yourself out.");
+
+            RServiceResult<PublicRAppUser> userInfo = await _appUserService.GetUserInformation(lockout.UserId);
+            if (userInfo.Result == null)
+            {
+                if (string.IsNullOrEmpty(userInfo.ExceptionString))
+                    return NotFound();
+                return BadRequest(userInfo.ExceptionString);
+            }
+
+            RServiceResult<bool> isAdmin = await _appUserService.IsAdmin(loggedOnUserId);
+            if (!string.IsNullOrEmpty(isAdmin.ExceptionString))
+                return BadRequest(isAdmin.ExceptionString);
+            if (!isAdmin.Result)
+            {
+                RServiceResult<bool> isTargetAdmin = await _appUserService.IsAdmin(lockout.UserId);
+                if (!string.IsNullOrEmpty(isTargetAdmin.ExceptionString))
+                    return BadRequest(isTargetAdmin.ExceptionString);
+                if (isTargetAdmin.Result)
+                    return Forbid();//You can not lock admin users.
+            }
+
+            RServiceResult<bool> res = await _appUserService.LockoutAsync(lockout.UserId, lockout.Cause.Trim(), lockout.LockoutEnd);
+            if (!res.Result)
+            {
+                return BadRequest(res.ExceptionString);
+            }
+
+            if (NotifyUserOnLockout)
+                await NotifyUserAsync(userInfo.Result, RVerifyQueueType.UserLockedOut,
+                    $"{lockout.Cause.Trim()} ({lockout.LockoutEnd.UtcDateTime:yyyy-MM-dd HH:mm} UTC)");
+
+            return Ok(true);
+        }
+
+        /// <summary>
+        /// best-effort email (or sms, if the user has no email) notification to a user about an
+        /// administrative action; never throws, a delivery failure must not fail the action itself
+        /// </summary>
+        protected virtual async Task NotifyUserAsync(PublicRAppUser user, RVerifyQueueType op, string text)
+        {
+            try
+            {
+                bool hasEmail = !string.IsNullOrEmpty(user.Email);
+                bool hasPhone = !string.IsNullOrEmpty(user.PhoneNumber) && _smsSender != null;
+                //prefer a verified channel, fall back to an unverified one
+                bool useEmail = hasEmail && (user.EmailConfirmed || !hasPhone || !user.PhoneNumberConfirmed);
+                if (useEmail)
+                {
+                    await _emailSender.SendEmailAsync(
+                        user.Email,
+                        _appUserService.GetEmailSubject(op, text),
+                        _appUserService.GetEmailHtmlContent(op, text, ""));
+                }
+                else if (hasPhone)
+                {
+                    await _smsSender.SendSmsAsync(user.PhoneNumber, _appUserService.GetSmsText(op, text));
+                }
+            }
+            catch
+            {
+                //intentionally swallowed
+            }
+        }
+
+        /// <summary>
+        /// notify a user (email/sms) when an administrator locks him/her out.
+        /// Configuration "Lockout:NotifyOnLockout", defaults to false.
+        /// </summary>
+        public bool NotifyUserOnLockout
+        {
+            get
+            {
+                string v = Configuration.GetSection("Lockout")["NotifyOnLockout"];
+                return !string.IsNullOrEmpty(v) && bool.Parse(v);
+            }
+        }
+
+        /// <summary>
+        /// notify a user (email/sms) when an administrator unlocks him/her.
+        /// Configuration "Lockout:NotifyOnUnlock", defaults to false.
+        /// </summary>
+        public bool NotifyUserOnUnlock
+        {
+            get
+            {
+                string v = Configuration.GetSection("Lockout")["NotifyOnUnlock"];
+                return !string.IsNullOrEmpty(v) && bool.Parse(v);
+            }
         }
 
         /// <summary>

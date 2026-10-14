@@ -86,6 +86,11 @@ namespace RSecurityBackend.Models.Auth.ViewModels
         public bool EmailConfirmed { get; set; }
 
         /// <summary>
+        /// phone number verified (populated by user information and user list queries)
+        /// </summary>
+        public bool PhoneNumberConfirmed { get; set; }
+
+        /// <summary>
         /// create date
         /// </summary>
         public DateTime CreateDate { get; set; }

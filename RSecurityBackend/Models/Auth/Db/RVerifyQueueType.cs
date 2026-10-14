@@ -32,5 +32,13 @@
         /// security notice, only when there was a previous value to notify)
         /// </summary>
         ContactChanged = 5,
+        /// <summary>
+        /// user locked out by an administrator (optional notification, see Lockout:NotifyOnLockout)
+        /// </summary>
+        UserLockedOut = 6,
+        /// <summary>
+        /// user unlocked by an administrator (optional notification, see Lockout:NotifyOnUnlock)
+        /// </summary>
+        UserUnlocked = 7,
     }
 }

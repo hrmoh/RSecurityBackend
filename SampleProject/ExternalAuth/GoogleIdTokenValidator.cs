@@ -38,7 +38,7 @@ namespace SampleProject.ExternalAuth
                 GoogleAuthConfig config = GoogleAuthConfig.Load(_configuration);
                 if (config.ClientIds.Length == 0)
                 {
-                    return new RServiceResult<ExternalAuthPayload>(null, "GoogleAuthConfig:ClientIds is not configured.");
+                    return new RServiceResult<ExternalAuthPayload>(null!, "GoogleAuthConfig:ClientIds is not configured.");
                 }
 
                 //ValidateAsync verifies the token's signature against Google's published keys
@@ -68,11 +68,11 @@ namespace SampleProject.ExternalAuth
                 //expected for a bad/expired/wrong-audience token - not a server error, just an
                 //invalid credential from the client's point of view
                 _logger.LogWarning(exp, "Rejected an invalid Google ID token");
-                return new RServiceResult<ExternalAuthPayload>(null, "Invalid Google ID token.");
+                return new RServiceResult<ExternalAuthPayload>(null!, "Invalid Google ID token.");
             }
             catch (Exception exp)
             {
-                return new RServiceResult<ExternalAuthPayload>(null, exp.ToString());
+                return new RServiceResult<ExternalAuthPayload>(null!, exp.ToString());
             }
         }
     }
